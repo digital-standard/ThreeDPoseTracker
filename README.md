@@ -2,9 +2,10 @@
 
 # ThreeDPoseTracker
 
+Unity Standalone File Browser 1.2(https://github.com/gkngkc/UnityStandaloneFileBrowser)
 
 ## License
-・Non-commercial use only.Please use it freely for hobbies and research. When redistributing, it would be appreciated if you could enter a credit (Digital-Standard Co., Ltd.).Please contact us if you want to use it for commercial purposes.</br>
+・Non-commercial use only.Please use it freely for hobbies and research. Redistribution is prohibited. Please contact us if you want to use it for commercial purposes.</br>
 
 ・The videos named as "Action_with_wiper.mp4"(
 original video: https://www.youtube.com/watch?v=C9VtSRiEM7s) and "onegai_darling.mp4"(original video: https://www.youtube.com/watch?v=tmsK8985dyk) contained in this code are not copyright free.
