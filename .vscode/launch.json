@@ -1,0 +1,41 @@
+{
+    // IntelliSense を使用して利用可能な属性を学べます。
+    // 既存の属性の説明をホバーして表示します。
+    // 詳細情報は次を確認してください: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: DeepPose_to_barracuda",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/Assets/Packages/barracuda-release/Tools/onnx_to_barracuda.py",
+            "args": [
+                "D:/github/DeepPose/result/MobileNet3D3_448_ep2.onnx",
+                "D:/github/ThreeDPoseUnitySample_Barracuda/Assets/Scripts/MobileNet3D3_448_ep2_dp_1115.nn",
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Python: ThreeDPose_to_barracuda",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/Assets/Packages/barracuda-release/Tools/onnx_to_barracuda.py",
+            "args": [
+                "D:/github/ThreeDPose/result/MobileNet3D448_ep2.onnx",
+                "D:/github/ThreeDPoseUnitySample_Barracuda/Assets/Scripts/MobileNet3D448_ep2_1115.nn",
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Python: work_to_barracuda",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/Assets/Packages/barracuda-release/Tools/onnx_to_barracuda.py",
+            "args": [
+                "D:/work/DeepPose/MobileNet3D3_4/20190919/MobileNet3D3_4_ep9.onnx",
+                "D:/github/ThreeDPoseUnitySample_Barracuda/Assets/Scripts/MobileNet3D3_4_ep9_0918.nn",
+            ],
+            "console": "integratedTerminal"
+        },
+    ]
+}
