@@ -2,6 +2,7 @@
 
 # ThreeDPoseTracker
 
+Unity Standalone File Browser 1.2(https://github.com/gkngkc/UnityStandaloneFileBrowser)
 
 ## License
 ・Non-commercial use only.Please use it freely for hobbies and research. Redistribution is prohibited. Please contact us if you want to use it for commercial purposes.</br>
