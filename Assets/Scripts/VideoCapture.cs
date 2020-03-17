@@ -91,13 +91,19 @@ public class VideoCapture : MonoBehaviour
         VideoPlayer.url = path;
 
         // Video Playerの準備（完了まで待つ）
-        //yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(1);
 
         VideoClip vclip = (VideoClip)Resources.Load(path);
         yield return new WaitForSeconds(1);
         //videoTexture = new RenderTexture((int)vclip.width, (int)vclip.height, 24);
-        videoTexture = new RenderTexture((int)VideoPlayer.clip.width, (int)VideoPlayer.clip.height, 24);
-
+        if (VideoPlayer.clip != null)
+        {
+            videoTexture = new RenderTexture((int)VideoPlayer.clip.width, (int)VideoPlayer.clip.height, 24);
+        }
+        else
+        {
+            videoTexture = new RenderTexture(1920, 1080, 24);
+        }
         VideoPlayer.renderMode = VideoRenderMode.RenderTexture;
         VideoPlayer.targetTexture = videoTexture;
 
@@ -109,7 +115,14 @@ public class VideoCapture : MonoBehaviour
         SourceFps = (float)VideoPlayer.frameRate;
 
         var sd = VideoScreen.GetComponent<RectTransform>();
-        sd.sizeDelta = new Vector2(videoScreenWidth, (int)(videoScreenWidth * VideoPlayer.clip.height / VideoPlayer.clip.width));
+        if (VideoPlayer.clip != null)
+        {
+            sd.sizeDelta = new Vector2(videoScreenWidth, (int)(videoScreenWidth * VideoPlayer.clip.height / VideoPlayer.clip.width));
+        }
+        else
+        {
+            sd.sizeDelta = new Vector2(videoScreenWidth, (int)(videoScreenWidth * 1080 / 1920));
+        }
         VideoScreen.texture = videoTexture;
         VideoScreen.transform.localScale = localScale;
 

@@ -252,26 +252,26 @@ public class VNectBarracudaRunner : MonoBehaviour
         //inputs["input.1"] = input;
         /**/
         //inputs["0"] = input;
-        if (inputs["0"] == null)
+        if (inputs["input.1"] == null)
         {
-            inputs["0"] = input;
-            inputs["1"] = new Tensor(videoCapture.MainTexture);
-            inputs["2"] = new Tensor(videoCapture.MainTexture);
+            inputs["input.1"] = input;
+            inputs["input.4"] = new Tensor(videoCapture.MainTexture);
+            inputs["input.7"] = new Tensor(videoCapture.MainTexture);
         }
         else
         {
-            inputs["2"].Dispose();
+            inputs["input.7"].Dispose();
 
-            inputs["2"] = inputs["1"];
-            inputs["1"] = inputs["0"];
-            inputs["0"] = input;
+            inputs["input.7"] = inputs["input.4"];
+            inputs["input.4"] = inputs["input.1"];
+            inputs["input.1"] = input;
         }
         /**/
         StartCoroutine(ExecuteModelAsync());
     }
 
     Tensor input = new Tensor();
-    Dictionary<string, Tensor> inputs = new Dictionary<string, Tensor>() { { "0", null }, { "1", null }, { "2", null }, };
+    Dictionary<string, Tensor> inputs = new Dictionary<string, Tensor>() { { "input.1", null }, { "input.4", null }, { "input.7", null }, };
     Tensor[] b_outputs = new Tensor[4];
 
     private IEnumerator ExecuteModelAsync()
