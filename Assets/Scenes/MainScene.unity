@@ -16250,7 +16250,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: -400, y: -140}
+  m_AnchoredPosition: {x: -400, y: -85}
   m_SizeDelta: {x: 800, y: 600}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1623115140
@@ -18190,7 +18190,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: -400, y: -140}
+  m_AnchoredPosition: {x: -400, y: -85}
   m_SizeDelta: {x: 800, y: 600}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1793219200
@@ -18781,6 +18781,9 @@ MonoBehaviour:
   KalmanParamQ: 0.001
   KalmanParamR: 0.0015
   ModelQuality: 0
+  EstimatedScore: 0
+  DebugMode: 0
+  User3Input: 0
 --- !u!4 &1875476001
 Transform:
   m_ObjectHideFlags: 0

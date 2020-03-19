@@ -53,26 +53,60 @@ public class VNectBarracudaRunner : MonoBehaviour
     public float KalmanParamQ;
     public float KalmanParamR;
 
+    private delegate void UpdateVNectModelDelegate();
+    private UpdateVNectModelDelegate UpdateVNectModel;
     public int ModelQuality = 1;
-    private string HighQualityModelName = "Resnet34IN3_448x448_.onnx";
+    private string HighQualityModelName = "HighQualityTrainedModel.nn";
+
+    [SerializeField]
+    private float EstimatedScore;
+
+    public bool DebugMode;
+    public bool User3Input;
 
     private void Start()
     {
-        var streamingPath = System.IO.Path.Combine(Application.streamingAssetsPath, HighQualityModelName);
-        if (!File.Exists(streamingPath))
+        if (DebugMode)
         {
-            ModelQuality = 0;
-        }
-
-        if (ModelQuality == 0)
-        {
-            InputImageSize = 224;
-            HeatMapCol = 14;
+            if(User3Input)
+            {
+                UpdateVNectModel = new UpdateVNectModelDelegate(UpdateVNectAsync);
+            }
+            else
+            {
+                UpdateVNectModel = new UpdateVNectModelDelegate(UpdateVNect);
+            }
+            /*
+            var streamingPath = System.IO.Path.Combine(Application.streamingAssetsPath, HighQualityModelName);
+            var writer = new BinaryWriter(new FileStream(streamingPath, FileMode.Create));
+            writer.Write(NNModel.Value);
+            writer.Close();
+            */
+            _model = ModelLoader.Load(NNModel, Verbose);
+            
         }
         else
         {
-            InputImageSize = 448;
-            HeatMapCol = 28;
+            var streamingPath = System.IO.Path.Combine(Application.streamingAssetsPath, HighQualityModelName);
+            if (!File.Exists(streamingPath))
+            {
+                ModelQuality = 0;
+            }
+
+            if (ModelQuality == 0)
+            {
+                InputImageSize = 224;
+                HeatMapCol = 14;
+                UpdateVNectModel = new UpdateVNectModelDelegate(UpdateVNect);
+                _model = ModelLoader.Load(NNModel, Verbose);
+            }
+            else
+            {
+                InputImageSize = 448;
+                HeatMapCol = 28;
+                UpdateVNectModel = new UpdateVNectModelDelegate(UpdateVNectAsync);
+                _model = ModelLoader.LoadFromStreamingAssets(streamingPath);
+            }
         }
 
         HeatMapCol_Half = HeatMapCol / 2;
@@ -83,9 +117,6 @@ public class VNectBarracudaRunner : MonoBehaviour
         offset2D = new float[JointNum * HeatMapCol_Squared * 2];
         heatMap3D = new float[JointNum * HeatMapCol_Cube];
         offset3D = new float[JointNum * HeatMapCol_Cube * 3];
-        //offset3D = new float[JointNum * 3];
-        //ImageScale = 224f / (float)InputImageSize;
-        //ImageScale = 224f / (float)InputImageSize;
         InputImageSizeF = InputImageSize ;
         InputImageSizeHalf = InputImageSizeF / 2f ;
         unit = 1f / (float)HeatMapCol;
@@ -96,16 +127,6 @@ public class VNectBarracudaRunner : MonoBehaviour
         // Disabel sleep
         Screen.sleepTimeout = SleepTimeout.NeverSleep;
 
-        // Init model
-        if(ModelQuality == 0)
-        {
-            _model = ModelLoader.Load(NNModel, Verbose);
-        }
-        else
-        {
-            //Resnet34IN3_448_ep32
-            _model = ModelLoader.LoadFromStreamingAssets(HighQualityModelName);
-        }
         _worker = WorkerFactory.CreateWorker(WorkerType, _model, Verbose);
         StartCoroutine("WaitLoad");
 
@@ -170,7 +191,6 @@ public class VNectBarracudaRunner : MonoBehaviour
             fpsMeasurementSec += v;
             //if (elapsedMeasurementSec > waitSec)
             {
-                //UpdateVNectModelAsync();
                 UpdateVNectModel();
 
                 if (fpsMeasurementSec >= 1f)
@@ -191,7 +211,7 @@ public class VNectBarracudaRunner : MonoBehaviour
         Lock = false;
     }
 
-    private void UpdateVNectModel()
+    private void UpdateVNect()
     {
         ExecuteModel();
         PredictPose();
@@ -204,23 +224,6 @@ public class VNectBarracudaRunner : MonoBehaviour
 
         // Create input and Execute model
         input = new Tensor(videoCapture.MainTexture);
-        //inputs["input.1"] = input;
-        /*
-        if (inputs["0"] == null)
-        {
-            inputs["0"] = input;
-            inputs["1"] = input;
-            inputs["2"] = input;
-        }
-        else
-        {
-            inputs["2"].Dispose();
-
-            inputs["2"] = inputs["1"];
-            inputs["1"] = inputs["0"];
-            inputs["0"] = input;
-        }*/
-        //_worker.ExecuteAndWaitForCompletion(inputs);
         _worker.Execute(input);
         input.Dispose();
 
@@ -228,7 +231,6 @@ public class VNectBarracudaRunner : MonoBehaviour
         var b_outputs = new Tensor[4];
         for (var i = 2; i < _model.outputs.Count; i++)
         {
-            //b_outputs[i] = _worker.Peek(_model.outputs[i]);
             b_outputs[i] = _worker.PeekOutput(_model.outputs[i]);
         }
 
@@ -246,12 +248,9 @@ public class VNectBarracudaRunner : MonoBehaviour
         b_outputs = null;
     }
 
-    private void UpdateVNectModelAsync()
+    private void UpdateVNectAsync()
     {
         input = new Tensor(videoCapture.MainTexture);
-        //inputs["input.1"] = input;
-        /**/
-        //inputs["0"] = input;
         if (inputs["input.1"] == null)
         {
             inputs["input.1"] = input;
@@ -266,7 +265,7 @@ public class VNectBarracudaRunner : MonoBehaviour
             inputs["input.4"] = inputs["input.1"];
             inputs["input.1"] = input;
         }
-        /**/
+
         StartCoroutine(ExecuteModelAsync());
     }
 
@@ -278,7 +277,6 @@ public class VNectBarracudaRunner : MonoBehaviour
     {
         // Create input and Execute model
         yield return _worker.ExecuteAsync(inputs);
-        //input.Dispose();
 
         if (!Lock)
         {
@@ -293,8 +291,6 @@ public class VNectBarracudaRunner : MonoBehaviour
             //offset2D = b_outputs[1].data.Download(b_outputs[1].data.GetMaxCount());
             offset3D = b_outputs[2].data.Download(b_outputs[2].data.GetMaxCount());
             heatMap3D = b_outputs[3].data.Download(b_outputs[3].data.GetMaxCount());
-            //offset3D = b_outputs[2].readonlyArray;
-            //heatMap3D = b_outputs[3].readonlyArray;
 
             PredictPose();
 
@@ -304,6 +300,8 @@ public class VNectBarracudaRunner : MonoBehaviour
 
     private void PredictPose()
     {
+        var score = 0f;
+
         for (var j = 0; j < JointNum; j++)
         {
             var maxXIndex = 0;
@@ -331,11 +329,14 @@ public class VNectBarracudaRunner : MonoBehaviour
                     }
                 }
             }
-            
+
+            score += jointPoints[j].score3D;
             jointPoints[j].Now3D.x = ((offset3D[maxYIndex * cubeOffsetSquared + maxXIndex * cubeOffsetLinear + j * HeatMapCol + maxZIndex] + 0.5f + (float)maxXIndex) / (float)HeatMapCol) * InputImageSizeF - InputImageSizeHalf;
             jointPoints[j].Now3D.y = (float)InputImageSize - ((offset3D[maxYIndex * cubeOffsetSquared + maxXIndex * cubeOffsetLinear + (j + JointNum) * HeatMapCol + maxZIndex] + 0.5f + (float)maxYIndex) / (float)HeatMapCol) * InputImageSizeF - InputImageSizeHalf;
             jointPoints[j].Now3D.z = ((offset3D[maxYIndex * cubeOffsetSquared + maxXIndex * cubeOffsetLinear + (j + JointNum_Squared) * HeatMapCol + maxZIndex] + 0.5f + (float)(maxZIndex - HeatMapCol_Half)) / (float)HeatMapCol) * InputImageSizeF;
         }
+
+        EstimatedScore = score / JointNum;
 
         // Calculate hip location
         var lc = (jointPoints[PositionIndex.rThighBend.Int()].Now3D + jointPoints[PositionIndex.lThighBend.Int()].Now3D) / 2f;
@@ -370,7 +371,11 @@ public class VNectBarracudaRunner : MonoBehaviour
                 jp.Pos3D = jp.PrevPos3D[jp.PrevPos3D.Length - 1];
             }
         }
-        VNectModel.IsPoseUpdate = true;
+
+        if (EstimatedScore > 0.2f)
+        {
+            VNectModel.IsPoseUpdate = true;
+        }
     }
 
     void KalmanUpdate(VNectModel.JointPoint measurement)

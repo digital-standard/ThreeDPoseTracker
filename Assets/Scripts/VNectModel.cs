@@ -73,8 +73,6 @@ public class VNectModel : MonoBehaviour
 
         public JointPoint Child = null;
 
-        //public static float Q = 0.0001f;
-        //public static float R = 0.0002f;
         public static float Q = 0.001f;
         public static float R = 0.0015f;
         public Vector3 P = new Vector3();
