@@ -1,5 +1,3 @@
-# Now in preparation
-
 # ThreeDPoseTracker
 ## Install and Tutorial
 ### Download and put files
