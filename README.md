@@ -14,8 +14,9 @@
 1. Since we haven't created an quit button yet, check Windowed in the first Configuration and press the Play button.</br>
 
 2. When the window opens, select whether to use a video file or a USB camera from the Source device.</br>
-　　Here is a sample movie file.(https://github.com/digital-standard/ThreeDPoseTracker/tree/master/SampleVideo)</br>
-  
+　　Here is a sample movie file.(https://github.com/digital-standard/ThreeDPoseTracker/tree/master/SampleVideo)</br>  
+   If you connect a USB camera after starting the application, restart the application.</br>
+
 3. Switch the trained model on the Configuration screen. Select high quality or low quality in the item of "Trained Model". High quality Model recommends GPU of GTX1070 or more.
 
 4. Select Avatar in the Avatar menu. You can add VRM Avatar on the "Add Avatar" screen.</br>
