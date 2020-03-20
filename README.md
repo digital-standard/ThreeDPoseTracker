@@ -1,4 +1,4 @@
-# ThreeDPoseTracker
+# ThreeDPoseTracker (preparing now)
 ## Install and Tutorial
 ### Download and put files
 1. Download the zip file from the releases page and unzip it.
@@ -15,7 +15,8 @@
 　　Here is a sample movie file.(https://github.com/digital-standard/ThreeDPoseTracker/tree/master/SampleVideo)</br>  
    If you connect a USB camera after starting the application, restart the application.</br>
 
-3. Switch the trained model on the Configuration screen. Select high quality or low quality in the item of "Trained Model". High quality Model recommends GPU of GTX1070 or more.
+3. Switch the trained model on the Configuration screen. Select high quality or low quality in the item of "Trained Model". High quality Model recommends GPU of GTX1070 or more.</br>
+If it exceeds 100fps, please adjust LowPassFilter to about 0.5 on the Configuration screen
 
 4. Select Avatar in the Avatar menu. You can add VRM Avatar on the "Add Avatar" screen.</br>
    Here is a sample VRM file.(https://github.com/digital-standard/ThreeDPoseTracker/tree/master/Avatars)
