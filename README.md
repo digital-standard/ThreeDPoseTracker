@@ -21,8 +21,7 @@ If it exceeds 100fps, please adjust LowPassFilter to about 0.5 on the Configurat
 4. Select Avatar in the Avatar menu. You can add VRM Avatar on the "Add Avatar" screen.</br>
    Here is a sample VRM file.(https://github.com/digital-standard/ThreeDPoseTracker/tree/master/Avatars)
    FBX files are not yet available.
-   
-Add avatar Button</br>
+
 ![200323-01.png](image/200323-01.png)</br>
 ![200323-02.png](image/200323-02.png)</br>
 Upload the file from the "ADD Avatar" button.</br>
