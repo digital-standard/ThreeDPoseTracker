@@ -35,7 +35,7 @@ Scale: Stickman size</br>
 
 5. Use the "Close Menu" button to hide the menu. The menu is displayed again by pressing the space key.
 While the menu is not displayed, you can change the camera angle by left-clicking the mouse and change the avatar by right-clicking.
-![200319-04.png](image/200323-04.png)</br>
+![200319-04.png](image/200319-04.png)</br>
 
 
 ## Source
