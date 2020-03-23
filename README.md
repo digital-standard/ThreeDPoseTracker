@@ -24,7 +24,7 @@ If it exceeds 100fps, please adjust LowPassFilter to about 0.5 on the Configurat
 ![200323-01.png](image/200323-01.png)</br>
 ![200323-02.png](image/200323-02.png)</br>
    Upload the file from the "File" button.</br>
-   ※FBX files are not yet available.
+   ※FBX files are not yet available.</br>
    Avatar name: Avatar name</br>
    Default position: Start position</br>
    Depth scale in: Depth scale of depth movement ratio</br>
