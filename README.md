@@ -26,7 +26,7 @@ If it exceeds 100fps, please adjust LowPassFilter to about 0.5 on the Configurat
 While the menu is not displayed, you can change the camera angle by left-clicking the mouse and change the avatar by right-clicking.
 
 Add avatar Button</br>
-![preview_daring.png](/Assets/StreamingAssets/image/200323-01.png)</br>
+![preview_daring.png](Assets/StreamingAssets/image/200323-01.png)</br>
 Upload the file from the "ADD Avatar" button.</br>
 Avatar name: Avatar name</br>
 Default position: Start position</br>
