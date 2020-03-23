@@ -24,14 +24,14 @@ If it exceeds 100fps, please adjust LowPassFilter to about 0.5 on the Configurat
 
 ![200323-01.png](image/200323-01.png)</br>
 ![200323-02.png](image/200323-02.png)</br>
-Upload the file from the "ADD Avatar" button.</br>
-Avatar name: Avatar name</br>
-Default position: Start position</br>
-Depth scale in: Depth scale of depth movement ratio</br>
-Scale: Avatar size</br>
-Skeleton: Stickman Display</br>
-Default position: Stickman start position</br>
-Scale: Stickman size</br>
+   Upload the file from the "ADD Avatar" button.</br>
+   Avatar name: Avatar name</br>
+   Default position: Start position</br>
+   Depth scale in: Depth scale of depth movement ratio</br>
+   Scale: Avatar size</br>
+   Skeleton: Stickman Display</br>
+   Default position: Stickman start position</br>
+   Scale: Stickman size</br>
 
 5. Use the "Close Menu" button to hide the menu. The menu is displayed again by pressing the space key.
 While the menu is not displayed, you can change the camera angle by left-clicking the mouse and change the avatar by right-clicking.
