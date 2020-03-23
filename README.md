@@ -25,15 +25,15 @@ If it exceeds 100fps, please adjust LowPassFilter to about 0.5 on the Configurat
 5. Use the "Close Menu" button to hide the menu. The menu is displayed again by pressing the space key.
 While the menu is not displayed, you can change the camera angle by left-clicking the mouse and change the avatar by right-clicking.
 
-Add avatar Button
-Upload the file from the "ADD Avatar" button.
-Avatar name: Avatar name
-Default position: Start position
-Z: Depth scale of depth movement ratio
-Scale: Avatar size
-Skeleton: Stickman Display
-Default position: Stickman start position
-Scale: Stickman size
+Add avatar Button</br>
+Upload the file from the "ADD Avatar" button.</br>
+Avatar name: Avatar name</br>
+Default position: Start position</br>
+Z: Depth scale of depth movement ratio</br>
+Scale: Avatar size</br>
+Skeleton: Stickman Display</br>
+Default position: Stickman start position</br>
+Scale: Stickman size</br>
 
 ## Source
 Created with Unity ver 2019.2.12f1.</br>
