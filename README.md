@@ -31,7 +31,7 @@ Add avatar Button</br>
 Upload the file from the "ADD Avatar" button.</br>
 Avatar name: Avatar name</br>
 Default position: Start position</br>
-Z: Depth scale of depth movement ratio</br>
+Depth scale in: Depth scale of depth movement ratio</br>
 Scale: Avatar size</br>
 Skeleton: Stickman Display</br>
 Default position: Stickman start position</br>
