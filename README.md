@@ -27,6 +27,7 @@ While the menu is not displayed, you can change the camera angle by left-clickin
 
 Add avatar Button</br>
 ![200323-01.png](image/200323-01.png)</br>
+![200323-02.png](image/200323-02.png)</br>
 Upload the file from the "ADD Avatar" button.</br>
 Avatar name: Avatar name</br>
 Default position: Start position</br>
