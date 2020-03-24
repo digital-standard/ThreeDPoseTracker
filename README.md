@@ -31,9 +31,9 @@ If it exceeds 100fps, please adjust LowPassFilter to about 0.5 on the Configurat
    Scale: Avatar size</br>
    Skeleton: Stickman Display</br>
    Default position: Stickman start position</br>
-   Scale: Stickman size</br>
+   Scale: Stickman size</br></br>
 
-4. Add Avatar Menu
+4. Add Avatar Menu</br>
 　 Select Avatar in the Avatar menu. You can add VRM Avatar on the "Add Avatar" screen.</br>
    Here is a sample VRM file.(https://github.com/digital-standard/ThreeDPoseTracker/tree/master/Avatars)
    
