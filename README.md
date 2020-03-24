@@ -15,6 +15,7 @@
 2. When the window opens, select whether to use a video file or a USB camera from the Source device.</br>
 　　Here is a sample movie file.(https://github.com/digital-standard/ThreeDPoseTracker/tree/master/SampleVideo)</br>  
    If you connect a USB camera after starting the application, restart the application.</br>
+   ![200324-01.png](image/200324-01.png)</br>
 
 3. Switch the trained model on the Configuration screen. Select high quality or low quality in the item of "Trained Model". High quality Model recommends GPU of GTX1070 or more.</br>
 If it exceeds 100fps, please adjust LowPassFilter to about 0.5 on the Configuration screen
