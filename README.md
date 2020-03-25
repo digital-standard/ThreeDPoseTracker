@@ -38,8 +38,8 @@ Select Avatar in the Avatar menu. You can add VRM Avatar on the "Add Avatar" scr
    Default position: Start position</br>
    Depth scale in: Depth scale of depth movement ratio</br>
    Scale: Avatar size</br>
-   Skeleton: Stickman Display</br>
-   Default position: Stickman start position</br>
+   Skeleton: Skeleton Display</br>
+   Default position: Skeleton start position</br>
    Scale: Stickman size</br></br>
 
 5. Close Menu</br>
