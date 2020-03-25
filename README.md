@@ -19,9 +19,10 @@
 
 3. Configuraton Menu</br>
 Switch the trained model on the Configuration screen. Select high quality or low quality in the item of "Trained Model". High quality Model recommends GPU of GTX1070 or more.</br>
-![200324-02.png](image/200324-02.png)</br>
-If it exceeds 100fps, please adjust LowPassFilter to about 0.5 on the Configuration screen
+![200324-02.png](image/200324-02.png)</br></br>
+
 ![200324-03.png](image/200324-03.png)</br>
+If it exceeds 100fps, please adjust LowPassFilter to about 0.5 on the Configuration screen
 
 4. Add Avatar Menu</br>
   
