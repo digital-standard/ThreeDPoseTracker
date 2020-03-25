@@ -45,7 +45,7 @@ Select Avatar in the Avatar menu. You can add VRM Avatar on the "Add Avatar" scr
 
 5. Close Menu</br>
 The button to hide the menu. The menu is displayed again by pressing the space key.
-While the menu is not displayed, you can change the camera angle by left-clicking the mouse and change the avatar by right-clicking.</br>
+While the menu is not displayed, you can change the camera angle by left-clicking the mouse and change the avatar by right-clicking.</br></br>
 ![200319-04.png](image/200319-04.png)</br>
 
 
