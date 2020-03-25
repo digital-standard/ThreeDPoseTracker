@@ -22,7 +22,7 @@ Switch the trained model on the Configuration screen. Select high quality or low
 ![200324-02.png](image/200324-02.png)</br></br>
 
 　　![200324-03.png](image/200324-03.png)</br>
-　　If it exceeds 100fps, please adjust LowPassFilter to about 0.5 on the Configuration screen</br>
+　　If it exceeds 100fps, please adjust LowPassFilter to about 0.5 on the Configuration screen</br></br>
 
 4. Add Avatar Menu</br>
   
@@ -30,7 +30,7 @@ Switch the trained model on the Configuration screen. Select high quality or low
 
 Select Avatar in the Avatar menu. You can add VRM Avatar on the "Add Avatar" screen.</br>
    Here is a sample VRM file.(https://github.com/digital-standard/ThreeDPoseTracker/tree/master/Avatars)</br></br>
-![200323-02.png](image/200323-02.png)</br></br>
+![200323-02.png](image/200323-02.png)</br>
 
 
    Upload the file from the "File" button.</br>
