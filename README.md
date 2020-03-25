@@ -23,6 +23,14 @@ Switch the trained model on the Configuration screen. Select high quality or low
 If it exceeds 100fps, please adjust LowPassFilter to about 0.5 on the Configuration screen
 ![200324-03.png](image/200324-03.png)</br>
 
+4. Add Avatar Menu</br>
+Select Avatar in the Avatar menu. You can add VRM Avatar on the "Add Avatar" screen.</br>
+   Here is a sample VRM file.(https://github.com/digital-standard/ThreeDPoseTracker/tree/master/Avatars)
+   
+![200323-01.png](image/200323-01.png)</br></br>
+![200323-02.png](image/200323-02.png)</br></br>
+
+
    Upload the file from the "File" button.</br>
    ※FBX files are not yet available.</br>
    Avatar name: Avatar name</br>
@@ -32,13 +40,6 @@ If it exceeds 100fps, please adjust LowPassFilter to about 0.5 on the Configurat
    Skeleton: Stickman Display</br>
    Default position: Stickman start position</br>
    Scale: Stickman size</br></br>
-
-4. Add Avatar Menu</br>
-Select Avatar in the Avatar menu. You can add VRM Avatar on the "Add Avatar" screen.</br>
-   Here is a sample VRM file.(https://github.com/digital-standard/ThreeDPoseTracker/tree/master/Avatars)
-   
-![200323-01.png](image/200323-01.png)</br></br>
-![200323-02.png](image/200323-02.png)</br></br>
 
 5. Close Menu</br>
 The button to hide the menu. The menu is displayed again by pressing the space key.
