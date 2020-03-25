@@ -41,7 +41,7 @@ Select Avatar in the Avatar menu. You can add VRM Avatar on the "Add Avatar" scr
    Scale: Avatar size</br>
    Skeleton: Skeleton Display</br>
    Default position: Skeleton start position</br>
-   Scale: Stickman size</br></br>
+   Scale: Skeleton size</br></br>
 
 5. Close Menu</br>
 The button to hide the menu. The menu is displayed again by pressing the space key.
@@ -66,7 +66,8 @@ GeForce RTX2060 SUPER ⇒ About 60 FPS </br>
 
 
 ## License
-・Non-commercial use only.Please use it freely for hobbies and research. Redistribution is prohibited. Please contact us if you want to use it for commercial purposes.</br>
+・Non-commercial use only.Please use it freely for hobbies and research. Redistribution is prohibited. 
+　Please contact us if you want to use it for commercial purposes.</br>
 
 ・The videos named as "Action_with_wiper.mp4"(
 original video: https://www.youtube.com/watch?v=C9VtSRiEM7s) and "onegai_darling.mp4"(original video: https://www.youtube.com/watch?v=tmsK8985dyk) contained in this code are not copyright free.
