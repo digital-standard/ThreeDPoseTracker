@@ -9,8 +9,8 @@
 3. Move the downloaded HighQualityTrainedModel.nn file to ThreeDPoseTracker_Data/StreamingAssets in the unzipped folder.</br>
 
 ### How to Use
-1. Since we haven't created an quit button yet, check Windowed in the first Configuration and press the Play button.</br>
-![200319-01.png](image/200319-01.png)</br>
+1. Since we haven't created an quit button yet, check Windowed in the first Configuration and press the Play button.</br></br>
+![200319-01.png](image/200319-01.png)</br></br>
 
 2. When the window opens, select whether to use a video file or a USB camera from the Source device.</br>
 　　Here is a sample movie file.(https://github.com/digital-standard/ThreeDPoseTracker/tree/master/SampleVideo)</br>  
