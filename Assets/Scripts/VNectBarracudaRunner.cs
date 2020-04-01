@@ -63,6 +63,7 @@ public class VNectBarracudaRunner : MonoBehaviour
 
     public bool DebugMode;
     public bool User3Input;
+    public bool UpperBodyMode;
 
     private void Start()
     {
@@ -79,7 +80,7 @@ public class VNectBarracudaRunner : MonoBehaviour
             /*
             var streamingPath = System.IO.Path.Combine(Application.streamingAssetsPath, HighQualityModelName);
             var writer = new BinaryWriter(new FileStream(streamingPath, FileMode.Create));
-            writer.Write(NNModel.Value);
+            writer.Write(NNModel.modelData.Value);
             writer.Close();
             */
             _model = ModelLoader.Load(NNModel, Verbose);
@@ -251,26 +252,36 @@ public class VNectBarracudaRunner : MonoBehaviour
     private void UpdateVNectAsync()
     {
         input = new Tensor(videoCapture.MainTexture);
-        if (inputs["input.1"] == null)
+        if (inputs[inputName_1] == null)
         {
-            inputs["input.1"] = input;
-            inputs["input.4"] = new Tensor(videoCapture.MainTexture);
-            inputs["input.7"] = new Tensor(videoCapture.MainTexture);
+            inputs[inputName_1] = input;
+            inputs[inputName_2] = new Tensor(videoCapture.MainTexture);
+            inputs[inputName_3] = new Tensor(videoCapture.MainTexture);
         }
         else
         {
-            inputs["input.7"].Dispose();
+            inputs[inputName_3].Dispose();
 
-            inputs["input.7"] = inputs["input.4"];
-            inputs["input.4"] = inputs["input.1"];
-            inputs["input.1"] = input;
+            inputs[inputName_3] = inputs[inputName_2];
+            inputs[inputName_2] = inputs[inputName_1];
+            inputs[inputName_1] = input;
         }
 
         StartCoroutine(ExecuteModelAsync());
     }
 
+    
+    private const string inputName_1 = "input.1";
+    private const string inputName_2 = "input.4";
+    private const string inputName_3 = "input.7";
+    /*
+    private const string inputName_1 = "0";
+    private const string inputName_2 = "1";
+    private const string inputName_3 = "2";
+    */
+
     Tensor input = new Tensor();
-    Dictionary<string, Tensor> inputs = new Dictionary<string, Tensor>() { { "input.1", null }, { "input.4", null }, { "input.7", null }, };
+    Dictionary<string, Tensor> inputs = new Dictionary<string, Tensor>() { { inputName_1, null }, { inputName_2, null }, { inputName_3, null }, };
     Tensor[] b_outputs = new Tensor[4];
 
     private IEnumerator ExecuteModelAsync()
@@ -334,6 +345,7 @@ public class VNectBarracudaRunner : MonoBehaviour
             jointPoints[j].Now3D.x = ((offset3D[maxYIndex * cubeOffsetSquared + maxXIndex * cubeOffsetLinear + j * HeatMapCol + maxZIndex] + 0.5f + (float)maxXIndex) / (float)HeatMapCol) * InputImageSizeF - InputImageSizeHalf;
             jointPoints[j].Now3D.y = (float)InputImageSize - ((offset3D[maxYIndex * cubeOffsetSquared + maxXIndex * cubeOffsetLinear + (j + JointNum) * HeatMapCol + maxZIndex] + 0.5f + (float)maxYIndex) / (float)HeatMapCol) * InputImageSizeF - InputImageSizeHalf;
             jointPoints[j].Now3D.z = ((offset3D[maxYIndex * cubeOffsetSquared + maxXIndex * cubeOffsetLinear + (j + JointNum_Squared) * HeatMapCol + maxZIndex] + 0.5f + (float)(maxZIndex - HeatMapCol_Half)) / (float)HeatMapCol) * InputImageSizeF;
+            //jointPoints[j].Visibled = jointPoints[j].score3D > 0.2f;
         }
 
         EstimatedScore = score / JointNum;
@@ -357,6 +369,7 @@ public class VNectBarracudaRunner : MonoBehaviour
             foreach (var jp in jointPoints)
             {
                 KalmanUpdate(jp);
+                jp.Visibled = true;
             }
         }
         if (UseLPF)
@@ -372,7 +385,7 @@ public class VNectBarracudaRunner : MonoBehaviour
             }
         }
 
-        if (EstimatedScore > 0.2f)
+        //if (EstimatedScore > 0.2f)
         {
             VNectModel.IsPoseUpdate = true;
         }

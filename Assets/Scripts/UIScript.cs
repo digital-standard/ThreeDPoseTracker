@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+//using UnityEditor.Recorder;
+//using UnityEditor.Recorder.Input;
 using UnityEngine;
 using UnityEngine.UI;
 using VRM;
@@ -342,7 +344,6 @@ public class UIScript : MonoBehaviour
 
     public void onSourceDevice()
     {
-
         barracudaRunner.PlayStop();
 
         if (sourceDevice.value == 0)
@@ -382,19 +383,8 @@ public class UIScript : MonoBehaviour
         var setting = AvatarList[value];
         setting.Avatar.gameObject.SetActive(true);
         setting.Avatar.SetSettings(setting);
-        /*
-        setting.Avatar.ResetPosition(setting.PosX, setting.PosY, setting.PosZ);
-        setting.Avatar.SetNose(setting.FaceOriX, setting.FaceOriY, setting.FaceOriZ);
-        setting.Avatar.SetScale(setting.Scale);
-        setting.Avatar.SetSkeleton(setting.SkeletonVisible == 1);
-        */
+
         barracudaRunner.SetVNectModel(setting.Avatar);
-        /*
-        setting.Avatar.SkeletonX = setting.SkeletonPosX;
-        setting.Avatar.SkeletonY = setting.SkeletonPosY;
-        setting.Avatar.SkeletonZ = setting.SkeletonPosZ;
-        setting.Avatar.SkeletonScale = setting.SkeletonScale;
-        */
     }
 
     public void onAddAvatar()
@@ -429,6 +419,7 @@ public class UIScript : MonoBehaviour
         ChangedAvatar(avatars.value);
         SaveSetting();
     }
+
     public void RemoveAvatar()
     {
         AvatarList.RemoveAt(avatars.value);
@@ -539,11 +530,83 @@ public class UIScript : MonoBehaviour
         }
     }
 
+    //private RecorderController m_RecorderController;
+    private bool isRecording = false;
+
+    public void onRecord()
+    {
+  /*      if (!isRecording)
+        {
+            var extensions = new[]
+            {
+                new ExtensionFilter( "Animation Files", "anim" ),
+            };
+            var path = StandaloneFileBrowser.SaveFilePanel("Save File", "", "My_Animation", extensions);
+
+            if (path.Length == 0)
+            {
+                return;
+            }
+            string fileName = Path.GetFileName(path);
+            
+            var controllerSettings = ScriptableObject.CreateInstance<RecorderControllerSettings>();
+            if (m_RecorderController == null)
+            {
+                m_RecorderController = new RecorderController(controllerSettings);
+            }
+
+            // Animation
+            var animationRecorder = ScriptableObject.CreateInstance<AnimationRecorderSettings>();
+            //animationRecorder.name = "My Animation Recorder";
+            animationRecorder.name = fileName;
+            animationRecorder.Enabled = true;
+
+            var setting = AvatarList[avatars.value];
+
+            animationRecorder.AnimationInputSettings = new AnimationInputSettings
+            {
+                gameObject = setting.Avatar.gameObject,
+                Recursive = true,
+            };
+
+            animationRecorder.AnimationInputSettings.AddComponentToRecord(typeof(Transform));
+
+            //var animationOutputFolder = Path.Combine(Application.dataPath, "SampleRecordings");
+            //animationRecorder.OutputFile = Path.Combine(animationOutputFolder, "anim_" + DefaultWildcard.GeneratePattern("GameObject") + "_v" + DefaultWildcard.Take);
+            animationRecorder.OutputFile = path;
+
+            controllerSettings.AddRecorderSettings(animationRecorder);
+
+            controllerSettings.SetRecordModeToManual();
+            controllerSettings.FrameRate = 30.0f;
+
+            RecorderOptions.VerboseMode = false;
+            m_RecorderController.StartRecording();
+            isRecording = true;
+            
+        }
+        else
+        {
+            m_RecorderController.StopRecording();
+            isRecording = false;
+        }
+        */
+    }
+
     public void ShowMessage(string msg)
     {
         message.ShowMessage(msg);
     }
 
+    void OnDisable()
+    {
+        /*
+        if (m_RecorderController != null)
+        {
+            m_RecorderController.StopRecording();
+        }
+        */
+    }
 }
 
 public class AvatarSetting

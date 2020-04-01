@@ -57,6 +57,7 @@ public class VNectModel : MonoBehaviour
 
     public class JointPoint
     {
+        public PositionIndex Index;
         public Vector2 Pos2D = new Vector2();
         public float score2D;
 
@@ -64,6 +65,8 @@ public class VNectModel : MonoBehaviour
         public Vector3 Now3D = new Vector3();
         public Vector3[] PrevPos3D = new Vector3[6];
         public float score3D;
+        public bool Visibled;
+        public bool UpperBody;
 
         // Bones
         public Transform Transform = null;
@@ -72,6 +75,8 @@ public class VNectModel : MonoBehaviour
         public Quaternion InverseRotation;
 
         public JointPoint Child = null;
+        public JointPoint Parent = null;
+        public float VecFlag = 1f;
 
         public static float Q = 0.001f;
         public static float R = 0.0015f;
@@ -87,6 +92,7 @@ public class VNectModel : MonoBehaviour
 
         public JointPoint start = null;
         public JointPoint end = null;
+        public bool upperBody = false;
     }
 
     private List<Skeleton> Skeletons = new List<Skeleton>();
@@ -117,6 +123,10 @@ public class VNectModel : MonoBehaviour
     private float prevTall = 224 * 0.75f;
     public float ZScale = 0.8f;
 
+    private bool UpperBodyMode = false;
+    private float UpperBodyF = 1f;
+
+
     public JointPoint[] Init(int inputImageSize)
     {
         movementScale = 0.01f * 224f / inputImageSize;
@@ -125,7 +135,12 @@ public class VNectModel : MonoBehaviour
         prevTall = inputImageSize * 0.75f;
 
         jointPoints = new JointPoint[PositionIndex.Count.Int()];
-        for (var i = 0; i < PositionIndex.Count.Int(); i++) jointPoints[i] = new JointPoint();
+        for (var i = 0; i < PositionIndex.Count.Int(); i++)
+        {
+            jointPoints[i] = new JointPoint();
+            jointPoints[i].Index = (PositionIndex)i;
+            jointPoints[i].UpperBody = false;
+        }
 
         anim = ModelObject.GetComponent<Animator>();
         jointPoints[PositionIndex.hip.Int()].Transform = transform;
@@ -168,14 +183,42 @@ public class VNectModel : MonoBehaviour
         jointPoints[PositionIndex.neck.Int()].Transform = anim.GetBoneTransform(HumanBodyBones.Neck);
         jointPoints[PositionIndex.spine.Int()].Transform = anim.GetBoneTransform(HumanBodyBones.Spine);
 
-        // Child Settings
+        // UpperBody Settings
+        jointPoints[PositionIndex.hip.Int()].UpperBody = true;
+        // Right Arm
+        jointPoints[PositionIndex.rShldrBend.Int()].UpperBody = true;
+        jointPoints[PositionIndex.rForearmBend.Int()].UpperBody = true;
+        jointPoints[PositionIndex.rHand.Int()].UpperBody = true;
+        jointPoints[PositionIndex.rThumb2.Int()].UpperBody = true;
+        jointPoints[PositionIndex.rMid1.Int()].UpperBody = true;
+        // Left Arm
+        jointPoints[PositionIndex.lShldrBend.Int()].UpperBody = true;
+        jointPoints[PositionIndex.lForearmBend.Int()].UpperBody = true;
+        jointPoints[PositionIndex.lHand.Int()].UpperBody = true;
+        jointPoints[PositionIndex.lThumb2.Int()].UpperBody = true;
+        jointPoints[PositionIndex.lMid1.Int()].UpperBody = true;
+        // Face
+        jointPoints[PositionIndex.lEar.Int()].UpperBody = true;
+        jointPoints[PositionIndex.lEye.Int()].UpperBody = true;
+        jointPoints[PositionIndex.rEar.Int()].UpperBody = true;
+        jointPoints[PositionIndex.rEye.Int()].UpperBody = true;
+        jointPoints[PositionIndex.Nose.Int()].UpperBody = true;
+        // etc
+        jointPoints[PositionIndex.spine.Int()].UpperBody = true;
+        jointPoints[PositionIndex.neck.Int()].UpperBody = true;
+
+        // Parent and Child Settings
         // Right Arm
         jointPoints[PositionIndex.rShldrBend.Int()].Child = jointPoints[PositionIndex.rForearmBend.Int()];
         jointPoints[PositionIndex.rForearmBend.Int()].Child = jointPoints[PositionIndex.rHand.Int()];
+        jointPoints[PositionIndex.rForearmBend.Int()].Parent = jointPoints[PositionIndex.rShldrBend.Int()];
+        //jointPoints[PositionIndex.rHand.Int()].Parent = jointPoints[PositionIndex.rForearmBend.Int()];
 
         // Left Arm
         jointPoints[PositionIndex.lShldrBend.Int()].Child = jointPoints[PositionIndex.lForearmBend.Int()];
         jointPoints[PositionIndex.lForearmBend.Int()].Child = jointPoints[PositionIndex.lHand.Int()];
+        jointPoints[PositionIndex.lForearmBend.Int()].Parent = jointPoints[PositionIndex.lShldrBend.Int()];
+        //jointPoints[PositionIndex.lHand.Int()].Parent = jointPoints[PositionIndex.lForearmBend.Int()];
 
         // Fase
 
@@ -183,11 +226,13 @@ public class VNectModel : MonoBehaviour
         jointPoints[PositionIndex.rThighBend.Int()].Child = jointPoints[PositionIndex.rShin.Int()];
         jointPoints[PositionIndex.rShin.Int()].Child = jointPoints[PositionIndex.rFoot.Int()];
         jointPoints[PositionIndex.rFoot.Int()].Child = jointPoints[PositionIndex.rToe.Int()];
-
+        jointPoints[PositionIndex.rFoot.Int()].Parent = jointPoints[PositionIndex.rShin.Int()];
+         
         // Left Leg
         jointPoints[PositionIndex.lThighBend.Int()].Child = jointPoints[PositionIndex.lShin.Int()];
         jointPoints[PositionIndex.lShin.Int()].Child = jointPoints[PositionIndex.lFoot.Int()];
         jointPoints[PositionIndex.lFoot.Int()].Child = jointPoints[PositionIndex.lToe.Int()];
+        jointPoints[PositionIndex.lFoot.Int()].Parent = jointPoints[PositionIndex.lShin.Int()];
 
         // etc
         jointPoints[PositionIndex.spine.Int()].Child = jointPoints[PositionIndex.neck.Int()];
@@ -197,48 +242,48 @@ public class VNectModel : MonoBehaviour
 
         // Line Child Settings
         // Right Arm
-        AddSkeleton(PositionIndex.rShldrBend, PositionIndex.rForearmBend);
-        AddSkeleton(PositionIndex.rForearmBend, PositionIndex.rHand);
-        AddSkeleton(PositionIndex.rHand, PositionIndex.rThumb2);
-        AddSkeleton(PositionIndex.rHand, PositionIndex.rMid1);
+        AddSkeleton(PositionIndex.rShldrBend, PositionIndex.rForearmBend, true);
+        AddSkeleton(PositionIndex.rForearmBend, PositionIndex.rHand, true);
+        AddSkeleton(PositionIndex.rHand, PositionIndex.rThumb2, true);
+        AddSkeleton(PositionIndex.rHand, PositionIndex.rMid1, true);
 
         // Left Arm
-        AddSkeleton(PositionIndex.lShldrBend, PositionIndex.lForearmBend);
-        AddSkeleton(PositionIndex.lForearmBend, PositionIndex.lHand);
-        AddSkeleton(PositionIndex.lHand, PositionIndex.lThumb2);
-        AddSkeleton(PositionIndex.lHand, PositionIndex.lMid1);
+        AddSkeleton(PositionIndex.lShldrBend, PositionIndex.lForearmBend, true);
+        AddSkeleton(PositionIndex.lForearmBend, PositionIndex.lHand, true);
+        AddSkeleton(PositionIndex.lHand, PositionIndex.lThumb2, true);
+        AddSkeleton(PositionIndex.lHand, PositionIndex.lMid1, true);
 
         // Face
         //AddSkeleton(PositionIndex.lEar, PositionIndex.lEye);
         //AddSkeleton(PositionIndex.lEye, PositionIndex.Nose);
         //AddSkeleton(PositionIndex.rEar, PositionIndex.rEye);
         //AddSkeleton(PositionIndex.rEye, PositionIndex.Nose);
-        AddSkeleton(PositionIndex.lEar, PositionIndex.Nose);
-        AddSkeleton(PositionIndex.rEar, PositionIndex.Nose);
+        AddSkeleton(PositionIndex.lEar, PositionIndex.Nose, true);
+        AddSkeleton(PositionIndex.rEar, PositionIndex.Nose, true);
 
         // Right Leg
-        AddSkeleton(PositionIndex.rThighBend, PositionIndex.rShin);
-        AddSkeleton(PositionIndex.rShin, PositionIndex.rFoot);
-        AddSkeleton(PositionIndex.rFoot, PositionIndex.rToe);
+        AddSkeleton(PositionIndex.rThighBend, PositionIndex.rShin, false);
+        AddSkeleton(PositionIndex.rShin, PositionIndex.rFoot, false);
+        AddSkeleton(PositionIndex.rFoot, PositionIndex.rToe, false);
 
         // Left Leg
-        AddSkeleton(PositionIndex.lThighBend, PositionIndex.lShin);
-        AddSkeleton(PositionIndex.lShin, PositionIndex.lFoot);
-        AddSkeleton(PositionIndex.lFoot, PositionIndex.lToe);
+        AddSkeleton(PositionIndex.lThighBend, PositionIndex.lShin, false);
+        AddSkeleton(PositionIndex.lShin, PositionIndex.lFoot, false);
+        AddSkeleton(PositionIndex.lFoot, PositionIndex.lToe, false);
 
         // etc
-        AddSkeleton(PositionIndex.spine, PositionIndex.neck);
-        AddSkeleton(PositionIndex.neck, PositionIndex.head);
-        AddSkeleton(PositionIndex.head, PositionIndex.Nose);
-        AddSkeleton(PositionIndex.neck, PositionIndex.rShldrBend);
-        AddSkeleton(PositionIndex.neck, PositionIndex.lShldrBend);
-        AddSkeleton(PositionIndex.rThighBend, PositionIndex.rShldrBend);
-        AddSkeleton(PositionIndex.lThighBend, PositionIndex.lShldrBend);
-        AddSkeleton(PositionIndex.rShldrBend, PositionIndex.abdomenUpper);
-        AddSkeleton(PositionIndex.lShldrBend, PositionIndex.abdomenUpper);
-        AddSkeleton(PositionIndex.rThighBend, PositionIndex.abdomenUpper);
-        AddSkeleton(PositionIndex.lThighBend, PositionIndex.abdomenUpper);
-        AddSkeleton(PositionIndex.lThighBend, PositionIndex.rThighBend);
+        AddSkeleton(PositionIndex.spine, PositionIndex.neck, true);
+        AddSkeleton(PositionIndex.neck, PositionIndex.head, true);
+        AddSkeleton(PositionIndex.head, PositionIndex.Nose, true);
+        AddSkeleton(PositionIndex.neck, PositionIndex.rShldrBend, true);
+        AddSkeleton(PositionIndex.neck, PositionIndex.lShldrBend, true);
+        AddSkeleton(PositionIndex.rThighBend, PositionIndex.rShldrBend, true);
+        AddSkeleton(PositionIndex.lThighBend, PositionIndex.lShldrBend, true);
+        AddSkeleton(PositionIndex.rShldrBend, PositionIndex.abdomenUpper, true);
+        AddSkeleton(PositionIndex.lShldrBend, PositionIndex.abdomenUpper, true);
+        AddSkeleton(PositionIndex.rThighBend, PositionIndex.abdomenUpper, true);
+        AddSkeleton(PositionIndex.lThighBend, PositionIndex.abdomenUpper, true);
+        AddSkeleton(PositionIndex.lThighBend, PositionIndex.rThighBend, true);
 
         // Set Inverse
         var forward = TriangleNormal(jointPoints[PositionIndex.hip.Int()].Transform.position, jointPoints[PositionIndex.lThighBend.Int()].Transform.position, jointPoints[PositionIndex.rThighBend.Int()].Transform.position);
@@ -356,31 +401,114 @@ public class VNectModel : MonoBehaviour
         SetSkeleton(false);
     }
 
+    public void SetUpperBodyMode(bool upper)
+    {
+        UpperBodyMode = upper;
+        UpperBodyF = upper ? 0f : 1f;
+    }
+
+    private float tallHeadNeck;
+    private float tallNeckSpine;
+    private float tallSpineCrotch;
+    private float tallThigh;
+    private float tallShin;
+    public float EstimatedScore;
+    private float VisibleThreshold = 0.3f;
 
     public void PoseUpdate()
     {
         // 身長からｚの移動量を算出
-        var t1 = Vector3.Distance(jointPoints[PositionIndex.head.Int()].Pos3D, jointPoints[PositionIndex.neck.Int()].Pos3D);
-        var t2 = Vector3.Distance(jointPoints[PositionIndex.neck.Int()].Pos3D, jointPoints[PositionIndex.spine.Int()].Pos3D);
-        var pm = (jointPoints[PositionIndex.rThighBend.Int()].Pos3D + jointPoints[PositionIndex.lThighBend.Int()].Pos3D) / 2f;
-        var t3 = Vector3.Distance(jointPoints[PositionIndex.spine.Int()].Pos3D, pm);
-        var t4r = Vector3.Distance(jointPoints[PositionIndex.rThighBend.Int()].Pos3D, jointPoints[PositionIndex.rShin.Int()].Pos3D);
-        var t4l = Vector3.Distance(jointPoints[PositionIndex.lThighBend.Int()].Pos3D, jointPoints[PositionIndex.lShin.Int()].Pos3D);
-        var t4 = (t4r + t4l) / 2f;
-        var t5r = Vector3.Distance(jointPoints[PositionIndex.rShin.Int()].Pos3D, jointPoints[PositionIndex.rFoot.Int()].Pos3D);
-        var t5l = Vector3.Distance(jointPoints[PositionIndex.lShin.Int()].Pos3D, jointPoints[PositionIndex.lFoot.Int()].Pos3D);
-        var t5 = (t5r + t5l) / 2f;
-        var t = t1 + t2 + t3 + t4 + t5;
+        tallHeadNeck = Vector3.Distance(jointPoints[PositionIndex.head.Int()].Pos3D, jointPoints[PositionIndex.neck.Int()].Pos3D);
+        tallNeckSpine = Vector3.Distance(jointPoints[PositionIndex.neck.Int()].Pos3D, jointPoints[PositionIndex.spine.Int()].Pos3D);
+
+        if (jointPoints[PositionIndex.lToe.Int()].score3D < VisibleThreshold && jointPoints[PositionIndex.rToe.Int()].score3D < VisibleThreshold)
+        {
+            jointPoints[PositionIndex.lToe.Int()].Visibled = false;
+            jointPoints[PositionIndex.rToe.Int()].Visibled = false;
+
+            if (jointPoints[PositionIndex.lFoot.Int()].score3D < VisibleThreshold && jointPoints[PositionIndex.rFoot.Int()].score3D < VisibleThreshold)
+            {
+                jointPoints[PositionIndex.lFoot.Int()].Visibled = false;
+                jointPoints[PositionIndex.rFoot.Int()].Visibled = false;
+
+                if (jointPoints[PositionIndex.lShin.Int()].score3D < VisibleThreshold && jointPoints[PositionIndex.rShin.Int()].score3D < VisibleThreshold)
+                {
+                    jointPoints[PositionIndex.lShin.Int()].Visibled = false;
+                    jointPoints[PositionIndex.rShin.Int()].Visibled = false;
+                    jointPoints[PositionIndex.lThighBend.Int()].Visibled = false;
+                    jointPoints[PositionIndex.rThighBend.Int()].Visibled = false;
+
+                    if (jointPoints[PositionIndex.lThighBend.Int()].score3D < VisibleThreshold && jointPoints[PositionIndex.rThighBend.Int()].score3D < VisibleThreshold)
+                    {
+                        jointPoints[PositionIndex.lThighBend.Int()].Visibled = false;
+                        jointPoints[PositionIndex.rThighBend.Int()].Visibled = false;
+                    }
+                    /*
+                    if (jointPoints[PositionIndex.lHand.Int()].score3D < VisibleThreshold)
+                    {
+                        jointPoints[PositionIndex.lForearmBend.Int()].Visibled = false;
+                        jointPoints[PositionIndex.lHand.Int()].Visibled = false;
+                    }
+                    if (jointPoints[PositionIndex.rHand.Int()].score3D < VisibleThreshold)
+                    {
+                        jointPoints[PositionIndex.rForearmBend.Int()].Visibled = false;
+                        jointPoints[PositionIndex.rHand.Int()].Visibled = false;
+                    }
+                    */
+                }
+                else
+                {
+                    var rightThigh = Vector3.Distance(jointPoints[PositionIndex.rThighBend.Int()].Pos3D, jointPoints[PositionIndex.rShin.Int()].Pos3D);
+                    var leftThigh = Vector3.Distance(jointPoints[PositionIndex.lThighBend.Int()].Pos3D, jointPoints[PositionIndex.lShin.Int()].Pos3D);
+                    tallThigh = (rightThigh + leftThigh) / 2f;
+                }
+            }
+            else
+            {
+                var rightShin = Vector3.Distance(jointPoints[PositionIndex.rShin.Int()].Pos3D, jointPoints[PositionIndex.rFoot.Int()].Pos3D);
+                var leftShin = Vector3.Distance(jointPoints[PositionIndex.lShin.Int()].Pos3D, jointPoints[PositionIndex.lFoot.Int()].Pos3D);
+                tallShin = (rightShin + leftShin) / 2f;
+            }
+        }
+        var crotch = (jointPoints[PositionIndex.rThighBend.Int()].Pos3D + jointPoints[PositionIndex.lThighBend.Int()].Pos3D) / 2f;
+        tallSpineCrotch = Vector3.Distance(jointPoints[PositionIndex.spine.Int()].Pos3D, crotch);
+
+        var t = tallHeadNeck + tallNeckSpine + tallSpineCrotch + (tallThigh + tallShin) * UpperBodyF;
 
         tall = t * 0.7f + prevTall * 0.3f;
         prevTall = tall;
 
-        if (tall == 0)
-        {
-            t = centerTall;
-        }
         var dz = (centerTall - tall) / centerTall * ZScale;
 
+        var score = 0f;
+        var scoreCnt = 0;
+        for (var i = 0; i < 24; i++)
+        {
+            if (!jointPoints[i].Visibled)
+            {
+                continue;
+            }
+
+            if (jointPoints[i].Child != null)
+            {
+                score += jointPoints[i].score3D;
+                scoreCnt++;
+            }
+        }
+
+        if (scoreCnt > 0)
+        {
+            EstimatedScore = score / scoreCnt;
+        }
+        else
+        {
+            EstimatedScore = 0f;
+        }
+
+        if(EstimatedScore < 0.2f)
+        {
+            //return;
+        }
         // センターの移動と回転
         var forward = TriangleNormal(jointPoints[PositionIndex.hip.Int()].Pos3D, jointPoints[PositionIndex.lThighBend.Int()].Pos3D, jointPoints[PositionIndex.rThighBend.Int()].Pos3D);
         jointPoints[PositionIndex.hip.Int()].Transform.position = jointPoints[PositionIndex.hip.Int()].Pos3D * movementScale + new Vector3(initPosition.x, initPosition.y, initPosition.z + dz);
@@ -389,8 +517,29 @@ public class VNectModel : MonoBehaviour
         // 各ボーンの回転
         foreach (var jointPoint in jointPoints)
         {
-            if (jointPoint.Child != null)
+            if (this.UpperBodyMode && !jointPoint.UpperBody)
             {
+                continue;
+            }
+
+            if (!jointPoint.Visibled)
+            {
+                //jointPoint.Transform.localRotation = jointPoint.InitLocalRotation;
+                continue;
+            }
+
+            if (jointPoint.Parent != null)
+            {
+                var fv = jointPoint.Parent.Pos3D - jointPoint.Pos3D;
+                jointPoint.Transform.rotation = Quaternion.LookRotation(jointPoint.Pos3D - jointPoint.Child.Pos3D, jointPoint.VecFlag * fv) * jointPoint.InverseRotation;
+            }
+            else if (jointPoint.Child != null)
+            {
+                if (!jointPoint.Child.Visibled)
+                {
+                    //jointPoint.Transform.localRotation = jointPoint.InitLocalRotation;
+                    continue;
+                }
                 jointPoint.Transform.rotation = Quaternion.LookRotation(jointPoint.Pos3D - jointPoint.Child.Pos3D, forward) * jointPoint.InverseRotation;
             }
         }
@@ -400,24 +549,31 @@ public class VNectModel : MonoBehaviour
         var f = TriangleNormal(jointPoints[PositionIndex.Nose.Int()].Pos3D, jointPoints[PositionIndex.rEar.Int()].Pos3D, jointPoints[PositionIndex.lEar.Int()].Pos3D);
         var head = jointPoints[PositionIndex.head.Int()];
         head.Transform.rotation = Quaternion.LookRotation(gaze, f) * head.InverseRotation;
-        //head.Transform.eulerAngles = new Vector3(0f, 180f, 0f) - head.Transform.eulerAngles;
 
         // Wrist rotation (Test code)
         var lHand = jointPoints[PositionIndex.lHand.Int()];
-        var lf = TriangleNormal(lHand.Pos3D, jointPoints[PositionIndex.lMid1.Int()].Pos3D, jointPoints[PositionIndex.lThumb2.Int()].Pos3D);
-        lHand.Transform.rotation = Quaternion.LookRotation(jointPoints[PositionIndex.lThumb2.Int()].Pos3D - jointPoints[PositionIndex.lMid1.Int()].Pos3D, lf) * lHand.InverseRotation;
-
+        if (lHand.Visibled)
+        {
+            var lf = TriangleNormal(lHand.Pos3D, jointPoints[PositionIndex.lMid1.Int()].Pos3D, jointPoints[PositionIndex.lThumb2.Int()].Pos3D);
+            lHand.Transform.rotation = Quaternion.LookRotation(jointPoints[PositionIndex.lThumb2.Int()].Pos3D - jointPoints[PositionIndex.lMid1.Int()].Pos3D, lf) * lHand.InverseRotation;
+        }
         var rHand = jointPoints[PositionIndex.rHand.Int()];
-        var rf = TriangleNormal(rHand.Pos3D, jointPoints[PositionIndex.rThumb2.Int()].Pos3D, jointPoints[PositionIndex.rMid1.Int()].Pos3D);
-        rHand.Transform.rotation = Quaternion.LookRotation(jointPoints[PositionIndex.rThumb2.Int()].Pos3D - jointPoints[PositionIndex.rMid1.Int()].Pos3D, rf) * rHand.InverseRotation;
+        if (rHand.Visibled)
+        {
+            var rf = TriangleNormal(rHand.Pos3D, jointPoints[PositionIndex.rThumb2.Int()].Pos3D, jointPoints[PositionIndex.rMid1.Int()].Pos3D);
+            rHand.Transform.rotation = Quaternion.LookRotation(jointPoints[PositionIndex.rThumb2.Int()].Pos3D - jointPoints[PositionIndex.rMid1.Int()].Pos3D, rf) * rHand.InverseRotation;
+        }
 
         foreach (var sk in Skeletons)
         {
+            if (this.UpperBodyMode && !sk.upperBody)
+            {
+                continue;
+            }
+
             var s = sk.start;
             var e = sk.end;
 
-            //            sk.Line.SetPosition(0, new Vector3(s.Transform.position.x - 1.4f, s.Transform.position.y, s.Transform.position.z - 0.1f));
-            //            sk.Line.SetPosition(1, new Vector3(e.Transform.position.x - 1.4f, e.Transform.position.y, e.Transform.position.z - 0.1f));
             sk.Line.SetPosition(0, new Vector3(s.Pos3D.x * SkeletonScale + SkeletonX, s.Pos3D.y * SkeletonScale + SkeletonY, s.Pos3D.z * SkeletonScale + SkeletonZ));
             sk.Line.SetPosition(1, new Vector3(e.Pos3D.x * SkeletonScale + SkeletonX, e.Pos3D.y * SkeletonScale + SkeletonY, e.Pos3D.z * SkeletonScale + SkeletonZ));
         }
@@ -439,13 +595,14 @@ public class VNectModel : MonoBehaviour
         return Quaternion.Inverse(Quaternion.LookRotation(p1.Transform.position - p2.Transform.position, forward));
     }
 
-    private void AddSkeleton(PositionIndex s, PositionIndex e)
+    private void AddSkeleton(PositionIndex s, PositionIndex e, bool upperBody)
     {
         var sk = new Skeleton()
         {
             LineObject = new GameObject(this.name + "_Skeleton" +  (Skeletons.Count + 1).ToString("00")),
             start = jointPoints[s.Int()],
             end = jointPoints[e.Int()],
+            upperBody = upperBody,
         };
 
         sk.Line = sk.LineObject.AddComponent<LineRenderer>();
