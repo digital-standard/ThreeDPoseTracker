@@ -77,7 +77,7 @@ public class VideoCapture : MonoBehaviour
 
         sd.sizeDelta = new Vector2(videoScreenWidth, videoScreenWidth * webCamTexture.height / webCamTexture.width);
         var aspect = (float)webCamTexture.width / webCamTexture.height;
-        VideoBackground.transform.localScale = new Vector3(-aspect, 1, 1) * SourceCutScale;
+        VideoBackground.transform.localScale = new Vector3(-aspect * SourceCutScale, 1 * SourceCutScale, 1) ;
         VideoBackground.transform.localPosition = new Vector3(SourceCutX, SourceCutY, -2f);
         VideoBackground.GetComponent<Renderer>().material.mainTexture = webCamTexture;
 
@@ -135,7 +135,7 @@ public class VideoCapture : MonoBehaviour
 
         var aspect = (float)videoTexture.width / videoTexture.height;
 
-        VideoBackground.transform.localScale = new Vector3(aspect, 1, 1) * SourceCutScale;
+        VideoBackground.transform.localScale = new Vector3(aspect * SourceCutScale, 1 * SourceCutScale, 1) ;
         VideoBackground.transform.localPosition = new Vector3(SourceCutX, SourceCutY, -2f);
         VideoBackground.GetComponent<Renderer>().material.mainTexture = videoTexture;
 
@@ -151,11 +151,16 @@ public class VideoCapture : MonoBehaviour
         SourceCutScale = scale;
         SourceCutX = x;
         SourceCutY = y;
-        if (videoTexture != null)
+        if (VideoScreen.texture != null)
         {
-            var aspect = (float)videoTexture.width / videoTexture.height;
-            VideoBackground.transform.localScale = new Vector3(aspect, 1, 1) * SourceCutScale;
+            var aspect = (float)VideoScreen.texture.width / VideoScreen.texture.height;
+            aspect = status == Status.VideoPlay ? aspect : -aspect;
+            VideoBackground.transform.localScale = new Vector3(aspect * SourceCutScale, 1 * SourceCutScale, 1) ;
 
+        }
+
+        if(MainTextureCamera != null)
+        {
             MainTextureCamera.transform.localPosition = new Vector3(SourceCutX, SourceCutY, -2f);
         }
     }
