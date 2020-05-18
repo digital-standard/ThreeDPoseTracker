@@ -2,7 +2,7 @@
 ## Install and Tutorial
 ### Download and put files
 1. Download the zip file from the releases page and unzip it.</br>
-https://digi-rooms.com/
+
 2. Download onnx from our home page by clicking following URL in our HP.</br>
    https://digital-standard.com/threedpose/models/HighQualityTrainedModel.nn
    
