@@ -13,9 +13,9 @@ public class AvatarSettingScript : MonoBehaviour
     private Button btnAvatarSettingRemove;
 
     private InputField ifVRMFile;
-    private InputField ifFBXFile;
+    //private InputField ifFBXFile;
     private Button btnVRMFile;
-    private Button btnFBXFile;
+    //private Button btnFBXFile;
 
     private InputField ifAvatarName;
 
@@ -47,9 +47,9 @@ public class AvatarSettingScript : MonoBehaviour
         btnAvatarSettingRemove = GameObject.Find("btnAvatarSettingRemove").GetComponent<Button>();
 
         ifVRMFile = GameObject.Find("ifVRMFile").GetComponent<InputField>();
-        ifFBXFile = GameObject.Find("ifFBXFile").GetComponent<InputField>();
+        //ifFBXFile = GameObject.Find("ifFBXFile").GetComponent<InputField>();
         btnVRMFile = GameObject.Find("btnVRMFile").GetComponent<Button>();
-        btnFBXFile = GameObject.Find("btnFBXFile").GetComponent<Button>();
+        //btnFBXFile = GameObject.Find("btnFBXFile").GetComponent<Button>();
         ifAvatarName = GameObject.Find("ifAvatarName").GetComponent<InputField>();
         ifX = GameObject.Find("ifX").GetComponent<InputField>();
         ifY = GameObject.Find("ifY").GetComponent<InputField>();
@@ -72,9 +72,7 @@ public class AvatarSettingScript : MonoBehaviour
 
         lblAvatarTitle.text = "Add Avatar";
         ifVRMFile.enabled = true;
-        ifFBXFile.enabled = true;
         btnVRMFile.enabled = true;
-        btnFBXFile.enabled = true;
 
         btnAvatarSettingAdd.gameObject.SetActive(true);
         btnAvatarSettingOK.gameObject.SetActive(false);
@@ -98,17 +96,13 @@ public class AvatarSettingScript : MonoBehaviour
         {
             btnAvatarSettingRemove.gameObject.SetActive(false);
             ifVRMFile.enabled = false;
-            ifFBXFile.enabled = false;
             btnVRMFile.enabled = false;
-            btnFBXFile.enabled = false;
         }
         else
         {
             btnAvatarSettingRemove.gameObject.SetActive(true);
             ifVRMFile.enabled = true;
-            ifFBXFile.enabled = true;
             btnVRMFile.enabled = true;
-            btnFBXFile.enabled = true;
         }
 
         ShowSetting(setting);
@@ -121,7 +115,6 @@ public class AvatarSettingScript : MonoBehaviour
         currentSetting = setting;
 
         ifVRMFile.text = setting.VRMFilePath;
-        ifFBXFile.text = setting.FBXFilePath;
         ifAvatarName.text = setting.AvatarName;
 
         ifX.text = setting.PosX.ToString("0.00");
@@ -146,17 +139,17 @@ public class AvatarSettingScript : MonoBehaviour
         {
 
         }
-        else if(ifVRMFile.text != "" && ifFBXFile.text == "")
+        else if(ifVRMFile.text != "")
         {
             currentSetting.AvatarType = 0;
             currentSetting.VRMFilePath = ifVRMFile.text;
             currentSetting.FBXFilePath = "";
         }
-        else if (ifVRMFile.text == "" && ifFBXFile.text != "")
+        else if (ifVRMFile.text == "")
         {
             currentSetting.AvatarType = 1;
             currentSetting.VRMFilePath = "";
-            currentSetting.FBXFilePath = ifFBXFile.text;
+            currentSetting.FBXFilePath = "";
         }
         else
         {
@@ -248,6 +241,19 @@ public class AvatarSettingScript : MonoBehaviour
         }
     }
 
+    public void onApply()
+    {
+        var msg = SetSetting();
+        if (msg != "")
+        {
+            currentUI.ShowMessage(msg);
+        }
+        else
+        {
+            currentUI.SetAvatar(currentSetting);
+        }
+    }
+
     public void onAdd()
     {
         var msg = SetSetting();
@@ -284,7 +290,6 @@ public class AvatarSettingScript : MonoBehaviour
         if (paths.Length != 0)
         {
             ifVRMFile.text = paths[0];
-            ifFBXFile.text = "";
         }
     }
 
@@ -299,7 +304,7 @@ public class AvatarSettingScript : MonoBehaviour
         if (paths.Length != 0)
         {
             ifVRMFile.text = "";
-            ifFBXFile.text = paths[0];
+            //ifFBXFile.text = paths[0];
         }
     }
 }

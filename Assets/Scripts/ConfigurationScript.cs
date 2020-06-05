@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using SFB;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -15,8 +16,16 @@ public class ConfigurationScript : MonoBehaviour
     private InputField ifLowPassFilter;
     private Dropdown trainedModel;
 
+    private Toggle ShowBackground;
+    private InputField ifBackgroundFile;
+    private InputField ifBackgroundScale;
+    private InputField ifBackgroundR;
+    private InputField ifBackgroundG;
+    private InputField ifBackgroundB;
+
     private UIScript currentUI;
     private ConfigurationSetting configurationSetting;
+
 
     public void Init()
     {
@@ -29,6 +38,13 @@ public class ConfigurationScript : MonoBehaviour
         ifSourceCutY = GameObject.Find("ifSourceCutY").GetComponent<InputField>();
         ifLowPassFilter = GameObject.Find("ifLowPassFilter").GetComponent<InputField>();
         trainedModel = GameObject.Find("TrainedModel").GetComponent<Dropdown>();
+
+        ShowBackground = GameObject.Find("ShowBackground").GetComponent<Toggle>();
+        ifBackgroundFile = GameObject.Find("ifBackgroundFile").GetComponent<InputField>();
+        ifBackgroundScale = GameObject.Find("ifBackgroundScale").GetComponent<InputField>();
+        ifBackgroundR = GameObject.Find("ifBackgroundR").GetComponent<InputField>();
+        ifBackgroundG = GameObject.Find("ifBackgroundG").GetComponent<InputField>();
+        ifBackgroundB = GameObject.Find("ifBackgroundB").GetComponent<InputField>();
     }
 
 
@@ -46,6 +62,13 @@ public class ConfigurationScript : MonoBehaviour
         ifSourceCutY.text = config.SourceCutY.ToString("0.00");
         ifLowPassFilter.text = config.LowPassFilter.ToString("0.00");
         trainedModel.value = config.TrainedModel;
+
+        ShowBackground.isOn = config.ShowBackground == 1;
+        ifBackgroundFile.text = config.BackgroundFile;
+        ifBackgroundScale.text = config.BackgroundScale.ToString("0.00");
+        ifBackgroundR.text = config.BackgroundR.ToString("0");
+        ifBackgroundG.text = config.BackgroundG.ToString("0");
+        ifBackgroundB.text = config.BackgroundB.ToString("0");
     }
 
     public void Show(UIScript ui, ConfigurationSetting config)
@@ -75,19 +98,56 @@ public class ConfigurationScript : MonoBehaviour
         {
             return "Source Cut Center position Y is required.";
         }
-        if (!float.TryParse(ifLowPassFilter.text, out configurationSetting.LowPassFilter))
+        var f = 0f;
+        if (!float.TryParse(ifLowPassFilter.text, out f))
         {
             return "Low Pass Filter is required.";
         }
-        if(configurationSetting.LowPassFilter < 0f || configurationSetting.LowPassFilter > 1f)
+        if (f < 0f || f > 1f)
         {
             return "Low Pass Filter is between 0 and 1.";
         }
-
+        configurationSetting.LowPassFilter = f;
         configurationSetting.TrainedModel = trainedModel.value;
+
+        configurationSetting.ShowBackground = ShowBackground.isOn ? 1 : 0;
+        configurationSetting.BackgroundFile = ifBackgroundFile.text.Trim();
+        if (!float.TryParse(ifBackgroundScale.text, out configurationSetting.BackgroundScale))
+        {
+            return "Background Scale is required.";
+        }
+        var i = 0;
+        if (!int.TryParse(ifBackgroundR.text, out i))
+        {
+            return "Background Color R is required.";
+        }
+        if (i < 0 || i > 255)
+        {
+            return "Background Color R is between 0 and 255";
+        }
+        configurationSetting.BackgroundR = i;
+        if (!int.TryParse(ifBackgroundG.text, out i))
+        {
+            return "Background Color G is required.";
+        }
+        if (i < 0 || i > 255)
+        {
+            return "Background Color G is between 0 and 255";
+        }
+        configurationSetting.BackgroundG = i;
+        if (!int.TryParse(ifBackgroundB.text, out i))
+        {
+            return "Background Color B is required.";
+        }
+        if (i < 0 || i > 255)
+        {
+            return "Background Color B is between 0 and 255";
+        }
+        configurationSetting.BackgroundB = i;
 
         return "";
     }
+
     public void onOK()
     {
         var msg = SetSetting();
@@ -102,10 +162,40 @@ public class ConfigurationScript : MonoBehaviour
         }
     }
 
+    public void onApply()
+    {
+        var msg = SetSetting();
+        if (msg != "")
+        {
+            currentUI.ShowMessage(msg);
+        }
+        else
+        {
+            currentUI.SetConfiguration(configurationSetting);
+        }
+    }
+
+    public void onRestoreSettings()
+    {
+        currentUI.RestoreSettings();
+    }
 
     public void onCancel()
     {
         this.gameObject.SetActive(false);
+    }
+    public void onBackgroundFile()
+    {
+        var extensions = new[]
+        {
+                new ExtensionFilter( "Image Files", "png", "jpg", "jpeg" ),
+            };
+        var paths = StandaloneFileBrowser.OpenFilePanel("Open File", "", extensions, false);
+
+        if (paths.Length != 0)
+        {
+            ifBackgroundFile.text = paths[0];
+        }
     }
 
     public void TrainedModel_Changed(int value)

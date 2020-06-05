@@ -1,4 +1,4 @@
-Ôªøusing SFB;
+using SFB;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -33,16 +33,27 @@ public class UIScript : MonoBehaviour
     private Button btnSourceDevice;
     private Text txtFPS;
 
-    private float AppVer;
+    public RawImage BackgroundImage;
+    public Texture BackgroundTexture;
+    public Camera Maincamera;
 
-    private MessageBoxScript message;
+    private float AppVer = 0.1f;
+
+    public MessageBoxScript message;
 
     private void Awake()
     {
-        AppVer = PlayerPrefs.GetFloat("AppVer", 0.1f);
+        var appVer = PlayerPrefs.GetFloat("AppVer", 0.11f);
+        if(appVer != AppVer)
+        {
+            PlayerPrefs.SetString("AppVer", AppVer.ToString("0.0"));
+            PlayerPrefs.SetString("Configuration", "");
+            PlayerPrefs.SetString("AvatarSettings", "");
+            PlayerPrefs.Save();
+        }
         var configs = PlayerPrefs.GetString("Configuration", "");
         string[] cCol = configs.Split(',');
-        if (cCol.Length == 9)
+        if (cCol.Length == 15)
         {
             int.TryParse(cCol[0], out configurationSetting.ShowSource);
             int.TryParse(cCol[1], out configurationSetting.ShowInput);
@@ -53,11 +64,22 @@ public class UIScript : MonoBehaviour
             float.TryParse(cCol[6], out configurationSetting.SourceCutY);
             float.TryParse(cCol[7], out configurationSetting.LowPassFilter);
             int.TryParse(cCol[8], out configurationSetting.TrainedModel);
+
+            int.TryParse(cCol[9], out configurationSetting.ShowBackground);
+            configurationSetting.BackgroundFile = cCol[10];
+            float.TryParse(cCol[11], out configurationSetting.BackgroundScale);
+            int.TryParse(cCol[12], out configurationSetting.BackgroundR);
+            int.TryParse(cCol[13], out configurationSetting.BackgroundG);
+            int.TryParse(cCol[14], out configurationSetting.BackgroundB);
         }
         else
         {
             SaveConfiguration(configurationSetting);
         }
+
+        message = GameObject.Find("pnlMessage").GetComponent<MessageBoxScript>();
+        message.Init();
+        message.Hide();
     }
 
     void Start()
@@ -99,14 +121,10 @@ public class UIScript : MonoBehaviour
         configuration.Init();
         configuration.gameObject.SetActive(false);
 
-        message = GameObject.Find("pnlMessage").GetComponent<MessageBoxScript>();
-        message.Init();
-        message.Hide();
-
         ReflectConfiguration(configurationSetting);
 
         var settings = PlayerPrefs.GetString("AvatarSettings", "");
-
+        //settings = "";
         // Decode Avatar Setting
         string[] asStr = settings.Split(';');
         foreach (var s in asStr)
@@ -212,6 +230,7 @@ public class UIScript : MonoBehaviour
             setting.Avatar.SetNose(setting.FaceOriX, setting.FaceOriY, setting.FaceOriZ);
             AvatarList.Add(setting);
             barracudaRunner.InitVNectModel(setting.Avatar);
+
         }
 
         avatars.options.Clear();
@@ -234,7 +253,6 @@ public class UIScript : MonoBehaviour
                     case -2:
                         setting.Avatar = GameObject.Find("YukihikoAoyagi").GetComponent<VNectModel>();
                         break;
-
                 }
 
                 setting.Avatar.SetNose(setting.FaceOriX, setting.FaceOriY, setting.FaceOriZ);
@@ -254,6 +272,38 @@ public class UIScript : MonoBehaviour
         }
         avatars.value = v;
     }
+
+    bool triggerDown = false;
+    public float x0 = -0.8f;
+    public float y0 = 1.3f;
+    public float z0 = 0f;
+    public float yaw0 = 90f;
+    public float pitch0 = 0f;
+    public float roll0 = 0f;
+    public float x1 = 0.8f;
+    public float y1 = 1.3f;
+    public float z1 = 0f;
+    public float yaw1 = -90f;
+    public float pitch1 = 0f;
+    public float roll1 = 0f;
+    public float x2 = 0f;
+    public float y2 = 0.8f;
+    public float z2 = 0f;
+    public float yaw2 = 0f;
+    public float pitch2 = 0f;
+    public float roll2 = 0f;
+    public float x3 = -0.18f;
+    public float y3 = 0f;
+    public float z3 = 0f;
+    public float yaw3 = 0f;
+    public float pitch3 = 0f;
+    public float roll3 = 0f;
+    public float x4 = 0.18f;
+    public float y4 = 0f;
+    public float z4 = 0f;
+    public float yaw4 = 0f;
+    public float pitch4 = 0f;
+    public float roll4 = 0f;
 
     void Update()
     {
@@ -308,6 +358,48 @@ public class UIScript : MonoBehaviour
         }
     }
 
+    private void SetBackgroundImage(ConfigurationSetting config)
+    {
+        if(config.ShowBackground == 0)
+        {
+            BackgroundImage.gameObject.SetActive(false);
+        }
+        else
+        {
+            BackgroundImage.gameObject.SetActive(true);
+
+            Texture texture;
+
+            if (config.BackgroundFile != string.Empty)
+            {
+                texture = PngToTex2D(config.BackgroundFile);
+            }
+            else
+            {
+                texture = BackgroundTexture;
+            }
+
+            BackgroundImage.texture = texture;
+            var rt = BackgroundImage.GetComponent< RectTransform>();
+            rt.sizeDelta = new Vector2(texture.width, texture.height);
+            BackgroundImage.rectTransform.localScale = new Vector3(config.BackgroundScale, config.BackgroundScale, config.BackgroundScale);
+        }
+
+        Maincamera.backgroundColor = new Color(config.BackgroundR / 255f, config.BackgroundG / 255f, config.BackgroundB / 255f );
+    }
+
+    Texture2D PngToTex2D(string path)
+    {
+        BinaryReader bin = new BinaryReader(new FileStream(path, FileMode.Open, FileAccess.Read));
+        byte[] rb = bin.ReadBytes((int)bin.BaseStream.Length);
+        bin.Close();
+        int pos = 16, width = 0, height = 0;
+        for (int i = 0; i < 4; i++) width = width * 256 + rb[pos++];
+        for (int i = 0; i < 4; i++) height = height * 256 + rb[pos++];
+        Texture2D texture = new Texture2D(width, height);
+        texture.LoadImage(rb);
+        return texture;
+    }
     private void ReflectConfiguration(ConfigurationSetting config)
     {
         barracudaRunner.videoCapture.VideoScreen.gameObject.SetActive(config.ShowSource == 1);
@@ -316,10 +408,13 @@ public class UIScript : MonoBehaviour
         barracudaRunner.videoCapture.VideoPlayer.isLooping = (config.RepeatPlayback == 1);
         barracudaRunner.videoCapture.ResetScale(config.SourceCutScale, config.SourceCutX, config.SourceCutY);
         barracudaRunner.Smooth = config.LowPassFilter;
+
+        SetBackgroundImage(config);
     }
 
     private void SaveConfiguration(ConfigurationSetting config)
     {
+        PlayerPrefs.SetString("AppVer", AppVer.ToString("0.0"));
         PlayerPrefs.SetString("Configuration", config.ToString());
         PlayerPrefs.Save();
     }
@@ -436,6 +531,7 @@ public class UIScript : MonoBehaviour
             saveStr += setting.ToString();
         }
 
+        PlayerPrefs.SetString("AppVer", AppVer.ToString("0.0"));
         PlayerPrefs.SetString("AvatarSettings", saveStr);
         PlayerPrefs.Save();
     }
@@ -456,34 +552,34 @@ public class UIScript : MonoBehaviour
 
         if (path != "")
         {
-            //„Éï„Ç°„Ç§„É´„ÇíByteÈÖçÂàó„Å´Ë™≠„ÅøËæº„Åø„Åæ„Åô
+            //ÉtÉ@ÉCÉãÇByteîzóÒÇ…ì«Ç›çûÇ›Ç‹Ç∑
             var bytes = File.ReadAllBytes(path);
 
-            //VRMImporterContext„ÅåVRM„ÇíË™≠„ÅøËæº„ÇÄÊ©üËÉΩ„ÇíÊèê‰æõ„Åó„Åæ„Åô
+            //VRMImporterContextÇ™VRMÇì«Ç›çûÇﬁã@î\ÇíÒãüÇµÇ‹Ç∑
             var context = new VRMImporterContext();
 
-            // GLBÂΩ¢Âºè„ÅßJSON„ÇíÂèñÂæó„ÅóParse„Åó„Åæ„Åô
+            // GLBå`éÆÇ≈JSONÇéÊìæÇµParseÇµÇ‹Ç∑
             context.ParseGlb(bytes);
 
-            // VRM„ÅÆ„É°„Çø„Éá„Éº„Çø„ÇíÂèñÂæó
-            var meta = context.ReadMeta(false); //ÂºïÊï∞„ÇíTrue„Å´Â§â„Åà„Çã„Å®„Çµ„É†„Éç„Ç§„É´„ÇÇË™≠„ÅøËæº„Åø„Åæ„Åô
+            // VRMÇÃÉÅÉ^ÉfÅ[É^ÇéÊìæ
+            var meta = context.ReadMeta(false); //à¯êîÇTrueÇ…ïœÇ¶ÇÈÇ∆ÉTÉÄÉlÉCÉãÇ‡ì«Ç›çûÇ›Ç‹Ç∑
 
-            //Ë™≠„ÅøËæº„ÇÅ„Åü„Åã„Å©„ÅÜ„Åã„É≠„Ç∞„Å´„É¢„Éá„É´Âêç„ÇíÂá∫Âäõ„Åó„Å¶„Åø„Çã
+            //ì«Ç›çûÇﬂÇΩÇ©Ç«Ç§Ç©ÉçÉOÇ…ÉÇÉfÉãñºÇèoóÕÇµÇƒÇ›ÇÈ
             Debug.LogFormat("meta: title:{0}", meta.Title);
 
-            //ÈùûÂêåÊúüÂá¶ÁêÜ(Task)„ÅßË™≠„ÅøËæº„Åø„Åæ„Åô
+            //îÒìØä˙èàóù(Task)Ç≈ì«Ç›çûÇ›Ç‹Ç∑
             await context.LoadAsyncTask();
 
-            //Ë™≠Ëæº„ÅåÂÆå‰∫Ü„Åô„Çã„Å®context.Root„Å´„É¢„Éá„É´„ÅÆGameObject„ÅåÂÖ•„Å£„Å¶„ÅÑ„Åæ„Åô
+            //ì«çûÇ™äÆóπÇ∑ÇÈÇ∆context.RootÇ…ÉÇÉfÉãÇÃGameObjectÇ™ì¸Ç¡ÇƒÇ¢Ç‹Ç∑
             var avatarObject = context.Root;
             avatarObject.name = setting.AvatarName;
 
-            //„É¢„Éá„É´„Çí„ÉØ„Éº„É´„Éâ‰∏ä„Å´ÈÖçÁΩÆ„Åó„Åæ„Åô
+            //ÉÇÉfÉãÇÉèÅ[ÉãÉhè„Ç…îzíuÇµÇ‹Ç∑
             avatarObject.transform.SetParent(transform.parent, false);
 
             SetVRMBounds(avatarObject.transform);
 
-            //„É°„ÉÉ„Ç∑„É•„ÇíË°®Á§∫„Åó„Åæ„Åô
+            //ÉÅÉbÉVÉÖÇï\é¶ÇµÇ‹Ç∑
             context.ShowMeshes();
 
             setting.Avatar = avatarObject.AddComponent<VNectModel>();
@@ -497,7 +593,7 @@ public class UIScript : MonoBehaviour
     }
 
     /// <summary>
-    /// „Ç´„É°„É©„Åß„Ç¢„ÉÉ„Éó„Åô„Çã„Å®„É°„ÉÉ„Ç∑„É•„ÅåÊ∂à„Åà„Å¶„Åó„Åæ„ÅÜÂ†¥Âêà„ÅÆÂØæÂøú
+    /// ÉJÉÅÉâÇ≈ÉAÉbÉvÇ∑ÇÈÇ∆ÉÅÉbÉVÉÖÇ™è¡Ç¶ÇƒÇµÇ‹Ç§èÍçáÇÃëŒâû
     /// </summary>
     /// <param name="t"></param>
     private void SetVRMBounds(Transform t)
@@ -535,6 +631,7 @@ public class UIScript : MonoBehaviour
 
     public void onRecord()
     {
+
   /*      if (!isRecording)
         {
             var extensions = new[]
@@ -593,9 +690,28 @@ public class UIScript : MonoBehaviour
         */
     }
 
+
     public void ShowMessage(string msg)
     {
         message.ShowMessage(msg);
+    }
+
+    public void RestoreSettings()
+    {
+        var msg = "The application settings and avatar settings will also be restored to default. Please restart the application after running it.Are you sure?";
+        message.ShowMessage(msg,
+            (b) =>
+            {
+                if(b)
+                {
+                    PlayerPrefs.SetString("AppVer", AppVer.ToString("0.0"));
+                    configurationSetting = new ConfigurationSetting();
+                    SaveConfiguration(configurationSetting);
+                    SetConfiguration(configurationSetting);
+                    PlayerPrefs.SetString("AvatarSettings", "");
+                    PlayerPrefs.Save();
+                }
+            });
     }
 
     void OnDisable()
@@ -711,6 +827,14 @@ public class ConfigurationSetting
     public float LowPassFilter;
     public int TrainedModel;
 
+    public int ShowBackground;
+    public string BackgroundFile;
+    public float BackgroundScale;
+    public int BackgroundR;
+    public int BackgroundG;
+    public int BackgroundB;
+
+
     public ConfigurationSetting()
     {
         ShowSource = 1;
@@ -722,6 +846,13 @@ public class ConfigurationSetting
         SourceCutY = 0f;
         LowPassFilter = 0.1f;
         TrainedModel = 0;
+
+        ShowBackground = 1;
+        BackgroundFile = "";
+        BackgroundScale = 1f;
+        BackgroundR = 0;
+        BackgroundG = 255;
+        BackgroundB = 0;
     }
 
     public ConfigurationSetting Clone()
@@ -737,6 +868,12 @@ public class ConfigurationSetting
             SourceCutY = SourceCutY,
             LowPassFilter = LowPassFilter,
             TrainedModel = TrainedModel,
+            ShowBackground = ShowBackground,
+            BackgroundFile = BackgroundFile,
+            BackgroundScale = BackgroundScale,
+            BackgroundR = BackgroundR,
+            BackgroundG = BackgroundG,
+            BackgroundB = BackgroundB,
         };
     }
 
@@ -744,6 +881,8 @@ public class ConfigurationSetting
     {
         return ShowSource.ToString() + "," + ShowInput.ToString() + "," + SkipOnDrop.ToString() + "," + RepeatPlayback.ToString()
             + "," + SourceCutScale.ToString() + "," + SourceCutX.ToString() + "," + SourceCutY.ToString() + "," + LowPassFilter.ToString()
-            + "," + TrainedModel.ToString();
+            + "," + TrainedModel.ToString()
+            + "," + ShowBackground.ToString() + "," + BackgroundFile + "," + BackgroundScale.ToString()
+            + "," + BackgroundR.ToString() + "," + BackgroundG.ToString() + "," + BackgroundB.ToString();
     }
 }
