@@ -50,19 +50,17 @@ While the menu is not displayed, you can change the camera angle by left-clickin
 
 
 ## Source
-Created with Unity ver 2019.2.12f1.</br>
-We use Barracuda 0.4 to load onnx.</br>
-By updating the version to 0.5, it seems like the speed get slower. </br>
-Now we are still trying 0.5 version. </br>
+Created with Unity ver 2019.3.13f1.</br>
+We use Barracuda 1.0.0 to load onnx.</br>
 
 Unity Standalone File Browser 1.2(https://github.com/gkngkc/UnityStandaloneFileBrowser)</br>
 </br>
 ## Performance Report
 ### High Quality Trained Model </br>
-GeForce RTX2060 SUPER ⇒ About 30 FPS </br>
+GeForce RTX2070 SUPER ⇒ About 30 FPS </br>
 GeForce GTX1070 ⇒ About 20 FPS </br>
 ### Low Quality Trained Model </br>
-GeForce RTX2060 SUPER ⇒ About 60 FPS </br>
+GeForce RTX2070 SUPER ⇒ About 60 FPS </br>
 
 
 ## License
