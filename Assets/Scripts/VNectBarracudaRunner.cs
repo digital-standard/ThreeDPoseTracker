@@ -1,10 +1,10 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using Barracuda;
 using System.Collections;
 using System.Collections.Generic;
 using System;
 using System.IO;
+using Unity.Barracuda;
 
 public class VNectBarracudaRunner : MonoBehaviour
 {
@@ -238,8 +238,8 @@ public class VNectBarracudaRunner : MonoBehaviour
         // Get data from outputs
         //heatMap2D = b_outputs[0].data.Download(b_outputs[0].data.GetMaxCount());
         //offset2D = b_outputs[1].data.Download(b_outputs[1].data.GetMaxCount());
-        offset3D = b_outputs[2].data.Download(b_outputs[2].data.GetMaxCount());
-        heatMap3D = b_outputs[3].data.Download(b_outputs[3].data.GetMaxCount());
+        offset3D = b_outputs[2].data.Download(b_outputs[2].shape);
+        heatMap3D = b_outputs[3].data.Download(b_outputs[3].shape);
         
         // Release outputs
         for (var i = 2; i < b_outputs.Length; i++)
@@ -300,8 +300,8 @@ public class VNectBarracudaRunner : MonoBehaviour
             // Get data from outputs
             //heatMap2D = b_outputs[0].data.Download(b_outputs[0].data.GetMaxCount());
             //offset2D = b_outputs[1].data.Download(b_outputs[1].data.GetMaxCount());
-            offset3D = b_outputs[2].data.Download(b_outputs[2].data.GetMaxCount());
-            heatMap3D = b_outputs[3].data.Download(b_outputs[3].data.GetMaxCount());
+            offset3D = b_outputs[2].data.Download(b_outputs[2].shape);
+            heatMap3D = b_outputs[3].data.Download(b_outputs[3].shape);
 
             PredictPose();
 

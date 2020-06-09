@@ -37,7 +37,7 @@ public class UIScript : MonoBehaviour
     public Texture BackgroundTexture;
     public Camera Maincamera;
 
-    private float AppVer = 0.1f;
+    private float AppVer = 0.11f;
 
     public MessageBoxScript message;
 

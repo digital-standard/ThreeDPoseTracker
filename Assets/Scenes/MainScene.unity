@@ -21697,7 +21697,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22f181ccb880e5c4a8cf0b92c2410b1f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  NNModel: {fileID: 5022602860645237092, guid: 1e61baccb596bcc42a9e4e8e46850067, type: 3}
+  NNModel: {fileID: 5022602860645237092, guid: d20681afb0a5abc4484ab30500f01bec, type: 3}
   WorkerType: 32768
   Verbose: 0
   VNectModel: {fileID: 717188072}
@@ -21713,7 +21713,7 @@ MonoBehaviour:
   KalmanParamR: 0.0015
   ModelQuality: 0
   EstimatedScore: 0
-  DebugMode: 1
+  DebugMode: 0
   User3Input: 1
   UpperBodyMode: 1
 --- !u!4 &1875476001
