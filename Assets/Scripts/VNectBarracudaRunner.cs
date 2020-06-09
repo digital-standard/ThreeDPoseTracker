@@ -84,7 +84,6 @@ public class VNectBarracudaRunner : MonoBehaviour
             writer.Close();
             */
             _model = ModelLoader.Load(NNModel, Verbose);
-            
         }
         else
         {
@@ -98,6 +97,7 @@ public class VNectBarracudaRunner : MonoBehaviour
             {
                 InputImageSize = 224;
                 HeatMapCol = 14;
+                User3Input = false;
                 UpdateVNectModel = new UpdateVNectModelDelegate(UpdateVNect);
                 _model = ModelLoader.Load(NNModel, Verbose);
             }
@@ -105,6 +105,7 @@ public class VNectBarracudaRunner : MonoBehaviour
             {
                 InputImageSize = 448;
                 HeatMapCol = 28;
+                User3Input = true;
                 UpdateVNectModel = new UpdateVNectModelDelegate(UpdateVNectAsync);
                 _model = ModelLoader.LoadFromStreamingAssets(streamingPath);
             }
@@ -130,6 +131,26 @@ public class VNectBarracudaRunner : MonoBehaviour
 
         _worker = WorkerFactory.CreateWorker(WorkerType, _model, Verbose);
         StartCoroutine("WaitLoad");
+        var texture = new RenderTexture(InputImageSize, InputImageSize, 0, RenderTextureFormat.RGB565, RenderTextureReadWrite.sRGB)
+        {
+            useMipMap = false,
+            autoGenerateMips = false,
+            wrapMode = TextureWrapMode.Clamp,
+            filterMode = FilterMode.Point,
+        };
+
+        if (User3Input)
+        {
+            inputs[inputName_1] = new Tensor(texture);
+            inputs[inputName_2] = new Tensor(texture);
+            inputs[inputName_3] = new Tensor(texture);
+            _worker.Execute(inputs);
+        }
+        else
+        {
+            input = new Tensor(texture);
+            _worker.Execute(input);
+        }
 
         // Init VideoCapture
         videoCapture.Init(InputImageSize, InputImageSize);
@@ -208,7 +229,7 @@ public class VNectBarracudaRunner : MonoBehaviour
 
     private IEnumerator WaitLoad()
     {
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(10f);
         Lock = false;
     }
 
@@ -236,8 +257,8 @@ public class VNectBarracudaRunner : MonoBehaviour
         }
 
         // Get data from outputs
-        //heatMap2D = b_outputs[0].data.Download(b_outputs[0].data.GetMaxCount());
-        //offset2D = b_outputs[1].data.Download(b_outputs[1].data.GetMaxCount());
+        //heatMap2D = b_outputs[0].data.Download(b_outputs[0].shape);
+        //offset2D = b_outputs[1].data.Download(b_outputs[1].shape);
         offset3D = b_outputs[2].data.Download(b_outputs[2].shape);
         heatMap3D = b_outputs[3].data.Download(b_outputs[3].shape);
         
@@ -287,7 +308,7 @@ public class VNectBarracudaRunner : MonoBehaviour
     private IEnumerator ExecuteModelAsync()
     {
         // Create input and Execute model
-        yield return _worker.ExecuteAsync(inputs);
+        yield return _worker.StartManualSchedule(inputs);
 
         if (!Lock)
         {
@@ -298,8 +319,8 @@ public class VNectBarracudaRunner : MonoBehaviour
             }
 
             // Get data from outputs
-            //heatMap2D = b_outputs[0].data.Download(b_outputs[0].data.GetMaxCount());
-            //offset2D = b_outputs[1].data.Download(b_outputs[1].data.GetMaxCount());
+            //heatMap2D = b_outputs[0].data.Download(b_outputs[0].shape);
+            //offset2D = b_outputs[1].data.Download(b_outputs[1].shape);
             offset3D = b_outputs[2].data.Download(b_outputs[2].shape);
             heatMap3D = b_outputs[3].data.Download(b_outputs[3].shape);
 
