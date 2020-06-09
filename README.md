@@ -57,10 +57,10 @@ Unity Standalone File Browser 1.2(https://github.com/gkngkc/UnityStandaloneFileB
 </br>
 ## Performance Report
 ### High Quality Trained Model </br>
-GeForce RTX2060 SUPER ⇒ About 30 FPS </br>
+GeForce RTX2070 SUPER ⇒ About 30 FPS </br>
 GeForce GTX1070 ⇒ About 20 FPS </br>
 ### Low Quality Trained Model </br>
-GeForce RTX2060 SUPER ⇒ About 60 FPS </br>
+GeForce RTX2070 SUPER ⇒ About 60 FPS </br>
 
 
 ## License
