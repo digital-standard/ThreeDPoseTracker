@@ -33,20 +33,22 @@ public class UIScript : MonoBehaviour
     private Button btnSourceDevice;
     private Text txtFPS;
 
+    private Button btnRecord;
+
     public RawImage BackgroundImage;
     public Texture BackgroundTexture;
     public Camera Maincamera;
 
-    private float AppVer = 0.11f;
+    private string AppVer = "0.12";
 
     public MessageBoxScript message;
 
     private void Awake()
     {
-        var appVer = PlayerPrefs.GetFloat("AppVer", 0.11f);
+        var appVer = PlayerPrefs.GetString("AppVer", "");
         if(appVer != AppVer)
         {
-            PlayerPrefs.SetString("AppVer", AppVer.ToString("0.0"));
+            PlayerPrefs.SetString("AppVer", AppVer);
             PlayerPrefs.SetString("Configuration", "");
             PlayerPrefs.SetString("AvatarSettings", "");
             PlayerPrefs.Save();
@@ -111,6 +113,7 @@ public class UIScript : MonoBehaviour
 
         btnSourceDevice = GameObject.Find("btnSourceDevice").GetComponent<Button>();
         txtFPS = GameObject.Find("txtFPS").GetComponent<Text>();
+        btnRecord = GameObject.Find("btnRecord").GetComponent<Button>();
 
         avatars = GameObject.Find("Avatars").GetComponent<Dropdown>();
 
@@ -414,7 +417,7 @@ public class UIScript : MonoBehaviour
 
     private void SaveConfiguration(ConfigurationSetting config)
     {
-        PlayerPrefs.SetString("AppVer", AppVer.ToString("0.0"));
+        PlayerPrefs.SetString("AppVer", AppVer);
         PlayerPrefs.SetString("Configuration", config.ToString());
         PlayerPrefs.Save();
     }
@@ -531,7 +534,7 @@ public class UIScript : MonoBehaviour
             saveStr += setting.ToString();
         }
 
-        PlayerPrefs.SetString("AppVer", AppVer.ToString("0.0"));
+        PlayerPrefs.SetString("AppVer", AppVer);
         PlayerPrefs.SetString("AvatarSettings", saveStr);
         PlayerPrefs.Save();
     }
@@ -565,7 +568,7 @@ public class UIScript : MonoBehaviour
             var meta = context.ReadMeta(false); //引数をTrueに変えるとサムネイルも読み込みます
 
             //読み込めたかどうかログにモデル名を出力してみる
-            Debug.LogFormat("meta: title:{0}", meta.Title);
+            //Debug.LogFormat("meta: title:{0}", meta.Title);
 
             //非同期処理(Task)で読み込みます
             await context.LoadAsyncTask();
@@ -628,68 +631,56 @@ public class UIScript : MonoBehaviour
 
     //private RecorderController m_RecorderController;
     private bool isRecording = false;
+    BVHRecorder recorder;
 
     public void onRecord()
     {
-
-  /*      if (!isRecording)
+        if (isRecording == false)
         {
-            var extensions = new[]
-            {
-                new ExtensionFilter( "Animation Files", "anim" ),
-            };
-            var path = StandaloneFileBrowser.SaveFilePanel("Save File", "", "My_Animation", extensions);
-
-            if (path.Length == 0)
-            {
-                return;
-            }
-            string fileName = Path.GetFileName(path);
-            
-            var controllerSettings = ScriptableObject.CreateInstance<RecorderControllerSettings>();
-            if (m_RecorderController == null)
-            {
-                m_RecorderController = new RecorderController(controllerSettings);
-            }
-
-            // Animation
-            var animationRecorder = ScriptableObject.CreateInstance<AnimationRecorderSettings>();
-            //animationRecorder.name = "My Animation Recorder";
-            animationRecorder.name = fileName;
-            animationRecorder.Enabled = true;
-
+            recorder = gameObject.AddComponent<BVHRecorder>();
             var setting = AvatarList[avatars.value];
-
-            animationRecorder.AnimationInputSettings = new AnimationInputSettings
-            {
-                gameObject = setting.Avatar.gameObject,
-                Recursive = true,
-            };
-
-            animationRecorder.AnimationInputSettings.AddComponentToRecord(typeof(Transform));
-
-            //var animationOutputFolder = Path.Combine(Application.dataPath, "SampleRecordings");
-            //animationRecorder.OutputFile = Path.Combine(animationOutputFolder, "anim_" + DefaultWildcard.GeneratePattern("GameObject") + "_v" + DefaultWildcard.Take);
-            animationRecorder.OutputFile = path;
-
-            controllerSettings.AddRecorderSettings(animationRecorder);
-
-            controllerSettings.SetRecordModeToManual();
-            controllerSettings.FrameRate = 30.0f;
-
-            RecorderOptions.VerboseMode = false;
-            m_RecorderController.StartRecording();
+            recorder.targetAvatar = setting.Avatar.GetComponent<Animator>();
+            recorder.scripted = true;
+            recorder.getBones();
+            recorder.rootBone = setting.Avatar.JointPoints[PositionIndex.hip.Int()].Transform;
+            recorder.buildSkeleton();
+            recorder.genHierarchy();
+            recorder.capturing = true;
             isRecording = true;
-            
+            btnRecord.image.color = Color.red;
+            btnRecord.GetComponentInChildren<Text>().text = "Recording";
+            btnRecord.GetComponentInChildren<Text>().color = Color.white;
         }
         else
         {
-            m_RecorderController.StopRecording();
-            isRecording = false;
+            var extensions = new[]
+            {
+                new ExtensionFilter( "BVH Files", "bvh" ),
+            };
+            var path = StandaloneFileBrowser.SaveFilePanel("SaveFile", "", "motion.bvh", extensions);
+
+            if (path.Length != 0)
+            {
+                isRecording = false;
+                recorder.capturing = false;
+                var streamingPath = System.IO.Path.Combine(Application.streamingAssetsPath, "motion.bvh");
+                FileInfo fi = new FileInfo(path);
+                recorder.directory = fi.DirectoryName;
+                recorder.filename = fi.Name;
+                recorder.saveBVH();
+            }
+            recorder.clearCapture();
+            recorder = null;
+            btnRecord.image.color = Color.white; 
+            btnRecord.GetComponentInChildren<Text>().text = "Record BVH";
+            btnRecord.GetComponentInChildren<Text>().color = Color.black;
         }
-        */
     }
 
+    public void onExit()
+    {
+
+    }
 
     public void ShowMessage(string msg)
     {
@@ -704,7 +695,7 @@ public class UIScript : MonoBehaviour
             {
                 if(b)
                 {
-                    PlayerPrefs.SetString("AppVer", AppVer.ToString("0.0"));
+                    PlayerPrefs.SetString("AppVer", AppVer);
                     configurationSetting = new ConfigurationSetting();
                     SaveConfiguration(configurationSetting);
                     SetConfiguration(configurationSetting);

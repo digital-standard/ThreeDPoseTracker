@@ -131,6 +131,7 @@ public class VNectBarracudaRunner : MonoBehaviour
 
         _worker = WorkerFactory.CreateWorker(WorkerType, _model, Verbose);
         StartCoroutine("WaitLoad");
+
         var texture = new RenderTexture(InputImageSize, InputImageSize, 0, RenderTextureFormat.RGB565, RenderTextureReadWrite.sRGB)
         {
             useMipMap = false,
@@ -145,11 +146,15 @@ public class VNectBarracudaRunner : MonoBehaviour
             inputs[inputName_2] = new Tensor(texture);
             inputs[inputName_3] = new Tensor(texture);
             _worker.Execute(inputs);
+            inputs[inputName_1].Dispose();
+            inputs[inputName_2].Dispose();
+            inputs[inputName_3].Dispose();
         }
         else
         {
             input = new Tensor(texture);
             _worker.Execute(input);
+            input.Dispose();
         }
 
         // Init VideoCapture
@@ -162,6 +167,16 @@ public class VNectBarracudaRunner : MonoBehaviour
         VNectModel = avatar;
         jointPoints = VNectModel.Init(InputImageSize);
 
+    }
+
+    public void Exit()
+    {
+        Lock = true;
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#elif UNITY_STANDALONE
+      UnityEngine.Application.Quit();
+#endif
     }
 
     public void SetVNectModel(VNectModel avatar)
@@ -250,7 +265,6 @@ public class VNectBarracudaRunner : MonoBehaviour
         input.Dispose();
 
         // Get outputs
-        var b_outputs = new Tensor[4];
         for (var i = 2; i < _model.outputs.Count; i++)
         {
             b_outputs[i] = _worker.PeekOutput(_model.outputs[i]);
@@ -261,13 +275,6 @@ public class VNectBarracudaRunner : MonoBehaviour
         //offset2D = b_outputs[1].data.Download(b_outputs[1].shape);
         offset3D = b_outputs[2].data.Download(b_outputs[2].shape);
         heatMap3D = b_outputs[3].data.Download(b_outputs[3].shape);
-        
-        // Release outputs
-        for (var i = 2; i < b_outputs.Length; i++)
-        {
-            b_outputs[i].Dispose();
-        }
-        b_outputs = null;
     }
 
     private void UpdateVNectAsync()
@@ -433,6 +440,21 @@ public class VNectBarracudaRunner : MonoBehaviour
     
     private void OnDestroy()
     {
-        if (_worker != null) _worker.Dispose();
+        _worker?.Dispose();
+
+        if (User3Input)
+        {
+            // Assuming model with multiple inputs that were passed as a Dictionary
+            foreach (var key in inputs.Keys)
+            {
+                inputs[key].Dispose();
+            }
+
+            inputs.Clear();
+        }
+        else
+        {
+            input.Dispose();
+        }
     }
 }
