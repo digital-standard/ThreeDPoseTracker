@@ -413,7 +413,7 @@ public class VNectModel : MonoBehaviour
     private float tallThigh;
     private float tallShin;
     public float EstimatedScore;
-    private float VisibleThreshold = 0.3f;
+    private float VisibleThreshold = 0.2f;
 
     public void PoseUpdate()
     {
@@ -421,6 +421,51 @@ public class VNectModel : MonoBehaviour
         tallHeadNeck = Vector3.Distance(jointPoints[PositionIndex.head.Int()].Pos3D, jointPoints[PositionIndex.neck.Int()].Pos3D);
         tallNeckSpine = Vector3.Distance(jointPoints[PositionIndex.neck.Int()].Pos3D, jointPoints[PositionIndex.spine.Int()].Pos3D);
 
+        jointPoints[PositionIndex.lToe.Int()].Visibled = jointPoints[PositionIndex.lToe.Int()].score3D < VisibleThreshold ? false : true;
+        jointPoints[PositionIndex.rToe.Int()].Visibled = jointPoints[PositionIndex.rToe.Int()].score3D < VisibleThreshold ? false : true;
+        jointPoints[PositionIndex.lFoot.Int()].Visibled = jointPoints[PositionIndex.lFoot.Int()].score3D < VisibleThreshold ? false : true;
+        jointPoints[PositionIndex.rFoot.Int()].Visibled = jointPoints[PositionIndex.rFoot.Int()].score3D < VisibleThreshold ? false : true;
+        jointPoints[PositionIndex.lShin.Int()].Visibled = jointPoints[PositionIndex.lShin.Int()].score3D < VisibleThreshold ? false : true;
+        jointPoints[PositionIndex.rShin.Int()].Visibled = jointPoints[PositionIndex.rShin.Int()].score3D < VisibleThreshold ? false : true;
+        jointPoints[PositionIndex.lThighBend.Int()].Visibled = jointPoints[PositionIndex.lThighBend.Int()].score3D < VisibleThreshold ? false : true;
+        jointPoints[PositionIndex.rThighBend.Int()].Visibled = jointPoints[PositionIndex.rThighBend.Int()].score3D < VisibleThreshold ? false : true;
+
+        var leftShin = 0f;
+        var rightShin = 0f;
+        var shinCnt = 0;
+        if (jointPoints[PositionIndex.lShin.Int()].Visibled && jointPoints[PositionIndex.lFoot.Int()].Visibled)
+        {
+            leftShin = Vector3.Distance(jointPoints[PositionIndex.lShin.Int()].Pos3D, jointPoints[PositionIndex.lFoot.Int()].Pos3D);
+            shinCnt++;
+        }
+        if (jointPoints[PositionIndex.rShin.Int()].Visibled && jointPoints[PositionIndex.rFoot.Int()].Visibled)
+        {
+            rightShin = Vector3.Distance(jointPoints[PositionIndex.rShin.Int()].Pos3D, jointPoints[PositionIndex.rFoot.Int()].Pos3D);
+            shinCnt++;
+        }
+        if (shinCnt != 0)
+        {
+            tallShin = (rightShin + leftShin) / shinCnt;
+        }
+
+        var rightThigh = 0f;
+        var leftThigh = 0f;
+        var thighCnt = 0;
+        if (jointPoints[PositionIndex.rThighBend.Int()].Visibled && jointPoints[PositionIndex.rShin.Int()].Visibled)
+        {
+            rightThigh = Vector3.Distance(jointPoints[PositionIndex.rThighBend.Int()].Pos3D, jointPoints[PositionIndex.rShin.Int()].Pos3D);
+            thighCnt++;
+        }
+        if (jointPoints[PositionIndex.lThighBend.Int()].Visibled && jointPoints[PositionIndex.lShin.Int()].Visibled)
+        {
+            leftThigh = Vector3.Distance(jointPoints[PositionIndex.lThighBend.Int()].Pos3D, jointPoints[PositionIndex.lShin.Int()].Pos3D);
+            thighCnt++;
+        }
+        if (thighCnt != 0)
+        {
+            tallThigh = (rightThigh + leftThigh) / 2f;
+        }
+/*
         if (jointPoints[PositionIndex.lToe.Int()].score3D < VisibleThreshold && jointPoints[PositionIndex.rToe.Int()].score3D < VisibleThreshold)
         {
             jointPoints[PositionIndex.lToe.Int()].Visibled = false;
@@ -428,8 +473,14 @@ public class VNectModel : MonoBehaviour
 
             if (jointPoints[PositionIndex.lFoot.Int()].score3D < VisibleThreshold && jointPoints[PositionIndex.rFoot.Int()].score3D < VisibleThreshold)
             {
-                jointPoints[PositionIndex.lFoot.Int()].Visibled = false;
-                jointPoints[PositionIndex.rFoot.Int()].Visibled = false;
+                if(jointPoints[PositionIndex.lFoot.Int()].score3D < VisibleThreshold)
+                {
+                    jointPoints[PositionIndex.lFoot.Int()].Visibled = false;
+                }
+                else if (jointPoints[PositionIndex.rFoot.Int()].score3D < VisibleThreshold)
+                {
+                    jointPoints[PositionIndex.rFoot.Int()].Visibled = false;
+                }
 
                 if (jointPoints[PositionIndex.lShin.Int()].score3D < VisibleThreshold && jointPoints[PositionIndex.rShin.Int()].score3D < VisibleThreshold)
                 {
@@ -443,18 +494,7 @@ public class VNectModel : MonoBehaviour
                         jointPoints[PositionIndex.lThighBend.Int()].Visibled = false;
                         jointPoints[PositionIndex.rThighBend.Int()].Visibled = false;
                     }
-                    /*
-                    if (jointPoints[PositionIndex.lHand.Int()].score3D < VisibleThreshold)
-                    {
-                        jointPoints[PositionIndex.lForearmBend.Int()].Visibled = false;
-                        jointPoints[PositionIndex.lHand.Int()].Visibled = false;
-                    }
-                    if (jointPoints[PositionIndex.rHand.Int()].score3D < VisibleThreshold)
-                    {
-                        jointPoints[PositionIndex.rForearmBend.Int()].Visibled = false;
-                        jointPoints[PositionIndex.rHand.Int()].Visibled = false;
-                    }
-                    */
+
                 }
                 else
                 {
@@ -470,8 +510,23 @@ public class VNectModel : MonoBehaviour
                 tallShin = (rightShin + leftShin) / 2f;
             }
         }
+   */
         var crotch = (jointPoints[PositionIndex.rThighBend.Int()].Pos3D + jointPoints[PositionIndex.lThighBend.Int()].Pos3D) / 2f;
         tallSpineCrotch = Vector3.Distance(jointPoints[PositionIndex.spine.Int()].Pos3D, crotch);
+
+        if(tallThigh <= 0.01f && tallShin <= 0.01f)
+        {
+            tallThigh = tallNeckSpine;
+            tallShin = tallNeckSpine;
+        }
+        else if (tallShin <= 0.01f)
+        {
+            tallShin = tallThigh;
+        }
+        else if (tallThigh <= 0.01f)
+        {
+            tallThigh = tallShin;
+        }
 
         var t = tallHeadNeck + tallNeckSpine + tallSpineCrotch + (tallThigh + tallShin) * UpperBodyF;
 
@@ -524,7 +579,6 @@ public class VNectModel : MonoBehaviour
 
             if (!jointPoint.Visibled)
             {
-                //jointPoint.Transform.localRotation = jointPoint.InitLocalRotation;
                 continue;
             }
 
@@ -537,7 +591,6 @@ public class VNectModel : MonoBehaviour
             {
                 if (!jointPoint.Child.Visibled)
                 {
-                    //jointPoint.Transform.localRotation = jointPoint.InitLocalRotation;
                     continue;
                 }
                 jointPoint.Transform.rotation = Quaternion.LookRotation(jointPoint.Pos3D - jointPoint.Child.Pos3D, forward) * jointPoint.InverseRotation;

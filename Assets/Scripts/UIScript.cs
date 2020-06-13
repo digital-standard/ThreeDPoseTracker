@@ -39,7 +39,7 @@ public class UIScript : MonoBehaviour
     public Texture BackgroundTexture;
     public Camera Maincamera;
 
-    private string AppVer = "0.12";
+    private string AppVer = "0.13";
 
     public MessageBoxScript message;
 
@@ -55,7 +55,7 @@ public class UIScript : MonoBehaviour
         }
         var configs = PlayerPrefs.GetString("Configuration", "");
         string[] cCol = configs.Split(',');
-        if (cCol.Length == 15)
+        if (cCol.Length == 16)
         {
             int.TryParse(cCol[0], out configurationSetting.ShowSource);
             int.TryParse(cCol[1], out configurationSetting.ShowInput);
@@ -73,6 +73,8 @@ public class UIScript : MonoBehaviour
             int.TryParse(cCol[12], out configurationSetting.BackgroundR);
             int.TryParse(cCol[13], out configurationSetting.BackgroundG);
             int.TryParse(cCol[14], out configurationSetting.BackgroundB);
+
+            int.TryParse(cCol[15], out configurationSetting.UseUnityCapture);
         }
         else
         {
@@ -411,6 +413,8 @@ public class UIScript : MonoBehaviour
         barracudaRunner.videoCapture.VideoPlayer.isLooping = (config.RepeatPlayback == 1);
         barracudaRunner.videoCapture.ResetScale(config.SourceCutScale, config.SourceCutX, config.SourceCutY);
         barracudaRunner.Smooth = config.LowPassFilter;
+
+        Maincamera.GetComponent<UnityCapture>().enabled = config.UseUnityCapture == 1;
 
         SetBackgroundImage(config);
     }
@@ -825,6 +829,7 @@ public class ConfigurationSetting
     public int BackgroundG;
     public int BackgroundB;
 
+    public int UseUnityCapture;
 
     public ConfigurationSetting()
     {
@@ -836,7 +841,7 @@ public class ConfigurationSetting
         SourceCutX = 0f;
         SourceCutY = 0f;
         LowPassFilter = 0.1f;
-        TrainedModel = 0;
+        TrainedModel = 1;
 
         ShowBackground = 1;
         BackgroundFile = "";
@@ -844,6 +849,8 @@ public class ConfigurationSetting
         BackgroundR = 0;
         BackgroundG = 255;
         BackgroundB = 0;
+
+        UseUnityCapture = 0;
     }
 
     public ConfigurationSetting Clone()
@@ -865,6 +872,7 @@ public class ConfigurationSetting
             BackgroundR = BackgroundR,
             BackgroundG = BackgroundG,
             BackgroundB = BackgroundB,
+            UseUnityCapture = UseUnityCapture,
         };
     }
 
@@ -874,6 +882,7 @@ public class ConfigurationSetting
             + "," + SourceCutScale.ToString() + "," + SourceCutX.ToString() + "," + SourceCutY.ToString() + "," + LowPassFilter.ToString()
             + "," + TrainedModel.ToString()
             + "," + ShowBackground.ToString() + "," + BackgroundFile + "," + BackgroundScale.ToString()
-            + "," + BackgroundR.ToString() + "," + BackgroundG.ToString() + "," + BackgroundB.ToString();
+            + "," + BackgroundR.ToString() + "," + BackgroundG.ToString() + "," + BackgroundB.ToString()
+            + "," + UseUnityCapture.ToString();
     }
 }

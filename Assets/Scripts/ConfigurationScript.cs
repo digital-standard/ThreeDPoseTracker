@@ -23,6 +23,8 @@ public class ConfigurationScript : MonoBehaviour
     private InputField ifBackgroundG;
     private InputField ifBackgroundB;
 
+    private Toggle UseUnityCapture;
+
     private UIScript currentUI;
     private ConfigurationSetting configurationSetting;
 
@@ -45,6 +47,8 @@ public class ConfigurationScript : MonoBehaviour
         ifBackgroundR = GameObject.Find("ifBackgroundR").GetComponent<InputField>();
         ifBackgroundG = GameObject.Find("ifBackgroundG").GetComponent<InputField>();
         ifBackgroundB = GameObject.Find("ifBackgroundB").GetComponent<InputField>();
+
+        UseUnityCapture = GameObject.Find("UseUnityCapture").GetComponent<Toggle>();
     }
 
 
@@ -69,6 +73,8 @@ public class ConfigurationScript : MonoBehaviour
         ifBackgroundR.text = config.BackgroundR.ToString("0");
         ifBackgroundG.text = config.BackgroundG.ToString("0");
         ifBackgroundB.text = config.BackgroundB.ToString("0");
+
+        UseUnityCapture.isOn = config.UseUnityCapture == 1;
     }
 
     public void Show(UIScript ui, ConfigurationSetting config)
@@ -144,6 +150,8 @@ public class ConfigurationScript : MonoBehaviour
             return "Background Color B is between 0 and 255";
         }
         configurationSetting.BackgroundB = i;
+
+        configurationSetting.UseUnityCapture = UseUnityCapture.isOn ? 1 : 0;
 
         return "";
     }
