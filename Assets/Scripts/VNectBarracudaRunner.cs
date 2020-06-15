@@ -218,15 +218,21 @@ public class VNectBarracudaRunner : MonoBehaviour
     public void PlayPause()
     {
         Lock = true;
-        //videoCapture.Pause();
-        StartCoroutine(PlayPauseAsync());
+        videoCapture.Pause();
+        //StartCoroutine(PlayPauseAsync());
     }
-
+    public void Resume()
+    {
+        Lock = false;
+        videoCapture.Resume();
+    }
+    /*
     private IEnumerator PlayPauseAsync()
     {
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(1f);
         videoCapture.Pause();
     }
+    */
     public Vector3 GetHeadPosition()
     {
         return VNectModel.GetHeadPosition();
@@ -234,7 +240,7 @@ public class VNectBarracudaRunner : MonoBehaviour
 
     private void Update()
     {
-        if (!Lock && videoCapture.IsPlay())
+        if (videoCapture.IsPlay())
         {
             var v = Time.deltaTime;
             elapsedMeasurementSec += v;
@@ -304,11 +310,14 @@ public class VNectBarracudaRunner : MonoBehaviour
             inputs[inputName_3].Dispose();
 
             inputs[inputName_3] = inputs[inputName_2];
-            inputs[inputName_2] = inputs[inputName_1];
-            inputs[inputName_1] = input;
+             inputs[inputName_2] = inputs[inputName_1];
+             inputs[inputName_1] = input;
         }
 
-        StartCoroutine(ExecuteModelAsync());
+        if (!Lock && videoCapture.IsPlay())
+        {
+            StartCoroutine(ExecuteModelAsync());
+        }
     }
 
     
@@ -327,6 +336,11 @@ public class VNectBarracudaRunner : MonoBehaviour
 
     private IEnumerator ExecuteModelAsync()
     {
+        if(Lock)
+        {
+            yield return null;
+        }
+
         // Create input and Execute model
         yield return _worker.StartManualSchedule(inputs);
 

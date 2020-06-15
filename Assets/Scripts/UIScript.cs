@@ -316,7 +316,7 @@ public class UIScript : MonoBehaviour
         } 
         else if (barracudaRunner.videoCapture.IsPause())
         {
-            barracudaRunner.videoCapture.Resume();
+            barracudaRunner.Resume();
         }
     }
 
