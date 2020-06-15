@@ -136,17 +136,19 @@ public class VideoCapture : MonoBehaviour
         var aspect = (float)videoTexture.width / videoTexture.height;
 
         VideoBackground.transform.localScale = new Vector3(aspect * SourceCutScale, 1 * SourceCutScale, 1) ;
-        VideoBackground.transform.localPosition = new Vector3(SourceCutX, SourceCutY, -2f);
+        VideoBackground.transform.localPosition = new Vector3(0f, 0f, -2f);
         VideoBackground.GetComponent<Renderer>().material.mainTexture = videoTexture;
 
         InitMainTexture();
+
+        MainTextureCamera.transform.localPosition = new Vector3(SourceCutX, SourceCutY, -2f);
 
         status = Status.VideoPlay;
 
         if (VideoReady != null) VideoReady();
     }
     
-    public void ResetScale(float scale, float x, float y)
+    public void ResetScale(float scale, float x, float y, bool isMirror)
     {
         SourceCutScale = scale;
         SourceCutX = x;
@@ -154,7 +156,19 @@ public class VideoCapture : MonoBehaviour
         if (VideoScreen.texture != null)
         {
             var aspect = (float)VideoScreen.texture.width / VideoScreen.texture.height;
-            aspect = status == Status.VideoPlay ? aspect : -aspect;
+            if(status == Status.Stop || status == Status.VideoPlay || status == Status.VideoPause)
+            {
+                // ビデオの場合、反転しない
+            }
+            else
+            {
+                // カメラは設定による
+                if(isMirror)
+                {
+                    aspect =  -aspect;
+                }
+
+            }
             VideoBackground.transform.localScale = new Vector3(aspect * SourceCutScale, 1 * SourceCutScale, 1) ;
 
         }

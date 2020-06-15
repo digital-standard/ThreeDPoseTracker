@@ -39,7 +39,8 @@ public class UIScript : MonoBehaviour
     public Texture BackgroundTexture;
     public Camera Maincamera;
 
-    private string AppVer = "0.13";
+    private string AppVer = "0.14";
+    private int ConfigColums = 17;
 
     public MessageBoxScript message;
 
@@ -55,7 +56,7 @@ public class UIScript : MonoBehaviour
         }
         var configs = PlayerPrefs.GetString("Configuration", "");
         string[] cCol = configs.Split(',');
-        if (cCol.Length == 16)
+        if (cCol.Length == ConfigColums)
         {
             int.TryParse(cCol[0], out configurationSetting.ShowSource);
             int.TryParse(cCol[1], out configurationSetting.ShowInput);
@@ -278,38 +279,6 @@ public class UIScript : MonoBehaviour
         avatars.value = v;
     }
 
-    bool triggerDown = false;
-    public float x0 = -0.8f;
-    public float y0 = 1.3f;
-    public float z0 = 0f;
-    public float yaw0 = 90f;
-    public float pitch0 = 0f;
-    public float roll0 = 0f;
-    public float x1 = 0.8f;
-    public float y1 = 1.3f;
-    public float z1 = 0f;
-    public float yaw1 = -90f;
-    public float pitch1 = 0f;
-    public float roll1 = 0f;
-    public float x2 = 0f;
-    public float y2 = 0.8f;
-    public float z2 = 0f;
-    public float yaw2 = 0f;
-    public float pitch2 = 0f;
-    public float roll2 = 0f;
-    public float x3 = -0.18f;
-    public float y3 = 0f;
-    public float z3 = 0f;
-    public float yaw3 = 0f;
-    public float pitch3 = 0f;
-    public float roll3 = 0f;
-    public float x4 = 0.18f;
-    public float y4 = 0f;
-    public float z4 = 0f;
-    public float yaw4 = 0f;
-    public float pitch4 = 0f;
-    public float roll4 = 0f;
-
     void Update()
     {
         if(Menu != null && !Menu.activeSelf)
@@ -343,7 +312,7 @@ public class UIScript : MonoBehaviour
     {
         if(barracudaRunner.videoCapture.IsPlay())
         {
-            barracudaRunner.videoCapture.Pause();
+            barracudaRunner.PlayPause();
         } 
         else if (barracudaRunner.videoCapture.IsPause())
         {
@@ -405,13 +374,14 @@ public class UIScript : MonoBehaviour
         texture.LoadImage(rb);
         return texture;
     }
+
     private void ReflectConfiguration(ConfigurationSetting config)
     {
         barracudaRunner.videoCapture.VideoScreen.gameObject.SetActive(config.ShowSource == 1);
         barracudaRunner.videoCapture.InputTexture.gameObject.SetActive(config.ShowInput == 1);
         barracudaRunner.videoCapture.VideoPlayer.skipOnDrop = (config.SkipOnDrop == 1);
         barracudaRunner.videoCapture.VideoPlayer.isLooping = (config.RepeatPlayback == 1);
-        barracudaRunner.videoCapture.ResetScale(config.SourceCutScale, config.SourceCutX, config.SourceCutY);
+        barracudaRunner.videoCapture.ResetScale(config.SourceCutScale, config.SourceCutX, config.SourceCutY, config.MirrorUseCamera == 1);
         barracudaRunner.Smooth = config.LowPassFilter;
 
         Maincamera.GetComponent<UnityCapture>().enabled = config.UseUnityCapture == 1;
@@ -830,6 +800,7 @@ public class ConfigurationSetting
     public int BackgroundB;
 
     public int UseUnityCapture;
+    public int MirrorUseCamera;
 
     public ConfigurationSetting()
     {
@@ -851,6 +822,7 @@ public class ConfigurationSetting
         BackgroundB = 0;
 
         UseUnityCapture = 0;
+        MirrorUseCamera = 1;
     }
 
     public ConfigurationSetting Clone()
@@ -873,6 +845,7 @@ public class ConfigurationSetting
             BackgroundG = BackgroundG,
             BackgroundB = BackgroundB,
             UseUnityCapture = UseUnityCapture,
+            MirrorUseCamera = MirrorUseCamera,
         };
     }
 
@@ -883,6 +856,6 @@ public class ConfigurationSetting
             + "," + TrainedModel.ToString()
             + "," + ShowBackground.ToString() + "," + BackgroundFile + "," + BackgroundScale.ToString()
             + "," + BackgroundR.ToString() + "," + BackgroundG.ToString() + "," + BackgroundB.ToString()
-            + "," + UseUnityCapture.ToString();
+            + "," + UseUnityCapture.ToString() + "," + MirrorUseCamera.ToString();
     }
 }

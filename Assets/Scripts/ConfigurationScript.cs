@@ -24,6 +24,7 @@ public class ConfigurationScript : MonoBehaviour
     private InputField ifBackgroundB;
 
     private Toggle UseUnityCapture;
+    private Toggle MirrorUseCamera;
 
     private UIScript currentUI;
     private ConfigurationSetting configurationSetting;
@@ -49,6 +50,7 @@ public class ConfigurationScript : MonoBehaviour
         ifBackgroundB = GameObject.Find("ifBackgroundB").GetComponent<InputField>();
 
         UseUnityCapture = GameObject.Find("UseUnityCapture").GetComponent<Toggle>();
+        MirrorUseCamera = GameObject.Find("MirrorUseCamera").GetComponent<Toggle>();
     }
 
 
@@ -75,6 +77,7 @@ public class ConfigurationScript : MonoBehaviour
         ifBackgroundB.text = config.BackgroundB.ToString("0");
 
         UseUnityCapture.isOn = config.UseUnityCapture == 1;
+        MirrorUseCamera.isOn = config.MirrorUseCamera == 1;
     }
 
     public void Show(UIScript ui, ConfigurationSetting config)
@@ -152,6 +155,7 @@ public class ConfigurationScript : MonoBehaviour
         configurationSetting.BackgroundB = i;
 
         configurationSetting.UseUnityCapture = UseUnityCapture.isOn ? 1 : 0;
+        configurationSetting.MirrorUseCamera = MirrorUseCamera.isOn ? 1 : 0;
 
         return "";
     }

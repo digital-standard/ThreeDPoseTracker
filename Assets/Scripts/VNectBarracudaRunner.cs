@@ -190,6 +190,7 @@ public class VNectBarracudaRunner : MonoBehaviour
     public void VideoPlayStart(string path)
     {
         Lock = true;
+        VNectModel.IsPoseUpdate = false;
         waitSec = 1f / videoCapture.SourceFps * 0.85f;
 
         StartCoroutine(videoCapture.VideoStart(path));
@@ -214,6 +215,18 @@ public class VNectBarracudaRunner : MonoBehaviour
         videoCapture.PlayStop();
     }
 
+    public void PlayPause()
+    {
+        Lock = true;
+        //videoCapture.Pause();
+        StartCoroutine(PlayPauseAsync());
+    }
+
+    private IEnumerator PlayPauseAsync()
+    {
+        yield return new WaitForSeconds(0.5f);
+        videoCapture.Pause();
+    }
     public Vector3 GetHeadPosition()
     {
         return VNectModel.GetHeadPosition();
