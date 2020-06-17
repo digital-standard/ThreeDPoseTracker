@@ -71,7 +71,12 @@ GeForce RTX2070 SUPER ⇒ About 60 FPS </br>
 ・The videos named as "Action_with_wiper.mp4"(
 original video: https://www.youtube.com/watch?v=C9VtSRiEM7s) and "onegai_darling.mp4"(original video: https://www.youtube.com/watch?v=tmsK8985dyk) contained in this code are not copyright free.
   So you should not use those of files in other places without permission.</br></br>
-   
+
+### Unitychan</br>
+We follow the Unity-Chan License Terms.</br>
+https://unity-chan.com/contents/license_en/</br>
+![Light_Frame.png](image/Light_Frame.png)</br></br>
+
 ### Commercial use</br>
 ・In the case of developping application including free application for advertising, it costs $500 per developer.
   About complicated case, please contact us.</br>
