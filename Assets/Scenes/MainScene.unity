@@ -3038,7 +3038,7 @@ MonoBehaviour:
   m_LineType: 0
   m_HideMobileInput: 0
   m_CharacterValidation: 0
-  m_CharacterLimit: 6
+  m_CharacterLimit: 0
   m_OnEndEdit:
     m_PersistentCalls:
       m_Calls: []
@@ -6259,13 +6259,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   CaptureDevice: 0
-  ResizeMode: 0
+  ResizeMode: 1
   Timeout: 1000
   MirrorMode: 0
   DoubleBuffering: 0
-  EnableVSync: 1
+  EnableVSync: 0
   TargetFrameRate: 30
-  HideWarnings: 1
+  HideWarnings: 0
 --- !u!1 &558186223
 GameObject:
   m_ObjectHideFlags: 0
@@ -22267,7 +22267,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22f181ccb880e5c4a8cf0b92c2410b1f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  NNModel: {fileID: 5022602860645237092, guid: 572321f0f2d137744b8aa621793a7d3b, type: 3}
+  NNModel: {fileID: 5022602860645237092, guid: 3b8dcff799460d145aa86eb667aed293, type: 3}
   WorkerType: 32768
   Verbose: 0
   VNectModel: {fileID: 717188072}
@@ -22277,7 +22277,7 @@ MonoBehaviour:
   HeatMapCol_Half: 0
   FPS: 0
   UseLPF: 1
-  Smooth: 0.3
+  Smooth: 0.1
   UseKalmanF: 1
   KalmanParamQ: 0.001
   KalmanParamR: 0.0015
