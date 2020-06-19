@@ -26,6 +26,12 @@ public class ConfigurationScript : MonoBehaviour
     private Toggle UseUnityCapture;
     private Toggle MirrorUseCamera;
 
+    private Toggle UseVMCProtocol;
+    private InputField ifVMCPIP;
+    private InputField ifVMCPPort;
+    private Toggle VMCPRot;
+
+
     private UIScript currentUI;
     private ConfigurationSetting configurationSetting;
 
@@ -51,6 +57,11 @@ public class ConfigurationScript : MonoBehaviour
 
         UseUnityCapture = GameObject.Find("UseUnityCapture").GetComponent<Toggle>();
         MirrorUseCamera = GameObject.Find("MirrorUseCamera").GetComponent<Toggle>();
+
+        UseVMCProtocol = GameObject.Find("UseVMCProtocol").GetComponent<Toggle>();
+        ifVMCPIP = GameObject.Find("ifVMCPIP").GetComponent<InputField>();
+        ifVMCPPort = GameObject.Find("ifVMCPPort").GetComponent<InputField>();
+        VMCPRot = GameObject.Find("VMCPRot").GetComponent<Toggle>();
     }
 
 
@@ -78,6 +89,11 @@ public class ConfigurationScript : MonoBehaviour
 
         UseUnityCapture.isOn = config.UseUnityCapture == 1;
         MirrorUseCamera.isOn = config.MirrorUseCamera == 1;
+
+        UseVMCProtocol.isOn = config.UseVMCProtocol == 1;
+        ifVMCPIP.text = config.VMCPIP;
+        ifVMCPPort.text = config.VMCPPort.ToString("0"); ;
+        VMCPRot.isOn = config.VMCPRot == 1;
     }
 
     public void Show(UIScript ui, ConfigurationSetting config)
@@ -86,6 +102,11 @@ public class ConfigurationScript : MonoBehaviour
         ShowSetting(config);
 
         this.gameObject.SetActive(true);
+    }
+
+    public void Close()
+    {
+        this.gameObject.SetActive(false);
     }
 
     private string SetSetting()
@@ -157,6 +178,19 @@ public class ConfigurationScript : MonoBehaviour
         configurationSetting.UseUnityCapture = UseUnityCapture.isOn ? 1 : 0;
         configurationSetting.MirrorUseCamera = MirrorUseCamera.isOn ? 1 : 0;
 
+        configurationSetting.UseVMCProtocol = UseVMCProtocol.isOn ? 1 : 0;
+        configurationSetting.VMCPIP = ifVMCPIP.text.Trim();
+        if (!int.TryParse(ifVMCPPort.text, out i))
+        {
+            return "Server IP is required.";
+        }
+        if (i < 0 || i > 100000)
+        {
+            return "Port num is between 0 and 100000";
+        }
+        configurationSetting.VMCPPort = i;
+        configurationSetting.VMCPRot = VMCPRot.isOn ? 1 : 0;
+
         return "";
     }
 
@@ -170,7 +204,7 @@ public class ConfigurationScript : MonoBehaviour
         else
         {
             currentUI.SetConfiguration(configurationSetting);
-            this.gameObject.SetActive(false);
+            Close();
         }
     }
 
@@ -194,7 +228,7 @@ public class ConfigurationScript : MonoBehaviour
 
     public void onCancel()
     {
-        this.gameObject.SetActive(false);
+        Close();
     }
     public void onBackgroundFile()
     {

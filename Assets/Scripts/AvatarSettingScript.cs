@@ -1,6 +1,7 @@
 ﻿using SFB;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,6 +12,7 @@ public class AvatarSettingScript : MonoBehaviour
     private Button btnAvatarSettingOK;
     private Button btnAvatarSettingCancel;
     private Button btnAvatarSettingRemove;
+    private Button btnAvatarSettingApply;
 
     private InputField ifVRMFile;
     //private InputField ifFBXFile;
@@ -45,6 +47,7 @@ public class AvatarSettingScript : MonoBehaviour
         btnAvatarSettingOK = GameObject.Find("btnAvatarSettingOK").GetComponent<Button>();
         btnAvatarSettingCancel = GameObject.Find("btnAvatarSettingCancel").GetComponent<Button>();
         btnAvatarSettingRemove = GameObject.Find("btnAvatarSettingRemove").GetComponent<Button>();
+        btnAvatarSettingApply = GameObject.Find("btnAvatarSettingApply").GetComponent<Button>();
 
         ifVRMFile = GameObject.Find("ifVRMFile").GetComponent<InputField>();
         //ifFBXFile = GameObject.Find("ifFBXFile").GetComponent<InputField>();
@@ -78,6 +81,7 @@ public class AvatarSettingScript : MonoBehaviour
         btnAvatarSettingOK.gameObject.SetActive(false);
         btnAvatarSettingCancel.gameObject.SetActive(true);
         btnAvatarSettingRemove.gameObject.SetActive(false);
+        btnAvatarSettingApply.gameObject.SetActive(false);
 
         ShowSetting(setting);
 
@@ -92,7 +96,7 @@ public class AvatarSettingScript : MonoBehaviour
         btnAvatarSettingAdd.gameObject.SetActive(false);
         btnAvatarSettingOK.gameObject.SetActive(true);
         btnAvatarSettingCancel.gameObject.SetActive(true);
-        if(setting.AvatarType < 0)
+        if (setting.AvatarType < 0)
         {
             btnAvatarSettingRemove.gameObject.SetActive(false);
             ifVRMFile.enabled = false;
@@ -104,6 +108,7 @@ public class AvatarSettingScript : MonoBehaviour
             ifVRMFile.enabled = true;
             btnVRMFile.enabled = true;
         }
+        btnAvatarSettingApply.gameObject.SetActive(true);
 
         ShowSetting(setting);
 
@@ -139,21 +144,15 @@ public class AvatarSettingScript : MonoBehaviour
         {
 
         }
-        else if(ifVRMFile.text != "")
+        else if(ifVRMFile.text != "" && File.Exists(ifVRMFile.text))
         {
             currentSetting.AvatarType = 0;
             currentSetting.VRMFilePath = ifVRMFile.text;
             currentSetting.FBXFilePath = "";
         }
-        else if (ifVRMFile.text == "")
-        {
-            currentSetting.AvatarType = 1;
-            currentSetting.VRMFilePath = "";
-            currentSetting.FBXFilePath = "";
-        }
         else
         {
-            return "Please specify either VRM or FBX.";
+            return "Please specify VRM File.";
         }
 
         if (ifAvatarName.text != "")

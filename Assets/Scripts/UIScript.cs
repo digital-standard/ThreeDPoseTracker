@@ -39,10 +39,13 @@ public class UIScript : MonoBehaviour
     public Texture BackgroundTexture;
     public Camera Maincamera;
 
-    private string AppVer = "0.14";
-    private int ConfigColums = 17;
+    private string AppVer = "0.13";
+    private int ConfigColums = 21;
 
     public MessageBoxScript message;
+
+    public GameObject OSCClient;
+
 
     private void Awake()
     {
@@ -76,6 +79,12 @@ public class UIScript : MonoBehaviour
             int.TryParse(cCol[14], out configurationSetting.BackgroundB);
 
             int.TryParse(cCol[15], out configurationSetting.UseUnityCapture);
+            int.TryParse(cCol[16], out configurationSetting.MirrorUseCamera);
+
+            int.TryParse(cCol[17], out configurationSetting.UseVMCProtocol);
+            configurationSetting.VMCPIP = cCol[18];
+            int.TryParse(cCol[19], out configurationSetting.VMCPPort);
+            int.TryParse(cCol[20], out configurationSetting.VMCPRot);
         }
         else
         {
@@ -85,6 +94,9 @@ public class UIScript : MonoBehaviour
         message = GameObject.Find("pnlMessage").GetComponent<MessageBoxScript>();
         message.Init();
         message.Hide();
+
+        OSCClient.SetActive(false);
+
     }
 
     void Start()
@@ -220,7 +232,7 @@ public class UIScript : MonoBehaviour
             var setting = new AvatarSetting()
             {
                 AvatarType = -1,
-                AvatarName = "unitychan",
+                AvatarName = "unity-chan",
                 Avatar = GameObject.Find("unitychan").GetComponent<VNectModel>(),
             };
             setting.Avatar.SetNose(setting.FaceOriX, setting.FaceOriY, setting.FaceOriZ);
@@ -230,7 +242,7 @@ public class UIScript : MonoBehaviour
             setting = new AvatarSetting()
             {
                 AvatarType = -2,
-                AvatarName = "YukihikoAoyagi",
+                AvatarName = "yukihiko-chan",
                 Avatar = GameObject.Find("YukihikoAoyagi").GetComponent<VNectModel>(),
             };
             setting.Avatar.SetNose(setting.FaceOriX, setting.FaceOriY, setting.FaceOriZ);
@@ -313,7 +325,7 @@ public class UIScript : MonoBehaviour
         if(barracudaRunner.videoCapture.IsPlay())
         {
             barracudaRunner.PlayPause();
-        } 
+        }
         else if (barracudaRunner.videoCapture.IsPause())
         {
             barracudaRunner.Resume();
@@ -344,7 +356,7 @@ public class UIScript : MonoBehaviour
 
             Texture texture;
 
-            if (config.BackgroundFile != string.Empty)
+            if (config.BackgroundFile != string.Empty && File.Exists(config.BackgroundFile))
             {
                 texture = PngToTex2D(config.BackgroundFile);
             }
@@ -387,6 +399,15 @@ public class UIScript : MonoBehaviour
         Maincamera.GetComponent<UnityCapture>().enabled = config.UseUnityCapture == 1;
 
         SetBackgroundImage(config);
+
+        if(config.UseVMCProtocol == 1)
+        {
+            StartVMCProtocol(configurationSetting);
+        }
+        else
+        {
+            StopVMCProtocol();
+        }
     }
 
     private void SaveConfiguration(ConfigurationSetting config)
@@ -457,6 +478,9 @@ public class UIScript : MonoBehaviour
         setting.Avatar.SetSettings(setting);
 
         barracudaRunner.SetVNectModel(setting.Avatar);
+
+        var src = OSCClient.GetComponent<VMCPBonesSender>();
+        src.Model = AvatarList[avatars.value].Avatar.gameObject;
     }
 
     public void onAddAvatar()
@@ -675,8 +699,55 @@ public class UIScript : MonoBehaviour
                     SetConfiguration(configurationSetting);
                     PlayerPrefs.SetString("AvatarSettings", "");
                     PlayerPrefs.Save();
+                    configuration.Close();
                 }
             });
+    }
+
+    public void StartVMCProtocol(ConfigurationSetting config)
+    {
+        var client = OSCClient.GetComponent<uOscClientTDP>();
+
+        if (!OSCClient.activeSelf)
+        {
+            client.address = config.VMCPIP;
+            client.port = config.VMCPPort;
+            var vmcp = OSCClient.GetComponent<VMCPBonesSender>();
+            vmcp.SetRot(config.VMCPRot == 1);
+            if (AvatarList != null && AvatarList.Count > 0)
+            {
+                vmcp.Model = AvatarList[avatars.value].Avatar.gameObject;
+            }
+            OSCClient.SetActive(true);
+        }
+        else
+        {
+            if(client.address != config.VMCPIP || client.port != config.VMCPPort)
+            {
+                client.address = config.VMCPIP;
+                client.port = config.VMCPPort;
+                StartCoroutine(RestartVMCP(config));
+            }
+        }
+    }
+
+    private IEnumerator RestartVMCP(ConfigurationSetting config)
+    {
+        OSCClient.SetActive(false);
+        yield return new WaitForSeconds(0.5f);
+
+        var vmcp = OSCClient.GetComponent<VMCPBonesSender>();
+        vmcp.SetRot(config.VMCPRot == 1);
+        if (AvatarList != null && AvatarList.Count > 0)
+        {
+            vmcp.Model = AvatarList[avatars.value].Avatar.gameObject;
+        }
+        OSCClient.SetActive(true);
+    }
+
+    public void StopVMCProtocol()
+    {
+        OSCClient.SetActive(false);
     }
 
     void OnDisable()
@@ -720,15 +791,15 @@ public class AvatarSetting
         PosX = 0f;
         PosY = 0f;
         PosZ = 0f;
-        DepthScale = 0.8f;
+        DepthScale = 1.0f;
         Scale = 1.0f;
         FaceOriX = 0.0f;
         FaceOriY = -0.001f;
         FaceOriZ = 0.01f;
         SkeletonVisible = 0;
         SkeletonPosX = -0.8f;
-        SkeletonPosY = 0f;
-        SkeletonPosZ = -0.5f;
+        SkeletonPosY = 0.9f;
+        SkeletonPosZ = 0f;
         SkeletonScale = 0.005f;
         Avatar = null;
     }
@@ -802,6 +873,12 @@ public class ConfigurationSetting
     public int UseUnityCapture;
     public int MirrorUseCamera;
 
+    public int UseVMCProtocol;
+    public string VMCPIP;
+    public int VMCPPort;
+    public int VMCPRot;
+
+
     public ConfigurationSetting()
     {
         ShowSource = 1;
@@ -823,9 +900,14 @@ public class ConfigurationSetting
 
         UseUnityCapture = 0;
         MirrorUseCamera = 1;
-    }
 
-    public ConfigurationSetting Clone()
+        UseVMCProtocol = 0;
+        VMCPIP = "127.0.0.1";
+        VMCPPort = 39539;
+        VMCPRot = 1;
+}
+
+public ConfigurationSetting Clone()
     {
         return new ConfigurationSetting()
         {
@@ -846,6 +928,11 @@ public class ConfigurationSetting
             BackgroundB = BackgroundB,
             UseUnityCapture = UseUnityCapture,
             MirrorUseCamera = MirrorUseCamera,
+
+            UseVMCProtocol = UseVMCProtocol,
+            VMCPIP = VMCPIP,
+            VMCPPort = VMCPPort,
+            VMCPRot = VMCPRot,
         };
     }
 
@@ -856,6 +943,8 @@ public class ConfigurationSetting
             + "," + TrainedModel.ToString()
             + "," + ShowBackground.ToString() + "," + BackgroundFile + "," + BackgroundScale.ToString()
             + "," + BackgroundR.ToString() + "," + BackgroundG.ToString() + "," + BackgroundB.ToString()
-            + "," + UseUnityCapture.ToString() + "," + MirrorUseCamera.ToString();
+            + "," + UseUnityCapture.ToString() + "," + MirrorUseCamera.ToString()
+            + "," + UseVMCProtocol.ToString() + "," + VMCPIP + "," + VMCPPort.ToString() + "," + VMCPRot.ToString()
+            ;
     }
 }
