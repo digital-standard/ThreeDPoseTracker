@@ -2429,7 +2429,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 0, y: -9.234581, z: 1.003e-42, w: -9.235062}
+  m_BoundingSphereOverride: {x: 5.373e-42, y: 1.01e-43, z: 6.7e-44, w: 0}
   m_UseBoundingSphereOverride: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
@@ -23552,7 +23552,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22f181ccb880e5c4a8cf0b92c2410b1f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  NNModel: {fileID: 5022602860645237092, guid: 572321f0f2d137744b8aa621793a7d3b, type: 3}
+  NNModel: {fileID: 5022602860645237092, guid: d5ceeddd6317af741ac4e4e09d85fcbb, type: 3}
   WorkerType: 32768
   Verbose: 0
   VNectModel: {fileID: 717188072}
@@ -23568,7 +23568,7 @@ MonoBehaviour:
   KalmanParamR: 0.0015
   ModelQuality: 0
   EstimatedScore: 0
-  DebugMode: 0
+  DebugMode: 1
   User3Input: 1
   UpperBodyMode: 1
 --- !u!4 &1875476001
