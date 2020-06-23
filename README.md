@@ -1,5 +1,5 @@
 # ThreeDPoseTracker (preparing now)
-使い方は下記のQiitaの記事を読んでください。
+使い方は下記のQiitaの記事を読んでください。</br>
 （For instructions on how to use it, please read the following Qiita article in Japanese.）
 https://qiita.com/yukihiko_a/items/43d09db5628334789fab
 
@@ -7,14 +7,14 @@ https://qiita.com/yukihiko_a/items/43d09db5628334789fab
 Created with Unity ver 2019.3.13f1.</br>
 We use Barracuda 1.0.0 to load onnx.</br>
 
-### Packages
+### Other Packages
 BVH Tools(https://assetstore.unity.com/packages/tools/animation/bvh-tools-144728)</br>
 Unity Standalone File Browser 1.2(https://github.com/gkngkc/UnityStandaloneFileBrowser)</br>
 uOSC(https://github.com/hecomi/uOSC)</br>
 Unity Capture(https://github.com/schellingb/UnityCapture)</br>
 
 </br>
-## Performance Report
+## Performance Report</br>
 ### High Quality Trained Model </br>
 GeForce RTX2070 SUPER ⇒ About 30 FPS </br>
 GeForce GTX1070 ⇒ About 20 FPS </br>
