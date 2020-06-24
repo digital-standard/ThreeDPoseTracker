@@ -373,7 +373,7 @@ public class VNectBarracudaRunner : MonoBehaviour
             var maxXIndex = 0;
             var maxYIndex = 0;
             var maxZIndex = 0;
-            jointPoints[j].score3D = 0.0f;
+            jointPoints[j].Score3D = 0.0f;
             var jj = j * HeatMapCol;
 
             for (var z = 0; z < HeatMapCol; z = z + 1)
@@ -385,9 +385,9 @@ public class VNectBarracudaRunner : MonoBehaviour
                     for (var x = 0; x < HeatMapCol; x = x + 1)
                     {
                         float v = heatMap3D[yy + x * HeatMapCol_JointNum];
-                        if (v > jointPoints[j].score3D)
+                        if (v > jointPoints[j].Score3D)
                         {
-                            jointPoints[j].score3D = v;
+                            jointPoints[j].Score3D = v;
                             maxXIndex = x;
                             maxYIndex = y;
                             maxZIndex = z;
@@ -396,7 +396,7 @@ public class VNectBarracudaRunner : MonoBehaviour
                 }
             }
 
-            score += jointPoints[j].score3D;
+            score += jointPoints[j].Score3D;
             jointPoints[j].Now3D.x = ((offset3D[maxYIndex * cubeOffsetSquared + maxXIndex * cubeOffsetLinear + j * HeatMapCol + maxZIndex] + 0.5f + (float)maxXIndex) / (float)HeatMapCol) * InputImageSizeF - InputImageSizeHalf;
             jointPoints[j].Now3D.y = InputImageSizeF - ((offset3D[maxYIndex * cubeOffsetSquared + maxXIndex * cubeOffsetLinear + (j + JointNum) * HeatMapCol + maxZIndex] + 0.5f + (float)maxYIndex) / (float)HeatMapCol) * InputImageSizeF - InputImageSizeHalf;
             jointPoints[j].Now3D.z = ((offset3D[maxYIndex * cubeOffsetSquared + maxXIndex * cubeOffsetLinear + (j + JointNum_Squared) * HeatMapCol + maxZIndex] + 0.5f + (float)(maxZIndex - HeatMapCol_Half)) / (float)HeatMapCol) * InputImageSizeF;
@@ -419,31 +419,122 @@ public class VNectBarracudaRunner : MonoBehaviour
         // Calculate spine location
         jointPoints[PositionIndex.spine.Int()].Now3D = jointPoints[PositionIndex.abdomenUpper.Int()].Now3D;
 
-        if (UseKalmanF)
+        // Filters
+        //
+
+        var f = false;
+        f = FrontBackCheckv(jointPoints[PositionIndex.lShldrBend.Int()], jointPoints[PositionIndex.rShldrBend.Int()], f);
+        if (f) return;
+        f = FrontBackCheckv(jointPoints[PositionIndex.lThighBend.Int()], jointPoints[PositionIndex.rThighBend.Int()], f);
+        f = FrontBackCheckv(jointPoints[PositionIndex.lShin.Int()], jointPoints[PositionIndex.rShin.Int()], f);
+        f = FrontBackCheckv(jointPoints[PositionIndex.lFoot.Int()], jointPoints[PositionIndex.rFoot.Int()], f);
+        FrontBackCheckv(jointPoints[PositionIndex.lToe.Int()], jointPoints[PositionIndex.rToe.Int()], f);
+
+        foreach (var jp in jointPoints)
         {
-            foreach (var jp in jointPoints)
+            var vec = jp.Now3D - jp.PrevNow3D;
+            var vel = jp.VecNow3D * FPS / 30f;
+
+            if (jp.Error != 0 || (jp.Score3D < 0.3 && vel.magnitude > jp.VelNow3D.magnitude * 1.5f))
             {
-                KalmanUpdate(jp);
-                jp.Visibled = true;
+                jp.Now3D = jp.PrevNow3D * 0.8f + jp.Now3D * 0.2f;
             }
-        }
-        if (UseLPF)
-        {
-            foreach (var jp in jointPoints)
+            else
             {
-                jp.PrevPos3D[0] = jp.Pos3D;
-                for (var i = 1; i < jp.PrevPos3D.Length; i++)
-                {
-                    jp.PrevPos3D[i] = jp.PrevPos3D[i] * Smooth + jp.PrevPos3D[i - 1] * (1f - Smooth);
-                }
-                jp.Pos3D = jp.PrevPos3D[jp.PrevPos3D.Length - 1];
+                jp.VecNow3D = vec;
+                jp.VelNow3D = vel;
             }
+            jp.PrevNow3D = jp.Now3D;
         }
 
-        //if (EstimatedScore > 0.2f)
+        foreach (var jp in jointPoints)
+        {
+            //if (jp.Error != 0) continue;
+
+            KalmanUpdate(jp);
+            jp.Visibled = true;
+        }
+
+        foreach (var jp in jointPoints)
+        {
+
+            //if (jp.Error != 0)
+            //{
+            //    jp.Pos3D = jp.Pos3D - jp.Vec3D;
+            //    continue;
+            //}
+
+            jp.PrevPos3D[0] = jp.Pos3D;
+            for (var i = 1; i < jp.PrevPos3D.Length; i++)
+            {
+                jp.PrevPos3D[i] = jp.PrevPos3D[i] * Smooth + jp.PrevPos3D[i - 1] * (1f - Smooth);
+            }
+            jp.Pos3D = jp.PrevPos3D[jp.PrevPos3D.Length - 1];
+        }
+
+        if (EstimatedScore > 0.2f)
         {
             VNectModel.IsPoseUpdate = true;
         }
+    }
+
+    bool FrontBackCheckv(VNectModel.JointPoint jp1, VNectModel.JointPoint jp2, bool flag)
+    {
+        if (flag)
+        {
+            jp1.Error++;
+            if(jp1.Error == 5)
+            {
+                jp1.Error = 0;
+                jp2.Error = 0;
+                return false;
+            }
+
+            jp2.Error++; ;
+            return true;
+        }
+        /*
+        if (jp1.PrevScore3D > 0.5 && jp2.Score3D > 0.5)
+        {
+            jp1.Error = false;
+            jp2.Error = false;
+            return false;
+        }
+        */
+        //if (jp1.PrevScore3D > jp1.Score3D && jp2.PrevScore3D > jp2.Score3D)
+        {
+            var l1 = Vector3.Distance(jp1.PrevNow3D, jp1.Now3D);
+            var c1 = Vector3.Distance(jp2.PrevNow3D, jp1.Now3D);
+
+            var l2 = Vector3.Distance(jp2.PrevNow3D, jp2.Now3D);
+            var c2 = Vector3.Distance(jp1.PrevNow3D, jp2.Now3D);
+
+            if(l1 > c1 && l2 > c2)
+            {
+                jp1.Error++;
+                if (jp1.Error == 5)
+                {
+                    jp1.Error = 0;
+                    jp2.Error = 0;
+                    return false;
+                }
+
+                jp2.Error++;
+                return true;
+            }
+            else
+            {
+                jp1.Error = 0;
+                jp2.Error = 0;
+
+                return false;
+            }
+        }
+        /*else
+        {
+            jp1.Error = false;
+            jp2.Error = false;
+        }*/
     }
 
     void KalmanUpdate(VNectModel.JointPoint measurement)

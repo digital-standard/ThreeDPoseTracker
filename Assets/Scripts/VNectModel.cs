@@ -59,14 +59,22 @@ public class VNectModel : MonoBehaviour
     {
         public PositionIndex Index;
         public Vector2 Pos2D = new Vector2();
-        public float score2D;
+        public float Score2D;
 
         public Vector3 Pos3D = new Vector3();
         public Vector3 Now3D = new Vector3();
         public Vector3[] PrevPos3D = new Vector3[6];
-        public float score3D;
+        public Vector3 PrevNow3D = new Vector3();
+        public Vector3 VecNow3D = new Vector3();
+        public Vector3 VelNow3D = new Vector3();
+        public float Score3D;
         public bool Visibled;
+        public int Error;
+        public float Smooth;
         public bool UpperBody;
+        public int maxXIndex;
+        public int maxYIndex;
+        public int maxZIndex;
 
         // Bones
         public Transform Transform = null;
@@ -126,7 +134,6 @@ public class VNectModel : MonoBehaviour
     private bool UpperBodyMode = false;
     private float UpperBodyF = 1f;
 
-
     public JointPoint[] Init(int inputImageSize)
     {
         movementScale = 0.01f * 224f / inputImageSize;
@@ -139,8 +146,17 @@ public class VNectModel : MonoBehaviour
         {
             jointPoints[i] = new JointPoint();
             jointPoints[i].Index = (PositionIndex)i;
+            jointPoints[i].Score3D = 1;
             jointPoints[i].UpperBody = false;
+            jointPoints[i].Error = 0;
+            jointPoints[i].Smooth = 0.2f;
         }
+        jointPoints[PositionIndex.rHand.Int()].Smooth = 0.4f;
+        jointPoints[PositionIndex.rThumb2.Int()].Smooth = 0.4f;
+        jointPoints[PositionIndex.rMid1.Int()].Smooth = 0.4f;
+        jointPoints[PositionIndex.lHand.Int()].Smooth = 0.4f;
+        jointPoints[PositionIndex.lThumb2.Int()].Smooth = 0.4f;
+        jointPoints[PositionIndex.lMid1.Int()].Smooth = 0.4f;
 
         anim = ModelObject.GetComponent<Animator>();
         jointPoints[PositionIndex.hip.Int()].Transform = transform;
@@ -325,11 +341,11 @@ public class VNectModel : MonoBehaviour
         rHand.Inverse = Quaternion.Inverse(Quaternion.LookRotation(jointPoints[PositionIndex.rThumb2.Int()].Transform.position - jointPoints[PositionIndex.rMid1.Int()].Transform.position, rf));
         rHand.InverseRotation = rHand.Inverse * rHand.InitRotation;
 
-        jointPoints[PositionIndex.hip.Int()].score3D = 1f;
-        jointPoints[PositionIndex.neck.Int()].score3D = 1f;
-        jointPoints[PositionIndex.Nose.Int()].score3D = 1f;
-        jointPoints[PositionIndex.head.Int()].score3D = 1f;
-        jointPoints[PositionIndex.spine.Int()].score3D = 1f;
+        jointPoints[PositionIndex.hip.Int()].Score3D = 1f;
+        jointPoints[PositionIndex.neck.Int()].Score3D = 1f;
+        jointPoints[PositionIndex.Nose.Int()].Score3D = 1f;
+        jointPoints[PositionIndex.head.Int()].Score3D = 1f;
+        jointPoints[PositionIndex.spine.Int()].Score3D = 1f;
 
         return JointPoints;
     }
@@ -421,14 +437,14 @@ public class VNectModel : MonoBehaviour
         tallHeadNeck = Vector3.Distance(jointPoints[PositionIndex.head.Int()].Pos3D, jointPoints[PositionIndex.neck.Int()].Pos3D);
         tallNeckSpine = Vector3.Distance(jointPoints[PositionIndex.neck.Int()].Pos3D, jointPoints[PositionIndex.spine.Int()].Pos3D);
 
-        jointPoints[PositionIndex.lToe.Int()].Visibled = jointPoints[PositionIndex.lToe.Int()].score3D < VisibleThreshold ? false : true;
-        jointPoints[PositionIndex.rToe.Int()].Visibled = jointPoints[PositionIndex.rToe.Int()].score3D < VisibleThreshold ? false : true;
-        jointPoints[PositionIndex.lFoot.Int()].Visibled = jointPoints[PositionIndex.lFoot.Int()].score3D < VisibleThreshold ? false : true;
-        jointPoints[PositionIndex.rFoot.Int()].Visibled = jointPoints[PositionIndex.rFoot.Int()].score3D < VisibleThreshold ? false : true;
-        jointPoints[PositionIndex.lShin.Int()].Visibled = jointPoints[PositionIndex.lShin.Int()].score3D < VisibleThreshold ? false : true;
-        jointPoints[PositionIndex.rShin.Int()].Visibled = jointPoints[PositionIndex.rShin.Int()].score3D < VisibleThreshold ? false : true;
-        jointPoints[PositionIndex.lThighBend.Int()].Visibled = jointPoints[PositionIndex.lThighBend.Int()].score3D < VisibleThreshold ? false : true;
-        jointPoints[PositionIndex.rThighBend.Int()].Visibled = jointPoints[PositionIndex.rThighBend.Int()].score3D < VisibleThreshold ? false : true;
+        jointPoints[PositionIndex.lToe.Int()].Visibled = jointPoints[PositionIndex.lToe.Int()].Score3D < VisibleThreshold ? false : true;
+        jointPoints[PositionIndex.rToe.Int()].Visibled = jointPoints[PositionIndex.rToe.Int()].Score3D < VisibleThreshold ? false : true;
+        jointPoints[PositionIndex.lFoot.Int()].Visibled = jointPoints[PositionIndex.lFoot.Int()].Score3D < VisibleThreshold ? false : true;
+        jointPoints[PositionIndex.rFoot.Int()].Visibled = jointPoints[PositionIndex.rFoot.Int()].Score3D < VisibleThreshold ? false : true;
+        jointPoints[PositionIndex.lShin.Int()].Visibled = jointPoints[PositionIndex.lShin.Int()].Score3D < VisibleThreshold ? false : true;
+        jointPoints[PositionIndex.rShin.Int()].Visibled = jointPoints[PositionIndex.rShin.Int()].Score3D < VisibleThreshold ? false : true;
+        jointPoints[PositionIndex.lThighBend.Int()].Visibled = jointPoints[PositionIndex.lThighBend.Int()].Score3D < VisibleThreshold ? false : true;
+        jointPoints[PositionIndex.rThighBend.Int()].Visibled = jointPoints[PositionIndex.rThighBend.Int()].Score3D < VisibleThreshold ? false : true;
 
         var leftShin = 0f;
         var rightShin = 0f;
@@ -501,7 +517,7 @@ public class VNectModel : MonoBehaviour
 
             if (jointPoints[i].Child != null)
             {
-                score += jointPoints[i].score3D;
+                score += jointPoints[i].Score3D;
                 scoreCnt++;
             }
         }
@@ -651,24 +667,5 @@ public class VNectModel : MonoBehaviour
             IsPoseUpdate = false;
             /**/
         }
-    }
-
-    void KalmanUpdate(VNectModel.JointPoint measurement)
-    {
-        measurementUpdate(measurement);
-        measurement.Pos3D.x = measurement.X.x + (measurement.Now3D.x - measurement.X.x) * measurement.K.x;
-        measurement.Pos3D.y = measurement.X.y + (measurement.Now3D.y - measurement.X.y) * measurement.K.y;
-        measurement.Pos3D.z = measurement.X.z + (measurement.Now3D.z - measurement.X.z) * measurement.K.z;
-        measurement.X = measurement.Pos3D;
-    }
-
-    void measurementUpdate(VNectModel.JointPoint measurement)
-    {
-        measurement.K.x = (measurement.P.x + VNectModel.JointPoint.Q) / (measurement.P.x + VNectModel.JointPoint.Q + VNectModel.JointPoint.R);
-        measurement.K.y = (measurement.P.y + VNectModel.JointPoint.Q) / (measurement.P.y + VNectModel.JointPoint.Q + VNectModel.JointPoint.R);
-        measurement.K.z = (measurement.P.z + VNectModel.JointPoint.Q) / (measurement.P.z + VNectModel.JointPoint.Q + VNectModel.JointPoint.R);
-        measurement.P.x = VNectModel.JointPoint.R * (measurement.P.x + VNectModel.JointPoint.Q) / (VNectModel.JointPoint.R + measurement.P.x + VNectModel.JointPoint.Q);
-        measurement.P.y = VNectModel.JointPoint.R * (measurement.P.y + VNectModel.JointPoint.Q) / (VNectModel.JointPoint.R + measurement.P.y + VNectModel.JointPoint.Q);
-        measurement.P.z = VNectModel.JointPoint.R * (measurement.P.z + VNectModel.JointPoint.Q) / (VNectModel.JointPoint.R + measurement.P.z + VNectModel.JointPoint.Q);
     }
 }
