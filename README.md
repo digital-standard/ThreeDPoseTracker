@@ -9,9 +9,7 @@ We use Barracuda 1.0.0 to load onnx.</br>
 
 Download nn File from our home page by clicking following URL in our HP.</br>
    https://digital-standard.com/threedpose/models/HighQualityTrainedModel.nn
-
 Move the downloaded HighQualityTrainedModel.nn file to Asset/StreamingAssets in the unzipped folder(If you don't have a folder, make one).</br>
-
 Turn off BarracudaRunner script DebugMode checkbox, which is in the Unity Editor's hierarchy</br>
 
 ### Other Packages
