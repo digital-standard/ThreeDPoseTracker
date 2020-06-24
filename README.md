@@ -20,6 +20,7 @@ Unity Capture(https://github.com/schellingb/UnityCapture)</br>
 
 </br>
 ## Performance Report</br>
+This has been confirmed to work on Windows 10 only.</br>
 ### High Quality Trained Model </br>
 GeForce RTX2070 SUPER ⇒ About 30 FPS </br>
 GeForce GTX1070 ⇒ About 20 FPS </br>
