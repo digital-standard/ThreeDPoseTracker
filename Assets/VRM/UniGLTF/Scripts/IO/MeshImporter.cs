@@ -23,7 +23,7 @@ namespace UniGLTF
             {
                 if (!gltfMesh.primitives[i].targets.SequenceEqual(targets))
                 {
-                    throw new NotImplementedException(string.Format("diffirent targets: {0} with {1}",
+                    throw new NotImplementedException(string.Format("different targets: {0} with {1}",
                         gltfMesh.primitives[i],
                         targets));
                 }
@@ -208,7 +208,25 @@ namespace UniGLTF
                 // color
                 if (prim.attributes.COLOR_0 != -1)
                 {
-                    context.colors = ctx.GLTF.GetArrayFromAccessor<Color>(prim.attributes.COLOR_0);
+                    if (ctx.GLTF.accessors[prim.attributes.COLOR_0].TypeCount == 3)
+                    {
+                        var vec3Color = ctx.GLTF.GetArrayFromAccessor<Vector3>(prim.attributes.COLOR_0);
+                        context.colors = new Color[vec3Color.Length];
+
+                        for (int i = 0; i < vec3Color.Length; i++)
+                        {
+                            Vector3 color = vec3Color[i];
+                            context.colors[i] = new Color(color.x, color.y, color.z);
+                        }
+                    }
+                    else if (ctx.GLTF.accessors[prim.attributes.COLOR_0].TypeCount == 4)
+                    {
+                        context.colors = ctx.GLTF.GetArrayFromAccessor<Color>(prim.attributes.COLOR_0);
+                    }
+                    else
+                    {
+                        throw new NotImplementedException(string.Format("unknown color type {0}", ctx.GLTF.accessors[prim.attributes.COLOR_0].type));
+                    }
                 }
 
                 // skin
@@ -450,13 +468,13 @@ namespace UniGLTF
                         {
                             mesh.AddBlendShapeFrame(blendShape.Name, FRAME_WEIGHT,
                                 blendShape.Positions.ToArray(),
-                                (meshContext.normals != null && meshContext.normals.Length == mesh.vertexCount) ? blendShape.Normals.ToArray() : null,
+                                (meshContext.normals != null && meshContext.normals.Length == mesh.vertexCount && blendShape.Normals.Count() == blendShape.Positions.Count()) ? blendShape.Normals.ToArray() : null,
                                 null
                                 );
                         }
                         else
                         {
-                            Debug.LogWarningFormat("May be partial primitive has blendShape. Rquire separete mesh or extend blend shape, but not implemented: {0}", blendShape.Name);
+                            Debug.LogWarningFormat("May be partial primitive has blendShape. Require separate mesh or extend blend shape, but not implemented: {0}", blendShape.Name);
                         }
                     }
                     else

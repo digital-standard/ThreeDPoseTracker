@@ -437,7 +437,7 @@ public class VNectBarracudaRunner : MonoBehaviour
 
             if (jp.Error != 0 || (jp.Score3D < 0.3 && vel.magnitude > jp.VelNow3D.magnitude * 1.5f))
             {
-                jp.Now3D = jp.PrevNow3D * 0.8f + jp.Now3D * 0.2f;
+                jp.Now3D = jp.PrevNow3D * (1f - jp.Smooth) + jp.Now3D * jp.Smooth;
             }
             else
             {

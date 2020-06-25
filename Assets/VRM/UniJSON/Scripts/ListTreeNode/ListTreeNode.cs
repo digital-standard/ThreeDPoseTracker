@@ -157,7 +157,7 @@ namespace UniJSON
 
                 var isFirst = true;
                 var childLevel = level + 1;
-                foreach (var kv in this.ObjectItems())
+                foreach (var kv in this.ObjectItems().OrderBy(x => x.Key.ToString()))
                 {
                     if (isFirst)
                     {
@@ -247,7 +247,7 @@ namespace UniJSON
 
                 foreach (var kv in r)
                 {
-                    // Addded
+                    // Added
                     yield return JsonDiff.Create(kv.Value, JsonDiffType.KeyAdded, kv.Value.Value.ToString());
                 }
             }
@@ -379,7 +379,7 @@ namespace UniJSON
         {
             get
             {
-                return this.GetArrrayItem(index);
+                return this.GetArrayItem(index);
             }
         }
         #endregion

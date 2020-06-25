@@ -7,7 +7,7 @@ namespace VRM
 {
     /// <summary>
     /// The base algorithm is http://rocketjump.skr.jp/unity3d/109/ of @ricopin416
-    /// DefaultExecutionOrder(11000) means calclate springbone after FinaiIK( VRIK )
+    /// DefaultExecutionOrder(11000) means calculate springbone after FinalIK( VRIK )
     /// </summary>
     #if UNITY_5_5_OR_NEWER
     [DefaultExecutionOrder(11000)]
@@ -227,6 +227,14 @@ namespace VRM
                         SetupRecursive(m_center, go);
                     }
                 }
+            }
+        }
+
+        public void SetLocalRotationsIdentity()
+        {
+            foreach (var verlet in m_verlet)
+            {
+                verlet.Head.localRotation = Quaternion.identity;
             }
         }
 

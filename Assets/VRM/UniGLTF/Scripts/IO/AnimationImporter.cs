@@ -34,7 +34,7 @@ namespace UniGLTF
             }
         }
 
-        private static void CalculateTanget(List<Keyframe> keyframes, int current)
+        private static void CalculateTangent(List<Keyframe> keyframes, int current)
         {
             int back = current - 1;
             if (back < 0)
@@ -134,7 +134,7 @@ namespace UniGLTF
                             keyframes[i].Add(new Keyframe(time, reversed[i], 0, 0));
                             if (keyframes[i].Count > 0)
                             {
-                                CalculateTanget(keyframes[i], keyframes[i].Count - 1);
+                                CalculateTangent(keyframes[i], keyframes[i].Count - 1);
                             }
                         }
                         else if (tangentMode == TangentMode.Constant)
@@ -157,7 +157,7 @@ namespace UniGLTF
 
         public static List<AnimationClip> ImportAnimationClip(ImporterContext ctx)
         {
-            List<AnimationClip> animasionClips = new List<AnimationClip>();
+            List<AnimationClip> animationClips = new List<AnimationClip>();
             for (int i = 0; i < ctx.GLTF.animations.Count; ++i)
             {
                 var clip = new AnimationClip();
@@ -186,7 +186,11 @@ namespace UniGLTF
                             {
                                 var sampler = animation.samplers[channel.sampler];
                                 var input = ctx.GLTF.GetArrayFromAccessor<float>(sampler.input);
-                                var output = ctx.GLTF.GetArrayFromAccessorAsFloat(sampler.output);
+                                var outputVector = ctx.GLTF.GetArrayFromAccessor<Vector3>(sampler.output);
+                                var output = new float[outputVector.Count() * 3];
+                                ArrayExtensions.Copy<Vector3, float>(
+                                    new ArraySegment<Vector3>(outputVector),
+                                    new ArraySegment<float>(output));
 
                                 AnimationImporter.SetAnimationCurve(
                                     clip,
@@ -209,7 +213,11 @@ namespace UniGLTF
                             {
                                 var sampler = animation.samplers[channel.sampler];
                                 var input = ctx.GLTF.GetArrayFromAccessor<float>(sampler.input);
-                                var output = ctx.GLTF.GetArrayFromAccessorAsFloat(sampler.output);
+                                var outputVector = ctx.GLTF.GetArrayFromAccessor<Vector4>(sampler.output);
+                                var output = new float[outputVector.Count() * 4];
+                                ArrayExtensions.Copy<Vector4, float>(
+                                    new ArraySegment<Vector4>(outputVector),
+                                    new ArraySegment<float>(output));
 
                                 AnimationImporter.SetAnimationCurve(
                                     clip,
@@ -235,7 +243,11 @@ namespace UniGLTF
                             {
                                 var sampler = animation.samplers[channel.sampler];
                                 var input = ctx.GLTF.GetArrayFromAccessor<float>(sampler.input);
-                                var output = ctx.GLTF.GetArrayFromAccessorAsFloat(sampler.output);
+                                var outputVector = ctx.GLTF.GetArrayFromAccessor<Vector3>(sampler.output);
+                                var output = new float[outputVector.Count() * 3];
+                                ArrayExtensions.Copy<Vector3, float>(
+                                    new ArraySegment<Vector3>(outputVector),
+                                    new ArraySegment<float>(output));
 
                                 AnimationImporter.SetAnimationCurve(
                                     clip,
@@ -302,10 +314,10 @@ namespace UniGLTF
                             break;
                     }
                 }
-                animasionClips.Add(clip);
+                animationClips.Add(clip);
             }
 
-            return animasionClips;
+            return animationClips;
         }
 
         public static void ImportAnimation(ImporterContext ctx)

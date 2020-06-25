@@ -101,6 +101,7 @@ namespace VRM
             {
                 // fallback
                 firstPerson.SetDefault();
+                firstPerson.FirstPersonOffset = gltfFirstPerson.firstPersonBoneOffset;
             }
             firstPerson.TraverseRenderers(this);
 
@@ -366,6 +367,24 @@ namespace VRM
                 || o is BlendShapeClip)
             {
                 var dir = prefabPath.GetAssetFolder(".BlendShapes");
+                var assetPath = dir.Child(o.name.EscapeFilePath() + ".asset");
+                return assetPath;
+            }
+            else if (o is Avatar)
+            {
+                var dir = prefabPath.GetAssetFolder(".Avatar");
+                var assetPath = dir.Child(o.name.EscapeFilePath() + ".asset");
+                return assetPath;
+            }
+            else if (o is VRMMetaObject)
+            {
+                var dir = prefabPath.GetAssetFolder(".MetaObject");
+                var assetPath = dir.Child(o.name.EscapeFilePath() + ".asset");
+                return assetPath;
+            }
+            else if (o is UniHumanoid.AvatarDescription)
+            {
+                var dir = prefabPath.GetAssetFolder(".AvatarDescription");
                 var assetPath = dir.Child(o.name.EscapeFilePath() + ".asset");
                 return assetPath;
             }
