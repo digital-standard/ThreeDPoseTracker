@@ -39,7 +39,7 @@ public class UIScript : MonoBehaviour
     public Texture BackgroundTexture;
     public Camera Maincamera;
 
-    private string AppVer = "0.13";
+    private string AppVer = "0.14";
     private int ConfigColums = 21;
 
     public MessageBoxScript message;

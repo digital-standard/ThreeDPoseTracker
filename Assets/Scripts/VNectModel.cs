@@ -72,6 +72,7 @@ public class VNectModel : MonoBehaviour
         public int Error;
         public float Smooth;
         public bool UpperBody;
+        public bool Lock;
         public int maxXIndex;
         public int maxYIndex;
         public int maxZIndex;
@@ -148,6 +149,7 @@ public class VNectModel : MonoBehaviour
             jointPoints[i].Index = (PositionIndex)i;
             jointPoints[i].Score3D = 1;
             jointPoints[i].UpperBody = false;
+            jointPoints[i].Lock = false;
             jointPoints[i].Error = 0;
             jointPoints[i].Smooth = 0.2f;
         }
@@ -157,6 +159,12 @@ public class VNectModel : MonoBehaviour
         jointPoints[PositionIndex.lHand.Int()].Smooth = 0.4f;
         jointPoints[PositionIndex.lThumb2.Int()].Smooth = 0.4f;
         jointPoints[PositionIndex.lMid1.Int()].Smooth = 0.4f;
+        //jointPoints[PositionIndex.lToe.Int()].Lock = true;
+        //jointPoints[PositionIndex.rToe.Int()].Lock = true;
+        //jointPoints[PositionIndex.lFoot.Int()].Lock = true;
+        //jointPoints[PositionIndex.rFoot.Int()].Lock = true;
+        //jointPoints[PositionIndex.lShin.Int()].Lock = true;
+        //jointPoints[PositionIndex.rShin.Int()].Lock = true;
 
         anim = ModelObject.GetComponent<Animator>();
         jointPoints[PositionIndex.hip.Int()].Transform = transform;
@@ -547,7 +555,10 @@ public class VNectModel : MonoBehaviour
             {
                 continue;
             }
-
+            if (jointPoint.Lock)
+            {
+                continue;
+            }
             if (!jointPoint.Visibled)
             {
                 continue;

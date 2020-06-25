@@ -370,24 +370,25 @@ public class VNectBarracudaRunner : MonoBehaviour
 
         for (var j = 0; j < JointNum; j++)
         {
+            var jp = jointPoints[j];
             var maxXIndex = 0;
             var maxYIndex = 0;
             var maxZIndex = 0;
-            jointPoints[j].Score3D = 0.0f;
+            jp.Score3D = 0.0f;
             var jj = j * HeatMapCol;
 
-            for (var z = 0; z < HeatMapCol; z = z + 1)
+            for (var z = 0; z < HeatMapCol; z++)
             {
                 var zz = jj + z;
-                for (var y = 0; y < HeatMapCol; y = y + 1)
+                for (var y = 0; y < HeatMapCol; y++)
                 {
                     var yy = y * HeatMapCol_Squared * JointNum + zz;
-                    for (var x = 0; x < HeatMapCol; x = x + 1)
+                    for (var x = 0; x < HeatMapCol; x++)
                     {
                         float v = heatMap3D[yy + x * HeatMapCol_JointNum];
-                        if (v > jointPoints[j].Score3D)
+                        if (v > jp.Score3D)
                         {
-                            jointPoints[j].Score3D = v;
+                            jp.Score3D = v;
                             maxXIndex = x;
                             maxYIndex = y;
                             maxZIndex = z;
@@ -396,10 +397,11 @@ public class VNectBarracudaRunner : MonoBehaviour
                 }
             }
 
-            score += jointPoints[j].Score3D;
-            jointPoints[j].Now3D.x = ((offset3D[maxYIndex * cubeOffsetSquared + maxXIndex * cubeOffsetLinear + j * HeatMapCol + maxZIndex] + 0.5f + (float)maxXIndex) / (float)HeatMapCol) * InputImageSizeF - InputImageSizeHalf;
-            jointPoints[j].Now3D.y = InputImageSizeF - ((offset3D[maxYIndex * cubeOffsetSquared + maxXIndex * cubeOffsetLinear + (j + JointNum) * HeatMapCol + maxZIndex] + 0.5f + (float)maxYIndex) / (float)HeatMapCol) * InputImageSizeF - InputImageSizeHalf;
-            jointPoints[j].Now3D.z = ((offset3D[maxYIndex * cubeOffsetSquared + maxXIndex * cubeOffsetLinear + (j + JointNum_Squared) * HeatMapCol + maxZIndex] + 0.5f + (float)(maxZIndex - HeatMapCol_Half)) / (float)HeatMapCol) * InputImageSizeF;
+            score += jp.Score3D;
+            var yi = maxYIndex * cubeOffsetSquared + maxXIndex * cubeOffsetLinear;
+            jp.Now3D.x = ((offset3D[yi + jj + maxZIndex] + 0.5f + (float)maxXIndex) / (float)HeatMapCol) * InputImageSizeF - InputImageSizeHalf;
+            jp.Now3D.y = InputImageSizeF - ((offset3D[yi + (j + JointNum) * HeatMapCol + maxZIndex] + 0.5f + (float)maxYIndex) / (float)HeatMapCol) * InputImageSizeF - InputImageSizeHalf;
+            jp.Now3D.z = ((offset3D[yi + (j + JointNum_Squared) * HeatMapCol + maxZIndex] + 0.5f + (float)(maxZIndex - HeatMapCol_Half)) / (float)HeatMapCol) * InputImageSizeF;
             //jointPoints[j].Visibled = jointPoints[j].score3D > 0.2f;
         }
 
