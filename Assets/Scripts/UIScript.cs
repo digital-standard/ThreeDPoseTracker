@@ -640,6 +640,8 @@ public class UIScript : MonoBehaviour
             var setting = AvatarList[avatars.value];
             recorder.targetAvatar = setting.Avatar.GetComponent<Animator>();
             recorder.scripted = true;
+            recorder.blender = false;
+            recorder.enforceHumanoidBones = true;
             recorder.getBones();
             recorder.rootBone = setting.Avatar.JointPoints[PositionIndex.hip.Int()].Transform;
             recorder.buildSkeleton();
@@ -851,7 +853,6 @@ public class AvatarSetting
     }
 }
 
-
 public class ConfigurationSetting
 {
     public int ShowSource;
@@ -906,9 +907,9 @@ public class ConfigurationSetting
         VMCPIP = "127.0.0.1";
         VMCPPort = 39539;
         VMCPRot = 1;
-}
+    }
 
-public ConfigurationSetting Clone()
+    public ConfigurationSetting Clone()
     {
         return new ConfigurationSetting()
         {
@@ -946,6 +947,34 @@ public ConfigurationSetting Clone()
             + "," + BackgroundR.ToString() + "," + BackgroundG.ToString() + "," + BackgroundB.ToString()
             + "," + UseUnityCapture.ToString() + "," + MirrorUseCamera.ToString()
             + "," + UseVMCProtocol.ToString() + "," + VMCPIP + "," + VMCPPort.ToString() + "," + VMCPRot.ToString()
+            ;
+    }
+}
+
+public class PredictSetting
+{
+    public float LowPassFilter;
+    public int TrainedModel;
+
+
+    public PredictSetting()
+    {
+        LowPassFilter = 0.1f;
+        TrainedModel = 1;
+    }
+
+    public ConfigurationSetting Clone()
+    {
+        return new ConfigurationSetting()
+        {
+            LowPassFilter = LowPassFilter,
+            TrainedModel = TrainedModel,
+        };
+    }
+
+    public override string ToString()
+    {
+        return LowPassFilter.ToString()  + "," + TrainedModel.ToString()
             ;
     }
 }

@@ -153,16 +153,17 @@ public class VNectModel : MonoBehaviour
             jointPoints[i].Error = 0;
             jointPoints[i].Smooth = 0.2f;
         }
-        jointPoints[PositionIndex.rHand.Int()].Smooth = 0.4f;
-        jointPoints[PositionIndex.rThumb2.Int()].Smooth = 0.4f;
-        jointPoints[PositionIndex.rMid1.Int()].Smooth = 0.4f;
-        jointPoints[PositionIndex.lHand.Int()].Smooth = 0.4f;
-        jointPoints[PositionIndex.lThumb2.Int()].Smooth = 0.4f;
-        jointPoints[PositionIndex.lMid1.Int()].Smooth = 0.4f;
-        //jointPoints[PositionIndex.lToe.Int()].Lock = true;
-        //jointPoints[PositionIndex.rToe.Int()].Lock = true;
-        //jointPoints[PositionIndex.lFoot.Int()].Lock = true;
-        //jointPoints[PositionIndex.rFoot.Int()].Lock = true;
+        jointPoints[PositionIndex.rHand.Int()].Smooth = 0.2f;
+        jointPoints[PositionIndex.rThumb2.Int()].Smooth = 0.2f;
+        jointPoints[PositionIndex.rMid1.Int()].Smooth = 0.2f;
+        jointPoints[PositionIndex.lHand.Int()].Smooth = 0.2f;
+        jointPoints[PositionIndex.lThumb2.Int()].Smooth = 0.2f;
+        jointPoints[PositionIndex.lMid1.Int()].Smooth = 0.2f;
+
+        jointPoints[PositionIndex.lToe.Int()].Lock = true;
+        jointPoints[PositionIndex.rToe.Int()].Lock = true;
+        jointPoints[PositionIndex.lFoot.Int()].Lock = true;
+        jointPoints[PositionIndex.rFoot.Int()].Lock = true;
         //jointPoints[PositionIndex.lShin.Int()].Lock = true;
         //jointPoints[PositionIndex.rShin.Int()].Lock = true;
 
@@ -235,13 +236,13 @@ public class VNectModel : MonoBehaviour
         // Right Arm
         jointPoints[PositionIndex.rShldrBend.Int()].Child = jointPoints[PositionIndex.rForearmBend.Int()];
         jointPoints[PositionIndex.rForearmBend.Int()].Child = jointPoints[PositionIndex.rHand.Int()];
-        jointPoints[PositionIndex.rForearmBend.Int()].Parent = jointPoints[PositionIndex.rShldrBend.Int()];
+//        jointPoints[PositionIndex.rForearmBend.Int()].Parent = jointPoints[PositionIndex.rShldrBend.Int()];
         //jointPoints[PositionIndex.rHand.Int()].Parent = jointPoints[PositionIndex.rForearmBend.Int()];
 
         // Left Arm
         jointPoints[PositionIndex.lShldrBend.Int()].Child = jointPoints[PositionIndex.lForearmBend.Int()];
         jointPoints[PositionIndex.lForearmBend.Int()].Child = jointPoints[PositionIndex.lHand.Int()];
-        jointPoints[PositionIndex.lForearmBend.Int()].Parent = jointPoints[PositionIndex.lShldrBend.Int()];
+//        jointPoints[PositionIndex.lForearmBend.Int()].Parent = jointPoints[PositionIndex.lShldrBend.Int()];
         //jointPoints[PositionIndex.lHand.Int()].Parent = jointPoints[PositionIndex.lForearmBend.Int()];
 
         // Fase

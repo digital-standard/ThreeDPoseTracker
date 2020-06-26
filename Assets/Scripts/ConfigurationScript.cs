@@ -6,6 +6,10 @@ using UnityEngine.UI;
 
 public class ConfigurationScript : MonoBehaviour
 {
+    private GameObject pnlImages;
+    private GameObject pnlPredict;
+    private GameObject pnlRecord;
+
     private Toggle ShowSource;
     private Toggle ShowInput;
     private Toggle SkipOnDrop;
@@ -38,6 +42,14 @@ public class ConfigurationScript : MonoBehaviour
 
     public void Init()
     {
+        pnlImages = GameObject.Find("pnlImages");
+        pnlPredict = GameObject.Find("pnlPredict");
+        pnlRecord = GameObject.Find("pnlRecord");
+
+        pnlImages.SetActive(true);
+        pnlPredict.SetActive(true);
+        pnlRecord.SetActive(true);
+
         ShowSource = GameObject.Find("ShowSource").GetComponent<Toggle>();
         ShowInput = GameObject.Find("ShowInput").GetComponent<Toggle>();
         SkipOnDrop = GameObject.Find("SkipOnDrop").GetComponent<Toggle>();
@@ -62,6 +74,10 @@ public class ConfigurationScript : MonoBehaviour
         ifVMCPIP = GameObject.Find("ifVMCPIP").GetComponent<InputField>();
         ifVMCPPort = GameObject.Find("ifVMCPPort").GetComponent<InputField>();
         VMCPRot = GameObject.Find("VMCPRot").GetComponent<Toggle>();
+
+        pnlImages.SetActive(true);
+        pnlPredict.SetActive(false);
+        pnlRecord.SetActive(false);
     }
 
 
@@ -230,6 +246,28 @@ public class ConfigurationScript : MonoBehaviour
     {
         Close();
     }
+
+    public void onTabImages()
+    {
+        pnlImages.SetActive(true);
+        pnlPredict.SetActive(false);
+        pnlRecord.SetActive(false);
+    }
+
+    public void onTabPredict()
+    {
+        pnlImages.SetActive(false);
+        pnlPredict.SetActive(true);
+        pnlRecord.SetActive(false);
+    }
+
+    public void onTabRecord()
+    {
+        pnlImages.SetActive(false);
+        pnlPredict.SetActive(false);
+        pnlRecord.SetActive(true);
+    }
+
     public void onBackgroundFile()
     {
         var extensions = new[]
