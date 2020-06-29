@@ -63,14 +63,17 @@ public class VNectModel : MonoBehaviour
 
         public Vector3 Pos3D = new Vector3();
         public Vector3 Now3D = new Vector3();
-        public Vector3[] PrevPos3D = new Vector3[6];
+        public Vector3[] PrevPos3D = new Vector3[10];
         public Vector3 PrevNow3D = new Vector3();
         public Vector3 VecNow3D = new Vector3();
         public Vector3 VelNow3D = new Vector3();
         public float Score3D;
         public bool Visibled;
         public int Error;
+        public float RattlingCheckFrame;
+        public float Threshold;
         public float Smooth;
+        public float Ratio;
         public bool UpperBody;
         public bool Lock;
         public int maxXIndex;
@@ -135,7 +138,7 @@ public class VNectModel : MonoBehaviour
     private bool UpperBodyMode = false;
     private float UpperBodyF = 1f;
 
-    public JointPoint[] Init(int inputImageSize)
+    public JointPoint[] Init(int inputImageSize, ConfigurationSetting config)
     {
         movementScale = 0.01f * 224f / inputImageSize;
         centerTall = inputImageSize * 0.75f;
@@ -151,21 +154,7 @@ public class VNectModel : MonoBehaviour
             jointPoints[i].UpperBody = false;
             jointPoints[i].Lock = false;
             jointPoints[i].Error = 0;
-            jointPoints[i].Smooth = 0.2f;
         }
-        jointPoints[PositionIndex.rHand.Int()].Smooth = 0.2f;
-        jointPoints[PositionIndex.rThumb2.Int()].Smooth = 0.2f;
-        jointPoints[PositionIndex.rMid1.Int()].Smooth = 0.2f;
-        jointPoints[PositionIndex.lHand.Int()].Smooth = 0.2f;
-        jointPoints[PositionIndex.lThumb2.Int()].Smooth = 0.2f;
-        jointPoints[PositionIndex.lMid1.Int()].Smooth = 0.2f;
-
-        jointPoints[PositionIndex.lToe.Int()].Lock = true;
-        jointPoints[PositionIndex.rToe.Int()].Lock = true;
-        jointPoints[PositionIndex.lFoot.Int()].Lock = true;
-        jointPoints[PositionIndex.rFoot.Int()].Lock = true;
-        //jointPoints[PositionIndex.lShin.Int()].Lock = true;
-        //jointPoints[PositionIndex.rShin.Int()].Lock = true;
 
         anim = ModelObject.GetComponent<Animator>();
         jointPoints[PositionIndex.hip.Int()].Transform = transform;
@@ -356,6 +345,8 @@ public class VNectModel : MonoBehaviour
         jointPoints[PositionIndex.head.Int()].Score3D = 1f;
         jointPoints[PositionIndex.spine.Int()].Score3D = 1f;
 
+        SetPredictSetting(config);
+
         return JointPoints;
     }
 
@@ -430,6 +421,74 @@ public class VNectModel : MonoBehaviour
     {
         UpperBodyMode = upper;
         UpperBodyF = upper ? 0f : 1f;
+    }
+
+    public void SetPredictSetting(ConfigurationSetting config)
+    {
+        if(jointPoints == null)
+        {
+            return;
+        }
+
+        for (var i = 0; i < PositionIndex.Count.Int(); i++)
+        {
+            jointPoints[i].RattlingCheckFrame = 5;
+            jointPoints[i].Threshold = config.OtherThreshold;
+            jointPoints[i].Smooth = config.OtherSmooth;
+            jointPoints[i].Ratio = config.OtherRatio;
+        }
+        jointPoints[PositionIndex.lShldrBend.Int()].RattlingCheckFrame = config.ShoulderRattlingCheckFrame;
+        jointPoints[PositionIndex.rShldrBend.Int()].RattlingCheckFrame = config.ShoulderRattlingCheckFrame;
+        jointPoints[PositionIndex.lThighBend.Int()].RattlingCheckFrame = config.ThighRattlingCheckFrame;
+        jointPoints[PositionIndex.rThighBend.Int()].RattlingCheckFrame = config.ThighRattlingCheckFrame;
+        jointPoints[PositionIndex.lShin.Int()].RattlingCheckFrame = config.FootRattlingCheckFrame;
+        jointPoints[PositionIndex.rShin.Int()].RattlingCheckFrame = config.FootRattlingCheckFrame;
+        jointPoints[PositionIndex.lFoot.Int()].RattlingCheckFrame = config.FootRattlingCheckFrame;
+        jointPoints[PositionIndex.rFoot.Int()].RattlingCheckFrame = config.FootRattlingCheckFrame;
+        jointPoints[PositionIndex.lToe.Int()].RattlingCheckFrame = config.FootRattlingCheckFrame;
+        jointPoints[PositionIndex.rToe.Int()].RattlingCheckFrame = config.FootRattlingCheckFrame;
+        jointPoints[PositionIndex.lForearmBend.Int()].RattlingCheckFrame = config.ArmRattlingCheckFrame;
+        jointPoints[PositionIndex.lHand.Int()].RattlingCheckFrame = config.ArmRattlingCheckFrame;
+        jointPoints[PositionIndex.lThumb2.Int()].RattlingCheckFrame = config.ArmRattlingCheckFrame;
+        jointPoints[PositionIndex.lMid1.Int()].RattlingCheckFrame = config.ArmRattlingCheckFrame;
+        jointPoints[PositionIndex.rForearmBend.Int()].RattlingCheckFrame = config.ArmRattlingCheckFrame;
+        jointPoints[PositionIndex.rHand.Int()].RattlingCheckFrame = config.ArmRattlingCheckFrame;
+        jointPoints[PositionIndex.rThumb2.Int()].RattlingCheckFrame = config.ArmRattlingCheckFrame;
+        jointPoints[PositionIndex.rMid1.Int()].RattlingCheckFrame = config.ArmRattlingCheckFrame;
+
+        jointPoints[PositionIndex.lShin.Int()].Threshold = config.ShinThreshold;
+        jointPoints[PositionIndex.rShin.Int()].Threshold = config.ShinThreshold;
+        jointPoints[PositionIndex.lShin.Int()].Smooth = config.ShinSmooth;
+        jointPoints[PositionIndex.rShin.Int()].Smooth = config.ShinSmooth;
+        jointPoints[PositionIndex.lShin.Int()].Ratio = config.ShinRatio;
+        jointPoints[PositionIndex.rShin.Int()].Ratio = config.ShinRatio;
+
+        jointPoints[PositionIndex.lHand.Int()].Threshold = config.ArmThreshold;
+        jointPoints[PositionIndex.lThumb2.Int()].Threshold = config.ArmThreshold;
+        jointPoints[PositionIndex.lMid1.Int()].Threshold = config.ArmThreshold;
+        jointPoints[PositionIndex.rHand.Int()].Threshold = config.ArmThreshold;
+        jointPoints[PositionIndex.rThumb2.Int()].Threshold = config.ArmThreshold;
+        jointPoints[PositionIndex.rMid1.Int()].Threshold = config.ArmThreshold;
+
+        jointPoints[PositionIndex.lHand.Int()].Smooth = config.ArmSmooth;
+        jointPoints[PositionIndex.lThumb2.Int()].Smooth = config.ArmSmooth;
+        jointPoints[PositionIndex.lMid1.Int()].Smooth = config.ArmSmooth;
+        jointPoints[PositionIndex.rHand.Int()].Smooth = config.ArmSmooth;
+        jointPoints[PositionIndex.rThumb2.Int()].Smooth = config.ArmSmooth;
+        jointPoints[PositionIndex.rMid1.Int()].Smooth = config.ArmSmooth;
+
+        jointPoints[PositionIndex.lHand.Int()].Ratio = config.ArmRatio;
+        jointPoints[PositionIndex.lThumb2.Int()].Ratio = config.ArmRatio;
+        jointPoints[PositionIndex.lMid1.Int()].Ratio = config.ArmRatio;
+        jointPoints[PositionIndex.rHand.Int()].Ratio = config.ArmRatio;
+        jointPoints[PositionIndex.rThumb2.Int()].Ratio = config.ArmRatio;
+        jointPoints[PositionIndex.rMid1.Int()].Ratio = config.ArmRatio;
+
+        jointPoints[PositionIndex.lToe.Int()].Lock = config.LockFoot == 1;
+        jointPoints[PositionIndex.rToe.Int()].Lock = config.LockFoot == 1;
+        jointPoints[PositionIndex.lFoot.Int()].Lock = config.LockFoot == 1;
+        jointPoints[PositionIndex.rFoot.Int()].Lock = config.LockFoot == 1;
+
     }
 
     private float tallHeadNeck;

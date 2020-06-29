@@ -39,7 +39,7 @@ public class UIScript : MonoBehaviour
     public Texture BackgroundTexture;
     public Camera Maincamera;
 
-    private string AppVer = "0.14";
+    private string AppVer = "0.16";
     private int ConfigColums = 21;
 
     public MessageBoxScript message;
@@ -53,43 +53,13 @@ public class UIScript : MonoBehaviour
         if(appVer != AppVer)
         {
             PlayerPrefs.SetString("AppVer", AppVer);
+            configurationSetting.Save();
             PlayerPrefs.SetString("Configuration", "");
             PlayerPrefs.SetString("AvatarSettings", "");
             PlayerPrefs.Save();
         }
-        var configs = PlayerPrefs.GetString("Configuration", "");
-        string[] cCol = configs.Split(',');
-        if (cCol.Length == ConfigColums)
-        {
-            int.TryParse(cCol[0], out configurationSetting.ShowSource);
-            int.TryParse(cCol[1], out configurationSetting.ShowInput);
-            int.TryParse(cCol[2], out configurationSetting.SkipOnDrop);
-            int.TryParse(cCol[3], out configurationSetting.RepeatPlayback);
-            float.TryParse(cCol[4], out configurationSetting.SourceCutScale);
-            float.TryParse(cCol[5], out configurationSetting.SourceCutX);
-            float.TryParse(cCol[6], out configurationSetting.SourceCutY);
-            float.TryParse(cCol[7], out configurationSetting.LowPassFilter);
-            int.TryParse(cCol[8], out configurationSetting.TrainedModel);
 
-            int.TryParse(cCol[9], out configurationSetting.ShowBackground);
-            configurationSetting.BackgroundFile = cCol[10];
-            float.TryParse(cCol[11], out configurationSetting.BackgroundScale);
-            int.TryParse(cCol[12], out configurationSetting.BackgroundR);
-            int.TryParse(cCol[13], out configurationSetting.BackgroundG);
-            int.TryParse(cCol[14], out configurationSetting.BackgroundB);
-
-            int.TryParse(cCol[15], out configurationSetting.UseUnityCapture);
-            int.TryParse(cCol[16], out configurationSetting.MirrorUseCamera);
-
-            int.TryParse(cCol[17], out configurationSetting.UseVMCProtocol);
-            configurationSetting.VMCPIP = cCol[18];
-            int.TryParse(cCol[19], out configurationSetting.VMCPPort);
-            int.TryParse(cCol[20], out configurationSetting.VMCPRot);
-        }
-        else
-        {
-            SaveConfiguration(configurationSetting);
-        }
+        configurationSetting.Load();
 
         message = GameObject.Find("pnlMessage").GetComponent<MessageBoxScript>();
         message.Init();
@@ -237,7 +207,7 @@ public class UIScript : MonoBehaviour
             };
             setting.Avatar.SetNose(setting.FaceOriX, setting.FaceOriY, setting.FaceOriZ);
             AvatarList.Add(setting);
-            barracudaRunner.InitVNectModel(setting.Avatar);
+            barracudaRunner.InitVNectModel(setting.Avatar, configurationSetting);
 
             setting = new AvatarSetting()
             {
@@ -247,7 +217,7 @@ public class UIScript : MonoBehaviour
             };
             setting.Avatar.SetNose(setting.FaceOriX, setting.FaceOriY, setting.FaceOriZ);
             AvatarList.Add(setting);
-            barracudaRunner.InitVNectModel(setting.Avatar);
+            barracudaRunner.InitVNectModel(setting.Avatar, configurationSetting);
 
         }
 
@@ -274,7 +244,7 @@ public class UIScript : MonoBehaviour
                 }
 
                 setting.Avatar.SetNose(setting.FaceOriX, setting.FaceOriY, setting.FaceOriZ);
-                barracudaRunner.InitVNectModel(setting.Avatar);
+                barracudaRunner.InitVNectModel(setting.Avatar, configurationSetting);
             }
         }
         avatars.value = 0;
@@ -394,7 +364,7 @@ public class UIScript : MonoBehaviour
         barracudaRunner.videoCapture.VideoPlayer.skipOnDrop = (config.SkipOnDrop == 1);
         barracudaRunner.videoCapture.VideoPlayer.isLooping = (config.RepeatPlayback == 1);
         barracudaRunner.videoCapture.ResetScale(config.SourceCutScale, config.SourceCutX, config.SourceCutY, config.MirrorUseCamera == 1);
-        barracudaRunner.Smooth = config.LowPassFilter;
+        barracudaRunner.SetPredictSetting(config);
 
         Maincamera.GetComponent<UnityCapture>().enabled = config.UseUnityCapture == 1;
 
@@ -413,7 +383,7 @@ public class UIScript : MonoBehaviour
     private void SaveConfiguration(ConfigurationSetting config)
     {
         PlayerPrefs.SetString("AppVer", AppVer);
-        PlayerPrefs.SetString("Configuration", config.ToString());
+        config.Save();
         PlayerPrefs.Save();
     }
 
@@ -590,7 +560,7 @@ public class UIScript : MonoBehaviour
             setting.Avatar.SkeletonMaterial = skeletonMaterial;
             DiactivateAvatars();
             avatars.options.Add(new Dropdown.OptionData(setting.AvatarName));
-            barracudaRunner.InitVNectModel(setting.Avatar);
+            barracudaRunner.InitVNectModel(setting.Avatar, configurationSetting);
         }
     }
 
@@ -640,13 +610,19 @@ public class UIScript : MonoBehaviour
             var setting = AvatarList[avatars.value];
             recorder.targetAvatar = setting.Avatar.GetComponent<Animator>();
             recorder.scripted = true;
-            recorder.blender = false;
-            recorder.enforceHumanoidBones = true;
+
+            recorder.blender = configurationSetting.Blender == 1;
+            recorder.enforceHumanoidBones = configurationSetting.EnforceHumanoidBones == 1;
             recorder.getBones();
             recorder.rootBone = setting.Avatar.JointPoints[PositionIndex.hip.Int()].Transform;
             recorder.buildSkeleton();
             recorder.genHierarchy();
-            recorder.capturing = true;
+            recorder.capturing = configurationSetting.Capturing == 1;
+            if (configurationSetting.Capturing == 1)
+            {
+                recorder.frameRate = configurationSetting.CapturingFPS;
+            }
+            recorder.catchUp = configurationSetting.CatchUp == 1;
             isRecording = true;
             btnRecord.image.color = Color.red;
             btnRecord.GetComponentInChildren<Text>().text = "Recording";
@@ -654,6 +630,9 @@ public class UIScript : MonoBehaviour
         }
         else
         {
+            isRecording = false;
+            recorder.capturing = false;
+
             var extensions = new[]
             {
                 new ExtensionFilter( "BVH Files", "bvh" ),
@@ -662,9 +641,6 @@ public class UIScript : MonoBehaviour
 
             if (path.Length != 0)
             {
-                isRecording = false;
-                recorder.capturing = false;
-                var streamingPath = System.IO.Path.Combine(Application.streamingAssetsPath, "motion.bvh");
                 FileInfo fi = new FileInfo(path);
                 recorder.directory = fi.DirectoryName;
                 recorder.filename = fi.Name;
@@ -859,11 +835,10 @@ public class ConfigurationSetting
     public int ShowInput;
     public int SkipOnDrop;
     public int RepeatPlayback;
+    public int MirrorUseCamera;
     public float SourceCutScale;
     public float SourceCutX;
     public float SourceCutY;
-    public float LowPassFilter;
-    public int TrainedModel;
 
     public int ShowBackground;
     public string BackgroundFile;
@@ -872,9 +847,38 @@ public class ConfigurationSetting
     public int BackgroundG;
     public int BackgroundB;
 
-    public int UseUnityCapture;
-    public int MirrorUseCamera;
+    public float LowPassFilter;
+    public int NOrderLPF;
+    public int BWBuffer;
+    public float BWCutoff;
+    public float ForwardThreshold;
+    public float BackwardThreshold;
+    public int LockFoot;
+    public int LockLegs;
+    public float HeightRatioThreshold;
+    public int TrainedModel;
 
+    public int ShoulderRattlingCheckFrame;
+    public int ThighRattlingCheckFrame;
+    public int FootRattlingCheckFrame;
+    public int ArmRattlingCheckFrame;
+    public float ShinThreshold;
+    public float ShinSmooth;
+    public float ShinRatio;
+    public float ArmThreshold;
+    public float ArmSmooth;
+    public float ArmRatio;
+    public float OtherThreshold;
+    public float OtherSmooth;
+    public float OtherRatio;
+
+    public int Blender;
+    public int EnforceHumanoidBones;
+    public int Capturing;
+    public float CapturingFPS;
+    public int CatchUp;
+
+    public int UseUnityCapture;
     public int UseVMCProtocol;
     public string VMCPIP;
     public int VMCPPort;
@@ -887,11 +891,10 @@ public class ConfigurationSetting
         ShowInput = 1;
         SkipOnDrop = 1;
         RepeatPlayback = 1;
+        MirrorUseCamera = 1;
         SourceCutScale = 1f;
         SourceCutX = 0f;
         SourceCutY = 0f;
-        LowPassFilter = 0.1f;
-        TrainedModel = 1;
 
         ShowBackground = 1;
         BackgroundFile = "";
@@ -900,9 +903,38 @@ public class ConfigurationSetting
         BackgroundG = 255;
         BackgroundB = 0;
 
-        UseUnityCapture = 0;
-        MirrorUseCamera = 1;
+        LowPassFilter = 0.1f;
+        NOrderLPF = 6;
+        BWBuffer = 100;
+        BWCutoff = 9.0f;
+        ForwardThreshold = 0.2f;
+        BackwardThreshold = 0.05f;
+        LockFoot = 0;
+        LockLegs = 0;
+        HeightRatioThreshold = 2f;
+        TrainedModel = 1;
 
+        ShoulderRattlingCheckFrame = 10;
+        ThighRattlingCheckFrame = 10;
+        FootRattlingCheckFrame = 10;
+        ArmRattlingCheckFrame = 10;
+        ShinThreshold = 0.2f;
+        ShinSmooth = 0.8f;
+        ShinRatio = 1.0f;
+        ArmThreshold = 0.2f;
+        ArmSmooth = 0.8f;
+        ArmRatio = 1.0f;
+        OtherThreshold = 0.1f;
+        OtherSmooth = 0.8f;
+        OtherRatio = 2.0f;
+
+        Blender = 0;
+        EnforceHumanoidBones = 1;
+        Capturing = 1;
+        CapturingFPS = 30f;
+        CatchUp = 1;
+
+        UseUnityCapture = 0;
         UseVMCProtocol = 0;
         VMCPIP = "127.0.0.1";
         VMCPPort = 39539;
@@ -917,20 +949,50 @@ public class ConfigurationSetting
             ShowInput = ShowInput,
             SkipOnDrop = SkipOnDrop,
             RepeatPlayback = RepeatPlayback,
+            MirrorUseCamera = MirrorUseCamera,
             SourceCutScale = SourceCutScale,
             SourceCutX = SourceCutX,
             SourceCutY = SourceCutY,
-            LowPassFilter = LowPassFilter,
-            TrainedModel = TrainedModel,
+
             ShowBackground = ShowBackground,
             BackgroundFile = BackgroundFile,
             BackgroundScale = BackgroundScale,
             BackgroundR = BackgroundR,
             BackgroundG = BackgroundG,
             BackgroundB = BackgroundB,
-            UseUnityCapture = UseUnityCapture,
-            MirrorUseCamera = MirrorUseCamera,
 
+            LowPassFilter = LowPassFilter,
+            NOrderLPF = NOrderLPF,
+            BWBuffer = BWBuffer,
+            BWCutoff = BWCutoff,
+            ForwardThreshold = ForwardThreshold,
+            BackwardThreshold = BackwardThreshold,
+            LockFoot = LockFoot,
+            LockLegs = LockLegs,
+            HeightRatioThreshold = HeightRatioThreshold,
+            TrainedModel = TrainedModel,
+
+            ShoulderRattlingCheckFrame = ShoulderRattlingCheckFrame,
+            ThighRattlingCheckFrame = ThighRattlingCheckFrame,
+            FootRattlingCheckFrame = FootRattlingCheckFrame,
+            ArmRattlingCheckFrame = ArmRattlingCheckFrame,
+            ShinThreshold = ShinThreshold,
+            ShinSmooth = ShinSmooth,
+            ShinRatio = ShinRatio,
+            ArmThreshold = ArmThreshold,
+            ArmSmooth = ArmSmooth,
+            ArmRatio = ArmRatio,
+            OtherThreshold = OtherThreshold,
+            OtherSmooth = OtherSmooth,
+            OtherRatio = OtherRatio,
+
+            Blender = Blender,
+            EnforceHumanoidBones = EnforceHumanoidBones,
+            Capturing = Capturing,
+            CapturingFPS = CapturingFPS,
+            CatchUp = CatchUp,
+
+            UseUnityCapture = UseUnityCapture,
             UseVMCProtocol = UseVMCProtocol,
             VMCPIP = VMCPIP,
             VMCPPort = VMCPPort,
@@ -938,43 +1000,132 @@ public class ConfigurationSetting
         };
     }
 
-    public override string ToString()
+    public void Load()
     {
-        return ShowSource.ToString() + "," + ShowInput.ToString() + "," + SkipOnDrop.ToString() + "," + RepeatPlayback.ToString()
-            + "," + SourceCutScale.ToString() + "," + SourceCutX.ToString() + "," + SourceCutY.ToString() + "," + LowPassFilter.ToString()
-            + "," + TrainedModel.ToString()
-            + "," + ShowBackground.ToString() + "," + BackgroundFile + "," + BackgroundScale.ToString()
-            + "," + BackgroundR.ToString() + "," + BackgroundG.ToString() + "," + BackgroundB.ToString()
-            + "," + UseUnityCapture.ToString() + "," + MirrorUseCamera.ToString()
-            + "," + UseVMCProtocol.ToString() + "," + VMCPIP + "," + VMCPPort.ToString() + "," + VMCPRot.ToString()
-            ;
+        ShowSource = PlayerPrefs.GetInt("ShowSource", ShowSource);
+        ShowInput = PlayerPrefs.GetInt("ShowInput", ShowInput);
+        SkipOnDrop = PlayerPrefs.GetInt("SkipOnDrop", SkipOnDrop);
+        RepeatPlayback = PlayerPrefs.GetInt("RepeatPlayback", RepeatPlayback);
+        MirrorUseCamera = PlayerPrefs.GetInt("MirrorUseCamera", MirrorUseCamera);
+        SourceCutScale = PlayerPrefs.GetFloat("SourceCutScale", SourceCutScale);
+        SourceCutX = PlayerPrefs.GetFloat("SourceCutX", SourceCutX);
+        SourceCutY = PlayerPrefs.GetFloat("SourceCutY", SourceCutY);
+
+        ShowBackground = PlayerPrefs.GetInt("ShowBackground", ShowBackground);
+        BackgroundFile = PlayerPrefs.GetString("BackgroundFile", BackgroundFile);
+        BackgroundScale = PlayerPrefs.GetFloat("BackgroundScale", BackgroundScale);
+        BackgroundR = PlayerPrefs.GetInt("BackgroundR", BackgroundR);
+        BackgroundG = PlayerPrefs.GetInt("BackgroundG", BackgroundG);
+        BackgroundB = PlayerPrefs.GetInt("BackgroundB", BackgroundB);
+
+        LowPassFilter = PlayerPrefs.GetFloat("LowPassFilter", LowPassFilter);
+        NOrderLPF = PlayerPrefs.GetInt("NOrderLPF", NOrderLPF);
+        BWBuffer = PlayerPrefs.GetInt("BWBuffer", BWBuffer);
+        BWCutoff = PlayerPrefs.GetFloat("BWCutoff", BWCutoff);
+        ForwardThreshold = PlayerPrefs.GetFloat("ForwardThreshold", ForwardThreshold);
+        BackwardThreshold = PlayerPrefs.GetFloat("BackwardThreshold", BackwardThreshold);
+        LockFoot = PlayerPrefs.GetInt("LockFoot", LockFoot);
+        LockLegs = PlayerPrefs.GetInt("LockLegs", LockLegs);
+        HeightRatioThreshold = PlayerPrefs.GetFloat("HeightRatioThreshold", HeightRatioThreshold);
+        TrainedModel = PlayerPrefs.GetInt("TrainedModel", TrainedModel);
+
+        ShoulderRattlingCheckFrame = PlayerPrefs.GetInt("ShoulderRattlingCheckFrame", ShoulderRattlingCheckFrame);
+        ThighRattlingCheckFrame = PlayerPrefs.GetInt("ThighRattlingCheckFrame", ThighRattlingCheckFrame);
+        FootRattlingCheckFrame = PlayerPrefs.GetInt("FootRattlingCheckFrame", FootRattlingCheckFrame);
+        ArmRattlingCheckFrame = PlayerPrefs.GetInt("ArmRattlingCheckFrame", ArmRattlingCheckFrame);
+
+        ShinThreshold = PlayerPrefs.GetFloat("ShinThreshold", ShinThreshold);
+        ShinSmooth = PlayerPrefs.GetFloat("ShinSmooth", ShinSmooth);
+        ShinRatio = PlayerPrefs.GetFloat("ShinRatio", ShinRatio);
+        ArmThreshold = PlayerPrefs.GetFloat("ArmThreshold", ArmThreshold);
+        ArmSmooth = PlayerPrefs.GetFloat("ArmSmooth", ArmSmooth);
+        ArmRatio = PlayerPrefs.GetFloat("ArmRatio", ArmRatio);
+        OtherThreshold = PlayerPrefs.GetFloat("OtherThreshold", OtherThreshold);
+        OtherSmooth = PlayerPrefs.GetFloat("OtherSmooth", OtherSmooth);
+        OtherRatio = PlayerPrefs.GetFloat("OtherRatio", OtherRatio);
+
+        Blender = PlayerPrefs.GetInt("Blender", Blender);
+        EnforceHumanoidBones = PlayerPrefs.GetInt("EnforceHumanoidBones", EnforceHumanoidBones);
+        Capturing = PlayerPrefs.GetInt("Capturing", Capturing);
+        CapturingFPS = PlayerPrefs.GetFloat("CapturingFPS", CapturingFPS);
+        CatchUp = PlayerPrefs.GetInt("CatchUp", CatchUp);
+
+        UseUnityCapture = PlayerPrefs.GetInt("UseUnityCapture", UseUnityCapture);
+        UseVMCProtocol = PlayerPrefs.GetInt("UseVMCProtocol", UseVMCProtocol);
+        VMCPIP = PlayerPrefs.GetString("VMCPIP", VMCPIP);
+        VMCPPort = PlayerPrefs.GetInt("VMCPPort", VMCPPort);
+        VMCPRot = PlayerPrefs.GetInt("VMCPRot", VMCPRot);
     }
-}
 
-public class PredictSetting
-{
-    public float LowPassFilter;
-    public int TrainedModel;
-
-
-    public PredictSetting()
+    public void Save()
     {
-        LowPassFilter = 0.1f;
-        TrainedModel = 1;
+        ppSet("ShowSource", ShowSource);
+        ppSet("ShowInput", ShowInput);
+        ppSet("SkipOnDrop", SkipOnDrop);
+        ppSet("RepeatPlayback", RepeatPlayback);
+        ppSet("MirrorUseCamera", MirrorUseCamera);
+        ppSet("SourceCutScale", SourceCutScale);
+        ppSet("SourceCutX", SourceCutX);
+        ppSet("SourceCutY", SourceCutY);
+
+        ppSet("ShowBackground", ShowBackground);
+        ppSet("BackgroundFile", BackgroundFile);
+        ppSet("BackgroundScale", BackgroundScale);
+        ppSet("BackgroundR", BackgroundR);
+        ppSet("BackgroundG", BackgroundG);
+        ppSet("BackgroundB", BackgroundB);
+
+        ppSet("LowPassFilter", LowPassFilter);
+        ppSet("NOrderLPF", NOrderLPF);
+        ppSet("BWBuffer", BWBuffer);
+        ppSet("BWCutoff", BWCutoff);
+        ppSet("ForwardThreshold", ForwardThreshold);
+        ppSet("BackwardThreshold", BackwardThreshold);
+        ppSet("LockFoot", LockFoot);
+        ppSet("LockLegs", LockLegs);
+        ppSet("HeightRatioThreshold", HeightRatioThreshold);
+        ppSet("TrainedModel", TrainedModel);
+
+        ppSet("ShoulderRattlingCheckFrame", ShoulderRattlingCheckFrame);
+        ppSet("ThighRattlingCheckFrame", ThighRattlingCheckFrame);
+        ppSet("FootRattlingCheckFrame", FootRattlingCheckFrame);
+        ppSet("ArmRattlingCheckFrame", ArmRattlingCheckFrame);
+        ppSet("ShinThreshold", ShinThreshold);
+        ppSet("ShinSmooth", ShinSmooth);
+        ppSet("ShinRatio", ShinRatio);
+        ppSet("ArmThreshold", ArmThreshold);
+        ppSet("ArmSmooth", ArmSmooth);
+        ppSet("ArmRatio", ArmRatio);
+        ppSet("OtherThreshold", OtherThreshold);
+        ppSet("OtherSmooth", OtherSmooth);
+        ppSet("OtherRatio", OtherRatio);
+
+        ppSet("Blender", Blender);
+        ppSet("EnforceHumanoidBones", EnforceHumanoidBones);
+        ppSet("Capturing", Capturing);
+        ppSet("CapturingFPS", CapturingFPS);
+        ppSet("CatchUp", CatchUp);
+
+        ppSet("UseUnityCapture", UseUnityCapture);
+        ppSet("UseVMCProtocol", UseVMCProtocol);
+        ppSet("VMCPIP", VMCPIP);
+        ppSet("VMCPPort", VMCPPort);
+        ppSet("VMCPRot", VMCPRot);
     }
 
-    public ConfigurationSetting Clone()
+    private void ppSet(string name, object o)
     {
-        return new ConfigurationSetting()
+        if (o.GetType() == typeof(string))
         {
-            LowPassFilter = LowPassFilter,
-            TrainedModel = TrainedModel,
-        };
-    }
-
-    public override string ToString()
-    {
-        return LowPassFilter.ToString()  + "," + TrainedModel.ToString()
-            ;
+            PlayerPrefs.SetString(name, o.ToString());
+        }
+        if (o.GetType() == typeof(float))
+        {
+            PlayerPrefs.SetFloat(name, (float)o);
+        }
+        if (o.GetType() == typeof(int))
+        {
+            PlayerPrefs.SetInt(name, (int)o);
+        }
     }
 }

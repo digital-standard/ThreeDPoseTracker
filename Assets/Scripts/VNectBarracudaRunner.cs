@@ -52,6 +52,12 @@ public class VNectBarracudaRunner : MonoBehaviour
     public bool UseKalmanF;
     public float KalmanParamQ;
     public float KalmanParamR;
+    public float ForwardThreshold;
+    public float BackwardThreshold;
+    public int NOrderLPF;
+    Filter[] filter = new Filter[JointNum];
+    public int BWBuffer = 300;
+    public float BWCutoff = 5.8f;
 
     private delegate void UpdateVNectModelDelegate();
     private UpdateVNectModelDelegate UpdateVNectModel;
@@ -126,6 +132,14 @@ public class VNectBarracudaRunner : MonoBehaviour
         cubeOffsetLinear = HeatMapCol * JointNum_Cube;
         cubeOffsetSquared = HeatMapCol_Squared * JointNum_Cube;
 
+        for (var i = 0; i < JointNum; i++)
+        {
+            if (filter[i] == null)
+            {
+                filter[i] = new Filter(BWBuffer, BWCutoff);
+            }
+        }
+
         // Disabel sleep
         Screen.sleepTimeout = SleepTimeout.NeverSleep;
 
@@ -162,10 +176,10 @@ public class VNectBarracudaRunner : MonoBehaviour
         videoCapture.VideoReady += videoCapture_VideoReady;
     }
 
-    public void InitVNectModel(VNectModel avatar)
+    public void InitVNectModel(VNectModel avatar, ConfigurationSetting config)
     {
         VNectModel = avatar;
-        jointPoints = VNectModel.Init(InputImageSize);
+        jointPoints = VNectModel.Init(InputImageSize, config);
 
     }
 
@@ -236,6 +250,30 @@ public class VNectBarracudaRunner : MonoBehaviour
     public Vector3 GetHeadPosition()
     {
         return VNectModel.GetHeadPosition();
+    }
+
+    public void SetPredictSetting(ConfigurationSetting config)
+    {
+        Smooth = config.LowPassFilter;
+        NOrderLPF = config.NOrderLPF;
+
+        for (var i = 0; i < JointNum; i++)
+        {
+            if(filter[i] == null)
+            {
+                filter[i] = new Filter(BWBuffer, BWCutoff);
+            }
+
+            filter[i].Init(config.BWBuffer, config.BWCutoff);
+        }
+
+        ForwardThreshold = config.ForwardThreshold;
+        BackwardThreshold = config.BackwardThreshold;
+
+        if(VNectModel != null)
+        {
+            VNectModel.SetPredictSetting(config);
+        }
     }
 
     private void Update()
@@ -399,10 +437,10 @@ public class VNectBarracudaRunner : MonoBehaviour
 
             score += jp.Score3D;
             var yi = maxYIndex * cubeOffsetSquared + maxXIndex * cubeOffsetLinear;
-            jp.Now3D.x = ((offset3D[yi + jj + maxZIndex] + 0.5f + (float)maxXIndex) / (float)HeatMapCol) * InputImageSizeF - InputImageSizeHalf;
-            jp.Now3D.y = InputImageSizeF - ((offset3D[yi + (j + JointNum) * HeatMapCol + maxZIndex] + 0.5f + (float)maxYIndex) / (float)HeatMapCol) * InputImageSizeF - InputImageSizeHalf;
-            jp.Now3D.z = ((offset3D[yi + (j + JointNum_Squared) * HeatMapCol + maxZIndex] + 0.5f + (float)(maxZIndex - HeatMapCol_Half)) / (float)HeatMapCol) * InputImageSizeF;
-            //jointPoints[j].Visibled = jointPoints[j].score3D > 0.2f;
+            var fx = ((offset3D[yi + jj + maxZIndex] + 0.5f + (float)maxXIndex) / (float)HeatMapCol) * InputImageSizeF - InputImageSizeHalf;
+            var fy = InputImageSizeF - ((offset3D[yi + (j + JointNum) * HeatMapCol + maxZIndex] + 0.5f + (float)maxYIndex) / (float)HeatMapCol) * InputImageSizeF - InputImageSizeHalf;
+            var fz = ((offset3D[yi + (j + JointNum_Squared) * HeatMapCol + maxZIndex] + 0.5f + (float)(maxZIndex - HeatMapCol_Half)) / (float)HeatMapCol) * InputImageSizeF;
+            (jp.Now3D.x, jp.Now3D.y, jp.Now3D.z) = filter[j].Add(fx, fy, fz, FPS);
         }
 
         EstimatedScore = score / JointNum;
@@ -437,9 +475,9 @@ public class VNectBarracudaRunner : MonoBehaviour
             var vec = jp.Now3D - jp.PrevNow3D;
             var vel = jp.VecNow3D * FPS / 30f;
 
-            if (jp.Error != 0 || (jp.Score3D < 0.3 && vel.magnitude > jp.VelNow3D.magnitude * 1.5f))
+            if (jp.Error != 0 || (jp.Score3D < jp.Threshold && vel.magnitude > jp.VelNow3D.magnitude * jp.Ratio))
             {
-                jp.Now3D = jp.PrevNow3D * (1f - jp.Smooth) + jp.Now3D * jp.Smooth;
+                jp.Now3D = jp.PrevNow3D * jp.Smooth + jp.Now3D * (1f - jp.Smooth);
             }
             else
             {
@@ -467,14 +505,15 @@ public class VNectBarracudaRunner : MonoBehaviour
             //}
 
             jp.PrevPos3D[0] = jp.Pos3D;
-            for (var i = 1; i < jp.PrevPos3D.Length; i++)
+            for (var i = 1; i < NOrderLPF; i++)
             {
                 jp.PrevPos3D[i] = jp.PrevPos3D[i] * Smooth + jp.PrevPos3D[i - 1] * (1f - Smooth);
             }
-            jp.Pos3D = jp.PrevPos3D[jp.PrevPos3D.Length - 1];
+            jp.Pos3D = jp.PrevPos3D[NOrderLPF - 1];
         }
 
-        if (EstimatedScore > 0.2f)
+
+        if (EstimatedScore > ForwardThreshold)
         {
             VNectModel.IsPoseUpdate = true;
         }
@@ -485,7 +524,7 @@ public class VNectBarracudaRunner : MonoBehaviour
         if (flag)
         {
             jp1.Error++;
-            if(jp1.Error == 5)
+            if(jp1.Error == jp1.RattlingCheckFrame)
             {
                 jp1.Error = 0;
                 jp2.Error = 0;
@@ -514,7 +553,7 @@ public class VNectBarracudaRunner : MonoBehaviour
             if(l1 > c1 && l2 > c2)
             {
                 jp1.Error++;
-                if (jp1.Error == 5)
+                if (jp1.Error == jp1.RattlingCheckFrame)
                 {
                     jp1.Error = 0;
                     jp2.Error = 0;
