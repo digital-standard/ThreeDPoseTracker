@@ -461,6 +461,8 @@ public class VNectBarracudaRunner : MonoBehaviour
 
         // Filters
         //
+        var frwd = TriangleNormal(jointPoints[PositionIndex.hip.Int()].Now3D, jointPoints[PositionIndex.lThighBend.Int()].Now3D, jointPoints[PositionIndex.rThighBend.Int()].Now3D);
+        var angle = Vector3.Angle(frwd, Vector3.back);
 
         var f = false;
         f = FrontBackCheckv(jointPoints[PositionIndex.lShldrBend.Int()], jointPoints[PositionIndex.rShldrBend.Int()], f);
@@ -512,11 +514,31 @@ public class VNectBarracudaRunner : MonoBehaviour
             jp.Pos3D = jp.PrevPos3D[NOrderLPF - 1];
         }
 
-
-        if (EstimatedScore > ForwardThreshold)
+        if(angle < 45f)
         {
-            VNectModel.IsPoseUpdate = true;
+            if (EstimatedScore > ForwardThreshold)
+            {
+                VNectModel.IsPoseUpdate = true;
+            }
         }
+        else
+        {
+            if (EstimatedScore > BackwardThreshold)
+            {
+                VNectModel.IsPoseUpdate = true;
+            }
+        }
+    }
+
+    Vector3 TriangleNormal(Vector3 a, Vector3 b, Vector3 c)
+    {
+        Vector3 d1 = a - b;
+        Vector3 d2 = a - c;
+
+        Vector3 dd = Vector3.Cross(d1, d2);
+        dd.Normalize();
+
+        return dd;
     }
 
     bool FrontBackCheckv(VNectModel.JointPoint jp1, VNectModel.JointPoint jp2, bool flag)

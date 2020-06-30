@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Meta
   m_EditorClassIdentifier: 
   ExporterVersion: VRoidStudio-0.9.5
-  Title: Lune
+  Title: 
   Version: 
-  Author: digital-standard.com
+  Author: 
   ContactInformation: 
   Reference: 
   Thumbnail: {fileID: 2800000, guid: 96332581a47f4af4c9349bc2c9bdac5b, type: 3}

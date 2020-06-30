@@ -135,6 +135,9 @@ public class VNectModel : MonoBehaviour
     private float prevTall = 224 * 0.75f;
     public float ZScale = 0.8f;
 
+    private bool LockFoot = false;
+    private bool LockLegs = false;
+
     private bool UpperBodyMode = false;
     private float UpperBodyF = 1f;
 
@@ -484,10 +487,14 @@ public class VNectModel : MonoBehaviour
         jointPoints[PositionIndex.rThumb2.Int()].Ratio = config.ArmRatio;
         jointPoints[PositionIndex.rMid1.Int()].Ratio = config.ArmRatio;
 
-        jointPoints[PositionIndex.lToe.Int()].Lock = config.LockFoot == 1;
-        jointPoints[PositionIndex.rToe.Int()].Lock = config.LockFoot == 1;
-        jointPoints[PositionIndex.lFoot.Int()].Lock = config.LockFoot == 1;
-        jointPoints[PositionIndex.rFoot.Int()].Lock = config.LockFoot == 1;
+        LockFoot = config.LockFoot == 1;
+        LockLegs = config.LockLegs == 1;
+        jointPoints[PositionIndex.lToe.Int()].Lock = LockFoot || LockLegs;
+        jointPoints[PositionIndex.rToe.Int()].Lock = LockFoot || LockLegs;
+        jointPoints[PositionIndex.lFoot.Int()].Lock = LockFoot || LockLegs;
+        jointPoints[PositionIndex.rFoot.Int()].Lock = LockFoot || LockLegs;
+        jointPoints[PositionIndex.lShin.Int()].Lock = LockLegs;
+        jointPoints[PositionIndex.rShin.Int()].Lock = LockLegs;
 
     }
 
@@ -617,6 +624,13 @@ public class VNectModel : MonoBehaviour
             }
             if (jointPoint.Lock)
             {
+                if(LockLegs)
+                {
+                    if(jointPoint.Index == PositionIndex.lShin || jointPoint.Index == PositionIndex.rShin)
+                    {
+                        jointPoint.Transform.rotation = Quaternion.LookRotation(Vector3.up, forward) * jointPoint.InverseRotation;
+                    }
+                }
                 continue;
             }
             if (!jointPoint.Visibled)

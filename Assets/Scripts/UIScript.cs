@@ -904,9 +904,9 @@ public class ConfigurationSetting
         BackgroundB = 0;
 
         LowPassFilter = 0.1f;
-        NOrderLPF = 6;
+        NOrderLPF = 7;
         BWBuffer = 100;
-        BWCutoff = 9.0f;
+        BWCutoff = 10.0f;
         ForwardThreshold = 0.2f;
         BackwardThreshold = 0.05f;
         LockFoot = 0;
