@@ -515,29 +515,36 @@ public class VNectBarracudaRunner : MonoBehaviour
         {
             var vec = jp.Now3D - jp.PrevNow3D;
             var vel = jp.VecNow3D * FPS / 30f;
-            /*
-            var r = (jp.PrevNow3D - jp.PPrevNow3D).magnitude;
-            if(jp.Score3D < 0.4 && (jp.Predicted3D - jp.Now3D).magnitude > (jp.PrevNow3D - jp.PPrevNow3D).magnitude * 1.5)
-            {
-                var vv1 = jp.PPrevNow3D - jp.PPPrevNow3D;
-                var vv2 = jp.PrevNow3D - jp.PPrevNow3D;
-                var vv = vv2 - vv1;
-                jp.Now3D = jp.PrevNow3D + vv * 0.5f;
+
+            //if (jp.Score3D < 0.4f && (jp.Predicted3D - jp.Now3D).magnitude > (jp.PrevNow3D - jp.PPrevNow3D).magnitude * 1.5)
+                if (jp.Score3D < 0.4f && (jp.Predicted3D - jp.PrevNow3D).magnitude > (jp.Now3D - jp.PrevNow3D).magnitude * 1.5)
+                {
+                    if (jp.Score3D < 0.2f)
+                {
+                    var vv1 = jp.PPrevNow3D - jp.PPPrevNow3D;
+                    var vv2 = jp.PrevNow3D - jp.PPrevNow3D;
+                    var vv = vv2 - vv1;
+                    jp.Now3D = jp.PrevNow3D + vv * 0.5f;
+                }
+                else
+                {
+                    jp.Now3D = (jp.Now3D + jp.PrevNow3D) * 0.5f;
+                }
                 jp.VecNow3D *= 0.25f;
                 Debug.Log("補正** :" + jp.Score3D.ToString() + "," + vel.magnitude.ToString());
             }
-           *
-            //if ((jp.RattlingCheck) && (jp.Score3D < 0.4 && vel.magnitude > jp.VecNow3DMagnitude * jp.Ratio))
-            else if (vel.magnitude > jp.VecNow3DMagnitude * 1.5f)
-            {
-                var vv1 = jp.PPrevNow3D - jp.PPPrevNow3D;
-                var vv2 = jp.PrevNow3D - jp.PPrevNow3D;
-                var vv = vv2 - vv1;
-                jp.Now3D = jp.PrevNow3D + vv * 0.5f;
-                jp.VecNow3D *= 0.25f;
-                Debug.Log("補正 :" + jp.Score3D.ToString()　+ "," +　vel.magnitude.ToString());
-            }
-            else*/
+            /*
+             //if ((jp.RattlingCheck) && (jp.Score3D < 0.4 && vel.magnitude > jp.VecNow3DMagnitude * jp.Ratio))
+             else if (vel.magnitude > jp.VecNow3DMagnitude * 1.5f)
+             {
+                 var vv1 = jp.PPrevNow3D - jp.PPPrevNow3D;
+                 var vv2 = jp.PrevNow3D - jp.PPrevNow3D;
+                 var vv = vv2 - vv1;
+                 jp.Now3D = jp.PrevNow3D + vv * 0.5f;
+                 jp.VecNow3D *= 0.25f;
+                 Debug.Log("補正 :" + jp.Score3D.ToString()　+ "," +　vel.magnitude.ToString());
+             }*/
+            else
             if (jp.Error != 0 || (jp.Score3D < jp.Threshold && vel.magnitude > jp.VelNow3D.magnitude * jp.Ratio))
             {
                 jp.Now3D = jp.PrevNow3D * jp.Smooth + jp.Now3D * (1f - jp.Smooth);
@@ -556,7 +563,7 @@ public class VNectBarracudaRunner : MonoBehaviour
             var v2 = jp.Now3D - jp.PrevNow3D;
             var v = v2 - v1;
             // 次の予測値
-            jp.Predicted3D = jp.Now3D + v * (v1.magnitude / v2.magnitude);
+            jp.Predicted3D = jp.Now3D + v * (v2.magnitude / v1.magnitude);
 
             jp.PPPrevNow3D = jp.PPrevNow3D;
             jp.PPrevNow3D = jp.PrevNow3D;
