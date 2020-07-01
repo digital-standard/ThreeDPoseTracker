@@ -462,13 +462,52 @@ public class VNectBarracudaRunner : MonoBehaviour
         // Filters
         //
         var frwd = TriangleNormal(jointPoints[PositionIndex.hip.Int()].Now3D, jointPoints[PositionIndex.lThighBend.Int()].Now3D, jointPoints[PositionIndex.rThighBend.Int()].Now3D);
-        var angle = Vector3.Angle(frwd, Vector3.back);
+        var frwdAngle = Vector3.Angle(frwd, Vector3.back);
 
         var f = false;
         f = FrontBackCheckv(jointPoints[PositionIndex.lShldrBend.Int()], jointPoints[PositionIndex.rShldrBend.Int()], f);
-        if (f) return;
+        if (f)
+        {
+            foreach (var jp in jointPoints)
+            {
+                var vec = jp.Now3D - jp.PrevNow3D;
+                var vel = jp.VecNow3D * FPS / 30f;
+
+                var v = jp.PrevNow3D - jp.PPrevNow3D;
+                jp.Now3D = jp.PrevNow3D + v * 0.6f;
+                jp.PPrevNow3D = jp.PrevNow3D;
+                jp.PrevNow3D = jp.Now3D;
+            }
+
+            return;
+        }
+
+        // 逆関節チェック
+        var lThighBend = jointPoints[PositionIndex.rThighBend.Int()].Now3D - jointPoints[PositionIndex.lThighBend.Int()].Now3D;
+        var lShin = TriangleNormal(jointPoints[PositionIndex.lShin.Int()].Now3D, jointPoints[PositionIndex.lFoot.Int()].Now3D, jointPoints[PositionIndex.lThighBend.Int()].Now3D);
+        var lShinAngle = Vector3.Angle(lShin, lThighBend.normalized);
+        if(lShinAngle > 90f && lShinAngle < 170f)
+        {
+            // 逆関節
+            jointPoints[PositionIndex.lShin.Int()].Error = 1;
+            //jointPoints[PositionIndex.lShin.Int()].Score3D = 0;
+            f = true;
+        }
+        var rThighBend = jointPoints[PositionIndex.rThighBend.Int()].Now3D - jointPoints[PositionIndex.lThighBend.Int()].Now3D;
+        var rShin = TriangleNormal(jointPoints[PositionIndex.rShin.Int()].Now3D, jointPoints[PositionIndex.rFoot.Int()].Now3D, jointPoints[PositionIndex.rThighBend.Int()].Now3D);
+        var rShinAngle = Vector3.Angle(rShin, rThighBend.normalized);
+        if (rShinAngle > 90f && rShinAngle < 170f)
+        {
+            // 逆関節
+            jointPoints[PositionIndex.rShin.Int()].Error = 1;
+            //jointPoints[PositionIndex.rShin.Int()].Score3D = 0;
+            f = true;
+        }
+        if(!f)
+        {
+            f = FrontBackCheckv(jointPoints[PositionIndex.lShin.Int()], jointPoints[PositionIndex.rShin.Int()], f);
+        }
         f = FrontBackCheckv(jointPoints[PositionIndex.lThighBend.Int()], jointPoints[PositionIndex.rThighBend.Int()], f);
-        f = FrontBackCheckv(jointPoints[PositionIndex.lShin.Int()], jointPoints[PositionIndex.rShin.Int()], f);
         f = FrontBackCheckv(jointPoints[PositionIndex.lFoot.Int()], jointPoints[PositionIndex.rFoot.Int()], f);
         FrontBackCheckv(jointPoints[PositionIndex.lToe.Int()], jointPoints[PositionIndex.rToe.Int()], f);
 
@@ -476,16 +515,51 @@ public class VNectBarracudaRunner : MonoBehaviour
         {
             var vec = jp.Now3D - jp.PrevNow3D;
             var vel = jp.VecNow3D * FPS / 30f;
-
+            /*
+            var r = (jp.PrevNow3D - jp.PPrevNow3D).magnitude;
+            if(jp.Score3D < 0.4 && (jp.Predicted3D - jp.Now3D).magnitude > (jp.PrevNow3D - jp.PPrevNow3D).magnitude * 1.5)
+            {
+                var vv1 = jp.PPrevNow3D - jp.PPPrevNow3D;
+                var vv2 = jp.PrevNow3D - jp.PPrevNow3D;
+                var vv = vv2 - vv1;
+                jp.Now3D = jp.PrevNow3D + vv * 0.5f;
+                jp.VecNow3D *= 0.25f;
+                Debug.Log("補正** :" + jp.Score3D.ToString() + "," + vel.magnitude.ToString());
+            }
+           *
+            //if ((jp.RattlingCheck) && (jp.Score3D < 0.4 && vel.magnitude > jp.VecNow3DMagnitude * jp.Ratio))
+            else if (vel.magnitude > jp.VecNow3DMagnitude * 1.5f)
+            {
+                var vv1 = jp.PPrevNow3D - jp.PPPrevNow3D;
+                var vv2 = jp.PrevNow3D - jp.PPrevNow3D;
+                var vv = vv2 - vv1;
+                jp.Now3D = jp.PrevNow3D + vv * 0.5f;
+                jp.VecNow3D *= 0.25f;
+                Debug.Log("補正 :" + jp.Score3D.ToString()　+ "," +　vel.magnitude.ToString());
+            }
+            else*/
             if (jp.Error != 0 || (jp.Score3D < jp.Threshold && vel.magnitude > jp.VelNow3D.magnitude * jp.Ratio))
             {
                 jp.Now3D = jp.PrevNow3D * jp.Smooth + jp.Now3D * (1f - jp.Smooth);
+                //jp.Now3D = jp.PrevNow3D + jp.VecNow3D * 0.5f;
+                //jp.VecNow3D *= 0.5f;
             }
             else
             {
+                vel = vec * FPS / 30f;
+
+                jp.VecNow3DMagnitude = jp.VelNow3D.magnitude * 0.7f + vel.magnitude * 0.3f;
                 jp.VecNow3D = vec;
                 jp.VelNow3D = vel;
             }
+            var v1 = jp.PrevNow3D - jp.PPrevNow3D;
+            var v2 = jp.Now3D - jp.PrevNow3D;
+            var v = v2 - v1;
+            // 次の予測値
+            jp.Predicted3D = jp.Now3D + v * (v1.magnitude / v2.magnitude);
+
+            jp.PPPrevNow3D = jp.PPrevNow3D;
+            jp.PPrevNow3D = jp.PrevNow3D;
             jp.PrevNow3D = jp.Now3D;
         }
 
@@ -499,13 +573,6 @@ public class VNectBarracudaRunner : MonoBehaviour
 
         foreach (var jp in jointPoints)
         {
-
-            //if (jp.Error != 0)
-            //{
-            //    jp.Pos3D = jp.Pos3D - jp.Vec3D;
-            //    continue;
-            //}
-
             jp.PrevPos3D[0] = jp.Pos3D;
             for (var i = 1; i < NOrderLPF; i++)
             {
@@ -514,7 +581,7 @@ public class VNectBarracudaRunner : MonoBehaviour
             jp.Pos3D = jp.PrevPos3D[NOrderLPF - 1];
         }
 
-        if(angle < 45f)
+        if(frwdAngle < 45f)
         {
             if (EstimatedScore > ForwardThreshold)
             {

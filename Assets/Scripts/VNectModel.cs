@@ -65,11 +65,16 @@ public class VNectModel : MonoBehaviour
         public Vector3 Now3D = new Vector3();
         public Vector3[] PrevPos3D = new Vector3[10];
         public Vector3 PrevNow3D = new Vector3();
+        public Vector3 PPrevNow3D = new Vector3();
+        public Vector3 PPPrevNow3D = new Vector3();
+        public Vector3 Predicted3D = new Vector3();
         public Vector3 VecNow3D = new Vector3();
         public Vector3 VelNow3D = new Vector3();
         public float Score3D;
         public bool Visibled;
         public int Error;
+        public float VecNow3DMagnitude;
+        public bool RattlingCheck;
         public float RattlingCheckFrame;
         public float Threshold;
         public float Smooth;
@@ -154,6 +159,8 @@ public class VNectModel : MonoBehaviour
             jointPoints[i] = new JointPoint();
             jointPoints[i].Index = (PositionIndex)i;
             jointPoints[i].Score3D = 1;
+            jointPoints[i].RattlingCheck = false;
+            jointPoints[i].VecNow3DMagnitude = 0;
             jointPoints[i].UpperBody = false;
             jointPoints[i].Lock = false;
             jointPoints[i].Error = 0;
@@ -348,6 +355,21 @@ public class VNectModel : MonoBehaviour
         jointPoints[PositionIndex.head.Int()].Score3D = 1f;
         jointPoints[PositionIndex.spine.Int()].Score3D = 1f;
 
+        jointPoints[PositionIndex.rForearmBend.Int()].RattlingCheck = true;
+        jointPoints[PositionIndex.rHand.Int()].RattlingCheck = true;
+        jointPoints[PositionIndex.rThumb2.Int()].RattlingCheck = true;
+        jointPoints[PositionIndex.rMid1.Int()].RattlingCheck = true;
+        jointPoints[PositionIndex.lForearmBend.Int()].RattlingCheck = true;
+        jointPoints[PositionIndex.lHand.Int()].RattlingCheck = true;
+        jointPoints[PositionIndex.lThumb2.Int()].RattlingCheck = true;
+        jointPoints[PositionIndex.lMid1.Int()].RattlingCheck = true;
+        jointPoints[PositionIndex.rShin.Int()].RattlingCheck = true;
+        jointPoints[PositionIndex.rFoot.Int()].RattlingCheck = true;
+        jointPoints[PositionIndex.rToe.Int()].RattlingCheck = true;
+        jointPoints[PositionIndex.lShin.Int()].RattlingCheck = true;
+        jointPoints[PositionIndex.lFoot.Int()].RattlingCheck = true;
+        jointPoints[PositionIndex.lToe.Int()].RattlingCheck = true;
+
         SetPredictSetting(config);
 
         return JointPoints;
@@ -436,6 +458,7 @@ public class VNectModel : MonoBehaviour
         for (var i = 0; i < PositionIndex.Count.Int(); i++)
         {
             jointPoints[i].RattlingCheckFrame = 5;
+            jointPoints[i].VecNow3DMagnitude = 0;
             jointPoints[i].Threshold = config.OtherThreshold;
             jointPoints[i].Smooth = config.OtherSmooth;
             jointPoints[i].Ratio = config.OtherRatio;
