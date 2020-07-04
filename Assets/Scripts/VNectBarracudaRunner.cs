@@ -620,7 +620,7 @@ public class VNectBarracudaRunner : MonoBehaviour
             }
         }
     }
-
+    
     Vector3 TriangleNormal(Vector3 a, Vector3 b, Vector3 c)
     {
         Vector3 d1 = a - b;
