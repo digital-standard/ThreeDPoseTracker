@@ -526,18 +526,22 @@ public class VNectBarracudaRunner : MonoBehaviour
                 jp.VecNow3D *= 0.25f;
                 Debug.Log("補正** :" + jp.Score3D.ToString() + "," + vel.magnitude.ToString());
             }*/
-           /*
-            //if ((jp.RattlingCheck) && (jp.Score3D < 0.4 && vel.magnitude > jp.VecNow3DMagnitude * jp.Ratio))
-            else if (vel.magnitude > jp.VecNow3DMagnitude * 1.5f)
+           
+            if ((jp.RattlingCheck) && (jp.Score3D < 0.4 && vel.magnitude > jp.VecNow3DMagnitude * jp.Ratio))
+           // else if (vel.magnitude > jp.VecNow3DMagnitude * 1.5f)
             {
+                /**/
                 var vv1 = jp.PPrevNow3D - jp.PPPrevNow3D;
                 var vv2 = jp.PrevNow3D - jp.PPrevNow3D;
                 var vv = vv2 - vv1;
                 jp.Now3D = jp.PrevNow3D + vv * 0.5f;
                 jp.VecNow3D *= 0.25f;
+                /**/
+                //jp.Now3D = (jp.PrevNow3D + jp.Predicted3D) * 0.5f;
+                //jp.VecNow3D *= 0.25f;
                 Debug.Log("補正 :" + jp.Score3D.ToString()　+ "," +　vel.magnitude.ToString());
             }
-            else*/
+            else
             if (jp.Error != 0 || (jp.Score3D < jp.Threshold && vel.magnitude > jp.VelNow3D.magnitude * jp.Ratio))
             {
                 jp.Now3D = jp.PrevNow3D * jp.Smooth + jp.Now3D * (1f - jp.Smooth);
@@ -552,46 +556,59 @@ public class VNectBarracudaRunner : MonoBehaviour
                 jp.VecNow3D = vec;
                 jp.VelNow3D = vel;
             }
+            /*
+            jp.K.x = (jp.P.x + this.KalmanParamQ) / (jp.P.x + this.KalmanParamQ + this.KalmanParamR);
+            jp.K.y = (jp.P.y + this.KalmanParamQ) / (jp.P.y + this.KalmanParamQ + this.KalmanParamR);
+            jp.K.z = (jp.P.z + this.KalmanParamQ) / (jp.P.z + this.KalmanParamQ + this.KalmanParamR);
+            jp.P.x = this.KalmanParamR * (jp.P.x + this.KalmanParamQ) / (this.KalmanParamR + jp.P.x + this.KalmanParamQ);
+            jp.P.y = this.KalmanParamR * (jp.P.y + this.KalmanParamQ) / (this.KalmanParamR + jp.P.y + this.KalmanParamQ);
+            jp.P.z = this.KalmanParamR * (jp.P.z + this.KalmanParamQ) / (this.KalmanParamR + jp.P.z + this.KalmanParamQ);
 
+            jp.Pos3D.x = jp.Predicted3D.x + (jp.Now3D.x - jp.Predicted3D.x) * jp.K.x;
+            jp.Pos3D.y = jp.Predicted3D.y + (jp.Now3D.y - jp.Predicted3D.y) * jp.K.y;
+            jp.Pos3D.z = jp.Predicted3D.z + (jp.Now3D.z - jp.Predicted3D.z) * jp.K.z;
+            jp.X = jp.Pos3D;
+            */
             var v1 = jp.PrevNow3D - jp.PPrevNow3D;
             var v2 = jp.Now3D - jp.PrevNow3D;
-            
-            // 二つのベクトルのなす角
-            var va = Vector3.Angle(v1, v2) * Mathf.Deg2Rad;
-            // 回転軸
-            Vector3 n = Vector3.Cross(v1, v2);
-            n.Normalize();
-            // ロドリゲス回転公式
-            //var pr = jp.Now3D.normalized;
-            var pr = v2;
-            var cos = Mathf.Cos(va);
-            var ocos = 1f - cos;
-            var sin = Mathf.Sin(va);
-            var nxocos = n.x * ocos;
-            var nyocos = n.y * ocos;
-            var nxsin = n.x * sin;
-            var nysin = n.y * sin;
-            var nzsin = n.z * sin;
-            var prX = (cos + n.x * nxocos) * pr.x + (n.y * nxocos - nzsin) * pr.y + (n.z * nxocos + nysin) * pr.z;
-            var prY = (n.y * nxocos + nzsin) * pr.x + (cos + n.y * nyocos) * pr.y + (n.z * nyocos - nxsin) * pr.z;
-            var prZ = (n.z * nxocos - nysin) * pr.x + (n.z * nyocos + nxsin) * pr.y + (cos + n.z * n.z * ocos) * pr.z;
 
-            var v = new Vector3(prX, prY, prZ);
-            
-            //var v = v2 - v1;
-            // 次の予測値
-            jp.Predicted3D = jp.Now3D + v * (v2.magnitude / v1.magnitude);
+            if (v1 == Vector3.zero)
+            {
+                jp.Predicted3D = jp.Now3D;
+            }
+            else
+            {
+                // 二つのベクトルのなす角
+                var va = Vector3.Angle(v1, v2) * Mathf.Deg2Rad;
+                // 回転軸
+                Vector3 n = Vector3.Cross(v1, v2);
+                n.Normalize();
+                // ロドリゲス回転公式
+                //var pr = jp.Now3D.normalized;
+                var pr = v2;
+                var cos = Mathf.Cos(va);
+                var ocos = 1f - cos;
+                var sin = Mathf.Sin(va);
+                var nxocos = n.x * ocos;
+                var nyocos = n.y * ocos;
+                var nxsin = n.x * sin;
+                var nysin = n.y * sin;
+                var nzsin = n.z * sin;
+                var prX = (cos + n.x * nxocos) * pr.x + (n.y * nxocos - nzsin) * pr.y + (n.z * nxocos + nysin) * pr.z;
+                var prY = (n.y * nxocos + nzsin) * pr.x + (cos + n.y * nyocos) * pr.y + (n.z * nyocos - nxsin) * pr.z;
+                var prZ = (n.z * nxocos - nysin) * pr.x + (n.z * nyocos + nxsin) * pr.y + (cos + n.z * n.z * ocos) * pr.z;
+
+                var v = new Vector3(prX, prY, prZ);
+
+                //var v = v2 - v1;
+                // 次の予測値
+                jp.Predicted3D = jp.Now3D + v * (v2.magnitude / v1.magnitude);
+            }
 
             jp.PPPrevNow3D = jp.PPrevNow3D;
             jp.PPrevNow3D = jp.PrevNow3D;
             jp.PrevNow3D = jp.Now3D;
-        }
-
-        foreach (var jp in jointPoints)
-        {
-            //if (jp.Error != 0) continue;
-
-            KalmanUpdate(jp);
+            jp.Pos3D = jp.Now3D;
             jp.Visibled = true;
         }
 
@@ -634,6 +651,7 @@ public class VNectBarracudaRunner : MonoBehaviour
 
     bool FrontBackCheckv(VNectModel.JointPoint jp1, VNectModel.JointPoint jp2, bool flag)
     {
+        /*
         if (flag)
         {
             jp1.Error++;
@@ -647,6 +665,7 @@ public class VNectBarracudaRunner : MonoBehaviour
             jp2.Error++; ;
             return true;
         }
+        */
         /*
         if (jp1.PrevScore3D > 0.5 && jp2.Score3D > 0.5)
         {
@@ -666,14 +685,14 @@ public class VNectBarracudaRunner : MonoBehaviour
             if(l1 > c1 && l2 > c2)
             {
                 jp1.Error++;
-                if (jp1.Error == jp1.RattlingCheckFrame)
+                jp2.Error++;
+                if (!flag && jp1.Error == jp1.RattlingCheckFrame)
                 {
                     jp1.Error = 0;
                     jp2.Error = 0;
                     return false;
                 }
 
-                jp2.Error++;
                 return true;
             }
             else
@@ -694,9 +713,9 @@ public class VNectBarracudaRunner : MonoBehaviour
     void KalmanUpdate(VNectModel.JointPoint measurement)
     {
         measurementUpdate(measurement);
-        measurement.Pos3D.x = measurement.X.x + (measurement.Now3D.x - measurement.X.x) * measurement.K.x;
-        measurement.Pos3D.y = measurement.X.y + (measurement.Now3D.y - measurement.X.y) * measurement.K.y;
-        measurement.Pos3D.z = measurement.X.z + (measurement.Now3D.z - measurement.X.z) * measurement.K.z;
+        measurement.Pos3D.x = measurement.Predicted3D.x + (measurement.Now3D.x - measurement.X.x) * measurement.K.x;
+        measurement.Pos3D.y = measurement.Predicted3D.y + (measurement.Now3D.y - measurement.X.y) * measurement.K.y;
+        measurement.Pos3D.z = measurement.Predicted3D.z + (measurement.Now3D.z - measurement.X.z) * measurement.K.z;
         measurement.X = measurement.Pos3D;
     }
 

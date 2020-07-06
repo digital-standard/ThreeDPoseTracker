@@ -142,9 +142,49 @@ public class VNectModel : MonoBehaviour
 
     private bool LockFoot = false;
     private bool LockLegs = false;
+    private float FootIKY = 0f;
+    private float ToeIKY = 0f;
 
     private bool UpperBodyMode = false;
     private float UpperBodyF = 1f;
+
+    /**** Foot IK ****/
+    [SerializeField]
+    private bool useIK = true;
+    //　IKで角度を有効にするかどうか
+    [SerializeField]
+    private bool useIKRot = true;
+    //　右足のウエイト
+    private float rightFootWeight = 0f;
+    //　左足のウエイト
+    private float leftFootWeight = 0f;
+    //　右足の位置
+    private Vector3 rightFootPos;
+    //　左足の位置
+    private Vector3 leftFootPos;
+    //　右足の角度
+    private Quaternion rightFootRot;
+    //　左足の角度
+    private Quaternion leftFootRot;
+    //　右足と左足の距離
+    private float distance;
+    //　足を付く位置のオフセット値
+    [SerializeField]
+    private float offset = 0.1f;
+    //　コライダの中心位置
+    private Vector3 defaultCenter;
+    //　レイを飛ばす距離
+    [SerializeField]
+    private float rayRange = 1f;
+
+    //　コライダの位置を調整する時のスピード
+    [SerializeField]
+    private float smoothing = 100f;
+
+    //　レイを飛ばす位置の調整値
+    [SerializeField]
+    private Vector3 rayPositionOffset = Vector3.up * 0.3f;
+
 
     public JointPoint[] Init(int inputImageSize, ConfigurationSetting config)
     {
@@ -371,6 +411,10 @@ public class VNectModel : MonoBehaviour
         jointPoints[PositionIndex.lToe.Int()].RattlingCheck = true;
 
         SetPredictSetting(config);
+
+        defaultCenter = new Vector3(transform.position.x, (jointPoints[PositionIndex.rToe.Int()].Transform.position.y + jointPoints[PositionIndex.lToe.Int()].Transform.position.y) /2f, transform.position.z);
+        FootIKY = (jointPoints[PositionIndex.rFoot.Int()].Transform.position.y + jointPoints[PositionIndex.lFoot.Int()].Transform.position.y) / 2f;
+        ToeIKY = (jointPoints[PositionIndex.rToe.Int()].Transform.position.y + jointPoints[PositionIndex.lToe.Int()].Transform.position.y) / 2f;
 
         return JointPoints;
     }
@@ -602,7 +646,8 @@ public class VNectModel : MonoBehaviour
         tall = t * 0.7f + prevTall * 0.3f;
         prevTall = tall;
 
-        var dz = (centerTall - tall) / centerTall * ZScale;
+        //var dz = (centerTall - tall) / centerTall * ZScale;
+        var dz = (tall / centerTall - 1f);
 
         var score = 0f;
         var scoreCnt = 0;
@@ -635,7 +680,7 @@ public class VNectModel : MonoBehaviour
         }
         // センターの移動と回転
         var forward = TriangleNormal(jointPoints[PositionIndex.hip.Int()].Pos3D, jointPoints[PositionIndex.lThighBend.Int()].Pos3D, jointPoints[PositionIndex.rThighBend.Int()].Pos3D);
-        transform.position = jointPoints[PositionIndex.hip.Int()].Pos3D * movementScale + new Vector3(initPosition.x, initPosition.y, initPosition.z + dz);
+        transform.position = jointPoints[PositionIndex.hip.Int()].Pos3D * movementScale + new Vector3(initPosition.x, initPosition.y, initPosition.z * dz * ZScale);
         jointPoints[PositionIndex.hip.Int()].Transform.rotation = Quaternion.LookRotation(forward) * jointPoints[PositionIndex.hip.Int()].InverseRotation;
 
         // 各ボーンの回転
@@ -674,6 +719,24 @@ public class VNectModel : MonoBehaviour
                 }
                 jointPoint.Transform.rotation = Quaternion.LookRotation(jointPoint.Pos3D - jointPoint.Child.Pos3D, forward) * jointPoint.InverseRotation;
             }
+
+        }
+        
+        if (jointPoints[PositionIndex.lFoot.Int()].Transform.position.y < FootIKY)
+        {
+            var jpf = jointPoints[PositionIndex.lFoot.Int()];
+            var fv = jpf.Parent.Transform.position - jpf.Transform.position;
+            jpf.Transform.rotation = Quaternion.LookRotation(jpf.Transform.position - new Vector3(jpf.Child.Transform.position.x, FootIKY, jpf.Child.Transform.position.z), fv) * jpf.InverseRotation;
+            var jpt = jointPoints[PositionIndex.lToe.Int()];
+            jpt.Transform.rotation = Quaternion.LookRotation(jpt.Transform.position - new Vector3(jpt.Child.Transform.position.x, ToeIKY, jpt.Child.Transform.position.z), Vector3.up) * jpt.InverseRotation;
+
+        }
+
+        else  if (jointPoints[PositionIndex.lToe.Int()].Transform.position.y < ToeIKY)
+        {
+            var jp = jointPoints[PositionIndex.lToe.Int()];
+            jp.Transform.rotation = Quaternion.LookRotation(jp.Transform.position - new Vector3(jp.Child.Transform.position.x, ToeIKY, jp.Child.Transform.position.z), Vector3.up) * jp.InverseRotation;
+
         }
 
         // Head Rotation
@@ -753,27 +816,69 @@ public class VNectModel : MonoBehaviour
     {
         if (jointPoints != null)
         {
-            /**/
             if (IsPoseUpdate)
             {
                 PoseUpdate();
             }
-            else
-            {
-                /*
-                foreach (var jp in jointPoints)
-                {
-                    KalmanUpdate(jp);
-                }
-                PoseUpdate();
-                foreach (var jp in jointPoints)
-                {
-                    jp.Now3D = jp.Pos3D;
-                }
-                */
-            }
             IsPoseUpdate = false;
-            /**/
+        }
+    }
+
+    void OnAnimatorIK()
+    {
+        //　IKを使わない場合はこれ以降なにもしない
+        if (!useIK)
+        {
+            return;
+        }
+
+        //　アニメーションパラメータからIKのウエイトを取得
+        rightFootWeight = 1f;
+        leftFootWeight = 1f;
+        //rightFootWeight = anim.GetFloat("RightFootWeight");
+        //leftFootWeight = anim.GetFloat("LeftFootWeight");
+
+        //　右足用のレイの視覚化
+        Debug.DrawRay(anim.GetIKPosition(AvatarIKGoal.RightFoot) + rayPositionOffset, -transform.up * rayRange, Color.red);
+        //　右足用のレイを飛ばす処理
+        var ray = new Ray(anim.GetIKPosition(AvatarIKGoal.RightFoot) + rayPositionOffset, -transform.up);
+
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit, rayRange))
+        {
+            rightFootPos = hit.point;
+            
+            //　右足IKの設定
+            anim.SetIKPositionWeight(AvatarIKGoal.RightFoot, rightFootWeight);
+            anim.SetIKPosition(AvatarIKGoal.RightFoot, rightFootPos + new Vector3(0f, offset, 0f));
+            if (useIKRot)
+            {
+                rightFootRot = Quaternion.FromToRotation(transform.up, hit.normal) * transform.rotation;
+                anim.SetIKRotationWeight(AvatarIKGoal.RightFoot, rightFootWeight);
+                anim.SetIKRotation(AvatarIKGoal.RightFoot, rightFootRot);
+            }
+        }
+
+        //　左足用のレイを飛ばす処理
+        ray = new Ray(anim.GetIKPosition(AvatarIKGoal.LeftFoot) + rayPositionOffset, -transform.up);
+        //　左足用のレイの視覚化
+        Debug.DrawRay(anim.GetIKPosition(AvatarIKGoal.LeftFoot) + rayPositionOffset, -transform.up * rayRange, Color.red);
+
+        if (Physics.Raycast(ray, out hit, rayRange))
+        {
+            leftFootPos = hit.point;
+
+            //　左足IKの設定
+            anim.SetIKPositionWeight(AvatarIKGoal.LeftFoot, leftFootWeight);
+            anim.SetIKPosition(AvatarIKGoal.LeftFoot, leftFootPos + new Vector3(0f, offset, 0f));
+
+            if (useIKRot)
+            {
+                leftFootRot = Quaternion.FromToRotation(transform.up, hit.normal) * transform.rotation;
+                anim.SetIKRotationWeight(AvatarIKGoal.LeftFoot, leftFootWeight);
+                anim.SetIKRotation(AvatarIKGoal.LeftFoot, leftFootRot);
+            }
         }
     }
 }
