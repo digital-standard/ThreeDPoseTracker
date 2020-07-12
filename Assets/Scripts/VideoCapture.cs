@@ -28,7 +28,7 @@ public class VideoCapture : MonoBehaviour
 
     private WebCamTexture webCamTexture;
     private RenderTexture videoTexture;
-    private GameObject MainTextureCamera;
+    private GameObject MainTextureCamera = null;
 
     private int videoScreenWidth = 2560 * 2;
     private int bgWidth, bgHeight;
@@ -247,6 +247,11 @@ public class VideoCapture : MonoBehaviour
 
     private void InitMainTexture()
     {
+        if(MainTextureCamera != null)
+        {
+            return;
+        }
+
         MainTextureCamera = new GameObject("MainTextureCamera", typeof(Camera));
 
         MainTextureCamera.transform.parent = VideoBackground.transform;

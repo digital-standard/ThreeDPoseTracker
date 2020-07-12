@@ -172,89 +172,117 @@ namespace VRM
             }
         }
 
-        static BoneWeight[] MapBoneWeight(BoneWeight[] src,
+        /// <summary>
+        /// index が 有効であれば、setter に weight を渡す。無効であれば setter に 0 を渡す。
+        /// </summary>
+        /// <param name="indexMap"></param>
+        /// <param name="srcIndex"></param>
+        /// <param name="weight"></param>
+        /// <param name="setter"></param>
+        static bool CopyOrDropWeight(int[] indexMap, int srcIndex, float weight, Action<int, float> setter)
+        {
+            if (srcIndex < 0 || srcIndex >= indexMap.Length)
+            {
+                // ありえるかどうかわからないが BoneWeight.boneIndexN に変な値が入っている. 
+                setter(0, 0);
+                return false;
+            }
+
+            var dstIndex = indexMap[srcIndex];
+            if (dstIndex != -1)
+            {
+                // 有効なindex。weightをコピーする
+                setter(dstIndex, weight);
+                return true;
+            }
+            else
+            {
+                // 無効なindex。0でクリアする
+                setter(0, 0);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// BoneWeight[] src から新しいボーンウェイトを作成する。
+        /// </summary>
+        /// <param name="src">変更前のBoneWeight[]</param>
+        /// <param name="boneMap">新旧のボーンの対応表。新しい方は無効なボーンが除去されてnullの部分がある</param>
+        /// <param name="srcBones">変更前のボーン配列</param>
+        /// <param name="dstBones">変更後のボーン配列。除去されたボーンがある場合、変更前より短い</param>
+        /// <returns></returns>
+        public static BoneWeight[] MapBoneWeight(BoneWeight[] src,
             Dictionary<Transform, Transform> boneMap,
             Transform[] srcBones,
             Transform[] dstBones
             )
         {
-            var indexMap =
-            srcBones
-                .Select((x, i) => new { i, x })
-                .Select(x => {
-                    Transform dstBone;
-                    if(boneMap.TryGetValue(x.x, out dstBone))
+            // 処理前後の index の対応表を作成する
+            var indexMap = new int[srcBones.Length];
+            for (int i = 0; i < srcBones.Length; ++i)
+            {
+                var srcBone = srcBones[i];
+                if (srcBone == null)
+                {
+                    // 元のボーンが無い
+                    indexMap[i] = -1;
+                    Debug.LogWarningFormat("bones[{0}] is null", i);
+                }
+                else
+                {
+                    if (boneMap.TryGetValue(srcBone, out Transform dstBone))
                     {
-                        return dstBones.IndexOf(dstBone);
+                        // 対応するボーンが存在する
+                        var dstIndex = dstBones.IndexOf(dstBone);
+                        if (dstIndex == -1)
+                        {
+                            // ありえない。バグ
+                            throw new Exception();
+                        }
+                        indexMap[i] = dstIndex;
                     }
                     else
                     {
-                        return -1;
+                        // 先のボーンが無い
+                        indexMap[i] = -1;
+                        Debug.LogWarningFormat("{0} is removed", srcBone.name);
                     }
-                 })
-                .ToArray();
-
-            for (int i = 0; i < srcBones.Length; ++i)
-            {
-                if (indexMap[i] < 0)
-                {
-                    Debug.LogWarningFormat("{0} is removed", srcBones[i].name);
                 }
             }
 
-            var dst = new BoneWeight[src.Length];
-            Array.Copy(src, dst, src.Length);
-
+            // 新しいBoneWeightを作成する
+            var newBoneWeights = new BoneWeight[src.Length];
             for (int i = 0; i < src.Length; ++i)
             {
-                var x = src[i];
+                BoneWeight srcBoneWeight = src[i];
 
-                if (indexMap[x.boneIndex0] != -1)
+                // 0
+                CopyOrDropWeight(indexMap, srcBoneWeight.boneIndex0, srcBoneWeight.weight0, (newIndex, newWeight) =>
                 {
-                    dst[i].boneIndex0 = indexMap[x.boneIndex0];
-                    dst[i].weight0 = x.weight0;
-                }
-                else if (x.weight0 > 0)
+                    newBoneWeights[i].boneIndex0 = newIndex;
+                    newBoneWeights[i].weight0 = newWeight;
+                });
+                // 1
+                CopyOrDropWeight(indexMap, srcBoneWeight.boneIndex1, srcBoneWeight.weight1, (newIndex, newWeight) =>
                 {
-                    Debug.LogWarningFormat("{0} weight0 to {1} is lost", i, srcBones[x.boneIndex0].name);
-                    dst[i].weight0 = 0;
-                }
-
-                if (indexMap[x.boneIndex1] != -1)
+                    newBoneWeights[i].boneIndex1 = newIndex;
+                    newBoneWeights[i].weight1 = newWeight;
+                });
+                // 2
+                CopyOrDropWeight(indexMap, srcBoneWeight.boneIndex2, srcBoneWeight.weight2, (newIndex, newWeight) =>
                 {
-                    dst[i].boneIndex1 = indexMap[x.boneIndex1];
-                    dst[i].weight1 = x.weight1;
-                }
-                else if (x.weight1 > 0)
+                    newBoneWeights[i].boneIndex2 = newIndex;
+                    newBoneWeights[i].weight2 = newWeight;
+                });
+                // 3
+                CopyOrDropWeight(indexMap, srcBoneWeight.boneIndex3, srcBoneWeight.weight3, (newIndex, newWeight) =>
                 {
-                    Debug.LogWarningFormat("{0} weight0 to {1} is lost", i, srcBones[x.boneIndex1].name);
-                    dst[i].weight1 = 0;
-                }
-
-                if (indexMap[x.boneIndex2] != -1)
-                {
-                    dst[i].boneIndex2 = indexMap[x.boneIndex2];
-                    dst[i].weight2 = x.weight2;
-                }
-                else if (x.weight2 > 0)
-                {
-                    Debug.LogWarningFormat("{0} weight0 to {1} is lost", i, srcBones[x.boneIndex2].name);
-                    dst[i].weight2 = 0;
-                }
-
-                if (indexMap[x.boneIndex3] != -1)
-                {
-                    dst[i].boneIndex3 = indexMap[x.boneIndex3];
-                    dst[i].weight3 = x.weight3;
-                }
-                else if (x.weight3 > 0)
-                {
-                    Debug.LogWarningFormat("{0} weight0 to {1} is lost", i, srcBones[x.boneIndex3].name);
-                    dst[i].weight3 = 0;
-                }
+                    newBoneWeights[i].boneIndex3 = newIndex;
+                    newBoneWeights[i].weight3 = newWeight;
+                });
             }
 
-            return dst;
+            return newBoneWeights;
         }
 
         /// <summary>
@@ -287,10 +315,12 @@ namespace VRM
                 }
             }
 
+            // 元の Transform[] bones から、無効なboneを取り除いて前に詰めた配列を作る
             var dstBones = srcRenderer.bones
-                .Where(x => boneMap.ContainsKey(x))
+                .Where(x => x != null && boneMap.ContainsKey(x))
                 .Select(x => boneMap[x])
                 .ToArray();
+
             var hasBoneWeight = srcRenderer.bones != null && srcRenderer.bones.Length > 0;
             if (!hasBoneWeight)
             {
@@ -322,15 +352,16 @@ namespace VRM
             var mesh = srcMesh.Copy(false);
             mesh.name = srcMesh.name + ".baked";
             srcRenderer.BakeMesh(mesh);
-           
-            var blendShapeValues = new Dictionary<int,float>();
+
+            var blendShapeValues = new Dictionary<int, float>();
             for (int i = 0; i < srcMesh.blendShapeCount; i++)
             {
                 var val = srcRenderer.GetBlendShapeWeight(i);
                 if (val > 0) blendShapeValues.Add(i, val);
             }
-        
-            mesh.boneWeights = MapBoneWeight(srcMesh.boneWeights, boneMap, srcRenderer.bones, dstBones); // restore weights. clear when BakeMesh
+
+            // 新しい骨格のボーンウェイトを作成する
+            mesh.boneWeights = MapBoneWeight(srcMesh.boneWeights, boneMap, srcRenderer.bones, dstBones);
 
             // recalc bindposes
             mesh.bindposes = dstBones.Select(x => x.worldToLocalMatrix * dst.transform.localToWorldMatrix).ToArray();
@@ -385,7 +416,7 @@ namespace VRM
                 srcRenderer.SetBlendShapeWeight(i, value);
 
                 Vector3[] vertices = blendShapeMesh.vertices;
-                
+
                 for (int j = 0; j < vertices.Length; ++j)
                 {
                     if (originalBlendShapePositions[j] == Vector3.zero)
@@ -404,7 +435,7 @@ namespace VRM
                     if (originalBlendShapeNormals[j] == Vector3.zero)
                     {
                         normals[j] = Vector3.zero;
-                        
+
                     }
                     else
                     {
@@ -427,24 +458,29 @@ namespace VRM
                 }
 #endif
 
-                var weight = srcMesh.GetBlendShapeFrameWeight(i, 0);
+                var frameCount = srcMesh.GetBlendShapeFrameCount(i);
+                for (int f = 0; f < frameCount; f++)
+                {
 
-                try
-                {
-                    mesh.AddBlendShapeFrame(name,
-                        weight,
-                        vertices,
-                        hasNormals > 0 ? normals : null,
-                        hasTangents > 0 ? tangents : null
-                        );
-                }
-                catch (Exception)
-                {
-                    Debug.LogErrorFormat("fail to mesh.AddBlendShapeFrame {0}.{1}",
-                        mesh.name,
-                        srcMesh.GetBlendShapeName(i)
-                        );
-                    throw;
+                    var weight = srcMesh.GetBlendShapeFrameWeight(i, f);
+
+                    try
+                    {
+                        mesh.AddBlendShapeFrame(name,
+                            weight,
+                            vertices,
+                            hasNormals > 0 ? normals : null,
+                            hasTangents > 0 ? tangents : null
+                            );
+                    }
+                    catch (Exception)
+                    {
+                        Debug.LogErrorFormat("fail to mesh.AddBlendShapeFrame {0}.{1}",
+                            mesh.name,
+                            srcMesh.GetBlendShapeName(i)
+                            );
+                        throw;
+                    }
                 }
             }
 
@@ -515,7 +551,7 @@ namespace VRM
         /// <param name="go">対象モデルのルート</param>
         /// <param name="forceTPose">強制的にT-Pose化するか</param>
         /// <returns>正規化済みのモデル</returns>
-        public static NormalizedResult Execute(GameObject go, bool forceTPose, bool clearBlendShapeBeforeNormalize)
+        public static GameObject Execute(GameObject go, bool forceTPose, bool clearBlendShapeBeforeNormalize)
         {
             Dictionary<Transform, Transform> boneMap = new Dictionary<Transform, Transform>();
 
@@ -559,11 +595,137 @@ namespace VRM
                 NormalizeNoneSkinnedMesh(src, dst);
             }
 
-            return new NormalizedResult
+            CopyVRMComponents(go, normalized, boneMap);
+
+            // return new NormalizedResult
+            // {
+            //     Root = normalized,
+            //     BoneMap = boneMap
+            // };
+            return normalized;
+        }
+
+        /// <summary>
+        /// VRMを構成するコンポーネントをコピーする。
+        /// </summary>
+        /// <param name="go">コピー元</param>
+        /// <param name="root">コピー先</param>
+        /// <param name="map">コピー元とコピー先の対応関係</param>
+        static void CopyVRMComponents(GameObject go, GameObject root,
+            Dictionary<Transform, Transform> map)
+        {
             {
-                Root = normalized,
-                BoneMap = boneMap
-            };
+                // blendshape
+                var src = go.GetComponent<VRMBlendShapeProxy>();
+                if (src != null)
+                {
+                    var dst = root.AddComponent<VRMBlendShapeProxy>();
+                    dst.BlendShapeAvatar = src.BlendShapeAvatar;
+                }
+            }
+
+            {
+                var secondary = go.transform.Find("secondary");
+                if (secondary == null)
+                {
+                    secondary = go.transform;
+                }
+
+                var dstSecondary = root.transform.Find("secondary");
+                if (dstSecondary == null)
+                {
+                    dstSecondary = new GameObject("secondary").transform;
+                    dstSecondary.SetParent(root.transform, false);
+                }
+
+                // 揺れモノ
+                foreach (var src in go.transform.GetComponentsInChildren<VRMSpringBoneColliderGroup>())
+                {
+                    var dst = map[src.transform];
+                    var dstColliderGroup = dst.gameObject.AddComponent<VRMSpringBoneColliderGroup>();
+                    dstColliderGroup.Colliders = src.Colliders.Select(y =>
+                    {
+                        var offset = dst.worldToLocalMatrix.MultiplyPoint(src.transform.localToWorldMatrix.MultiplyPoint(y.Offset));
+                        return new VRMSpringBoneColliderGroup.SphereCollider
+                        {
+                            Offset = offset,
+                            Radius = y.Radius
+                        };
+                    }).ToArray();
+                }
+
+                foreach (var src in go.transform.GetComponentsInChildren<VRMSpringBone>())
+                {
+                    // Copy VRMSpringBone
+                    var dst = dstSecondary.gameObject.AddComponent<VRMSpringBone>();
+                    dst.m_comment = src.m_comment;
+                    dst.m_stiffnessForce = src.m_stiffnessForce;
+                    dst.m_gravityPower = src.m_gravityPower;
+                    dst.m_gravityDir = src.m_gravityDir;
+                    dst.m_dragForce = src.m_dragForce;
+                    if (src.m_center != null)
+                    {
+                        dst.m_center = map[src.m_center];
+                    }
+
+                    dst.RootBones = src.RootBones.Select(x => map[x]).ToList();
+                    dst.m_hitRadius = src.m_hitRadius;
+                    if (src.ColliderGroups != null)
+                    {
+                        dst.ColliderGroups = src.ColliderGroups
+                            .Select(x => map[x.transform].GetComponent<VRMSpringBoneColliderGroup>()).ToArray();
+                    }
+                }
+            }
+
+#pragma warning disable 0618
+            {
+                // meta(obsolete)
+                var src = go.GetComponent<VRMMetaInformation>();
+                if (src != null)
+                {
+                    src.CopyTo(root);
+                }
+            }
+#pragma warning restore 0618
+
+            {
+                // meta
+                var src = go.GetComponent<VRMMeta>();
+                if (src != null)
+                {
+                    var dst = root.AddComponent<VRMMeta>();
+                    dst.Meta = src.Meta;
+                }
+            }
+
+            {
+                // firstPerson
+                var src = go.GetComponent<VRMFirstPerson>();
+                if (src != null)
+                {
+                    src.CopyTo(root, map);
+                }
+            }
+
+            {
+                // humanoid
+                var dst = root.AddComponent<VRMHumanoidDescription>();
+                var src = go.GetComponent<VRMHumanoidDescription>();
+                if (src != null)
+                {
+                    dst.Avatar = src.Avatar;
+                    dst.Description = src.Description;
+                }
+                else
+                {
+                    var animator = go.GetComponent<Animator>();
+                    if (animator != null)
+                    {
+                        dst.Avatar = animator.avatar;
+                    }
+                }
+            }
         }
     }
 }

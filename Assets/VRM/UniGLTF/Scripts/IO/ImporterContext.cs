@@ -109,7 +109,7 @@ namespace UniGLTF
             {
                 if (m_materialImporter == null)
                 {
-                    m_materialImporter = new MaterialImporter(ShaderStore, this);
+                    m_materialImporter = new MaterialImporter(ShaderStore, (int index) => this.GetTexture(index));
                 }
                 return m_materialImporter;
             }
@@ -372,6 +372,9 @@ namespace UniGLTF
         #endregion
 
         #region Load. Build unity objects
+
+        public bool EnableLoadBalancing;
+        
         /// <summary>
         /// ReadAllBytes, Parse, Create GameObject
         /// </summary>
@@ -392,6 +395,15 @@ namespace UniGLTF
             Parse(path, bytes);
             Load();
             Root.name = Path.GetFileNameWithoutExtension(path);
+        }
+
+        public virtual ITextureLoader CreateTextureLoader(int index)
+        {
+#if UNIGLTF_USE_WEBREQUEST_TEXTURELOADER
+            return new UnityWebRequestTextureLoader(index);
+#else
+            return new TextureLoader(index);
+#endif
         }
 
         public void CreateTextureItems(UnityPath imageBaseDir = default(UnityPath))
@@ -422,7 +434,7 @@ namespace UniGLTF
                 else
 #endif
                 {
-                    item = new TextureItem(i);
+                    item = new TextureItem(i, CreateTextureLoader(i));
                 }
 
                 AddTexture(item);
@@ -551,28 +563,7 @@ namespace UniGLTF
                                         return meshImporter.ReadMesh(this, index);
                                     }
                                 })
-                        .ContinueWith(Scheduler.MainThread, x =>
-                        {
-                            using (MeasureTime("BuildMesh"))
-                            {
-                                var meshWithMaterials = MeshImporter.BuildMesh(this, x);
-
-                                var mesh = meshWithMaterials.Mesh;
-
-                                // mesh name
-                                if (string.IsNullOrEmpty(mesh.name))
-                                {
-                                    mesh.name = string.Format("UniGLTF import#{0}", i);
-                                }
-                                var originalName = mesh.name;
-                                for (int j = 1; Meshes.Any(y => y.Mesh.name == mesh.name); ++j)
-                                {
-                                    mesh.name = string.Format("{0}({1})", originalName, j);
-                                }
-
-                                return meshWithMaterials;
-                            }
-                        })
+                        .ContinueWithCoroutine<MeshWithMaterials>(Scheduler.MainThread, x => BuildMesh(x, index))
                         .ContinueWith(Scheduler.ThreadPool, x => Meshes.Add(x))
                         ;
                     }
@@ -586,10 +577,10 @@ namespace UniGLTF
                         AnimationImporter.ImportAnimation(this);
                     }
                 })
+                .ContinueWithCoroutine(Scheduler.MainThread, OnLoadModel)
                 .ContinueWith(Scheduler.CurrentThread,
                     _ =>
                     {
-                        OnLoadModel();
                         if (m_showSpeedLog)
                         {
                             Debug.Log(GetSpeedLog());
@@ -598,9 +589,10 @@ namespace UniGLTF
                     });
         }
 
-        protected virtual void OnLoadModel()
+        protected virtual IEnumerator OnLoadModel()
         {
             Root.name = "GLTF";
+            yield break;
         }
 
         IEnumerator TexturesProcessOnAnyThread()
@@ -643,6 +635,39 @@ namespace UniGLTF
                 }
             }
             yield return null;
+        }
+        
+        IEnumerator BuildMesh(MeshImporter.MeshContext x, int i)
+        {
+            using (MeasureTime("BuildMesh"))
+            {
+                MeshWithMaterials meshWithMaterials;
+                if (EnableLoadBalancing)
+                {
+                    var buildMesh =  MeshImporter.BuildMeshCoroutine(this, x);
+                    yield return buildMesh;
+                    meshWithMaterials = buildMesh.Current as MeshWithMaterials;
+                }
+                else
+                {
+                    meshWithMaterials = MeshImporter.BuildMesh(this, x);
+                }
+
+                var mesh = meshWithMaterials.Mesh;
+
+                // mesh name
+                if (string.IsNullOrEmpty(mesh.name))
+                {
+                    mesh.name = string.Format("UniGLTF import#{0}", i);
+                }
+                var originalName = mesh.name;
+                for (int j = 1; Meshes.Any(y => y.Mesh.name == mesh.name); ++j)
+                {
+                    mesh.name = string.Format("{0}({1})", originalName, j);
+                }
+
+                yield return meshWithMaterials;
+            }
         }
 
         IEnumerator LoadMeshes()

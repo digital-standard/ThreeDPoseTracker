@@ -39,7 +39,7 @@ public class UIScript : MonoBehaviour
     public Texture BackgroundTexture;
     public Camera Maincamera;
 
-    private string AppVer = "0.16";
+    private string AppVer = "0.20";
     private int ConfigColums = 21;
 
     public MessageBoxScript message;
@@ -50,15 +50,16 @@ public class UIScript : MonoBehaviour
     private void Awake()
     {
         var appVer = PlayerPrefs.GetString("AppVer", "");
+        
         if(appVer != AppVer)
         {
             PlayerPrefs.SetString("AppVer", AppVer);
             configurationSetting.Save();
-            PlayerPrefs.SetString("Configuration", "");
-            PlayerPrefs.SetString("AvatarSettings", "");
+            //PlayerPrefs.SetString("Configuration", "");
+            //PlayerPrefs.SetString("AvatarSettings", "");
             PlayerPrefs.Save();
         }
-
+        
         configurationSetting.Load();
 
         message = GameObject.Find("pnlMessage").GetComponent<MessageBoxScript>();
@@ -111,7 +112,7 @@ public class UIScript : MonoBehaviour
 
         ReflectConfiguration(configurationSetting);
 
-        var settings = PlayerPrefs.GetString("AvatarSettings", "");
+        var settings = PlayerPrefs.GetString("AvatarSettings_020", "");
         //settings = "";
         // Decode Avatar Setting
         string[] asStr = settings.Split(';');
@@ -503,7 +504,7 @@ public class UIScript : MonoBehaviour
         }
 
         PlayerPrefs.SetString("AppVer", AppVer);
-        PlayerPrefs.SetString("AvatarSettings", saveStr);
+        PlayerPrefs.SetString("AvatarSettings_020", saveStr);
         PlayerPrefs.Save();
     }
 
@@ -577,6 +578,7 @@ public class UIScript : MonoBehaviour
             if (smr != null)
             {
                 smr.localBounds = new Bounds(new Vector3(), smr.localBounds.size);
+                smr.updateWhenOffscreen = true;
             }
             
             if(child.childCount > 0)
@@ -676,7 +678,7 @@ public class UIScript : MonoBehaviour
                     configurationSetting = new ConfigurationSetting();
                     SaveConfiguration(configurationSetting);
                     SetConfiguration(configurationSetting);
-                    PlayerPrefs.SetString("AvatarSettings", "");
+                    PlayerPrefs.SetString("AvatarSettings_020", "");
                     PlayerPrefs.Save();
                     configuration.Close();
                 }

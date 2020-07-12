@@ -63,13 +63,18 @@ public class VNectModel : MonoBehaviour
 
         public Vector3 Pos3D = new Vector3();
         public Vector3 Now3D = new Vector3();
+        public Vector3 PPos3D = new Vector3();
+        public Vector3 PPPos3D = new Vector3();
         public Vector3[] PrevPos3D = new Vector3[10];
         public Vector3 PrevNow3D = new Vector3();
         public Vector3 PPrevNow3D = new Vector3();
-        public Vector3 PPPrevNow3D = new Vector3();
+        //public Vector3 PPPrevNow3D = new Vector3();
         public Vector3 Predicted3D = new Vector3();
         public Vector3 VecNow3D = new Vector3();
+        public Vector3 PPredicted3D = new Vector3();
+        public Vector3 AccNow3D = new Vector3();
         public Vector3 VelNow3D = new Vector3();
+        public float VecAngle;
         public float Score3D;
         public bool Visibled;
         public int Error;
@@ -721,7 +726,7 @@ public class VNectModel : MonoBehaviour
             }
 
         }
-        
+        /*
         if (jointPoints[PositionIndex.lFoot.Int()].Transform.position.y < FootIKY)
         {
             var jpf = jointPoints[PositionIndex.lFoot.Int()];
@@ -738,6 +743,7 @@ public class VNectModel : MonoBehaviour
             jp.Transform.rotation = Quaternion.LookRotation(jp.Transform.position - new Vector3(jp.Child.Transform.position.x, ToeIKY, jp.Child.Transform.position.z), Vector3.up) * jp.InverseRotation;
 
         }
+        */
 
         // Head Rotation
         var gaze = jointPoints[PositionIndex.Nose.Int()].Pos3D - jointPoints[PositionIndex.head.Int()].Pos3D;

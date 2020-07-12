@@ -33,7 +33,16 @@ public class Filter
         if (list.Count > bufferSize)
         {
             list.RemoveAt(0);
-            return Butterworth(list, samplingrate);
+            FittingData[] data_list = new FittingData[100];
+            for(var i = 0; i < 100; i++)
+            {
+                data_list[i] = new FittingData(i, list[i]);
+
+            }
+            var rpf = new RobustPolynomialFitting(data_list, 3, true);
+            var rpfv = rpf.ExecureFitting();
+            return data_list[99].Y;
+            //return Butterworth(list, samplingrate);
         }
         else
         {

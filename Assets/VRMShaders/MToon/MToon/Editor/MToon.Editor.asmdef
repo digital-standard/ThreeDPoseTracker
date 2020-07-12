@@ -1,0 +1,12 @@
+{
+    "name": "MToon.Editor",
+    "references": [
+        "MToon"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false
+}

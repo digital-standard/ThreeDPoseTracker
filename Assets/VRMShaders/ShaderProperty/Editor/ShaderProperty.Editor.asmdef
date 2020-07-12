@@ -1,0 +1,12 @@
+{
+    "name": "ShaderProperty.Editor",
+    "references": [
+        "ShaderProperty.Runtime"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false
+}

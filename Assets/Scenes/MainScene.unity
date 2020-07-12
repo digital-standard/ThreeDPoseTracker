@@ -3511,6 +3511,11 @@ PrefabInstance:
       propertyPath: m_DirtyAABB
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2599620371799668786, guid: 3a09e2c4d13723240a31e93605ce0b59,
+        type: 3}
+      propertyPath: m_UpdateWhenOffscreen
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4431687141239471173, guid: 3a09e2c4d13723240a31e93605ce0b59,
         type: 3}
       propertyPath: m_Name
@@ -3606,6 +3611,11 @@ PrefabInstance:
       propertyPath: m_DirtyAABB
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6105095061273757007, guid: 3a09e2c4d13723240a31e93605ce0b59,
+        type: 3}
+      propertyPath: m_UpdateWhenOffscreen
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6535496634220229838, guid: 3a09e2c4d13723240a31e93605ce0b59,
         type: 3}
       propertyPath: m_AABB.m_Center.x
@@ -3640,6 +3650,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_DirtyAABB
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6535496634220229838, guid: 3a09e2c4d13723240a31e93605ce0b59,
+        type: 3}
+      propertyPath: m_UpdateWhenOffscreen
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7410749190129899084, guid: 3a09e2c4d13723240a31e93605ce0b59,
         type: 3}
@@ -10183,7 +10198,7 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
+  near clip plane: 0.01
   far clip plane: 150
   field of view: 60
   orthographic: 0
@@ -12005,7 +12020,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!65 &661009546
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -25724,7 +25739,7 @@ Rigidbody:
   m_Mass: 40
   m_Drag: 0
   m_AngularDrag: 0
-  m_UseGravity: 1
+  m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 1
   m_Constraints: 122
@@ -33320,7 +33335,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22f181ccb880e5c4a8cf0b92c2410b1f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  NNModel: {fileID: 5022602860645237092, guid: 4cfc464b3886fb448be90af565b307f1, type: 3}
+  NNModel: {fileID: 5022602860645237092, guid: 1a83b0b4a907bf648b5b46d0108c192d, type: 3}
   WorkerType: 32768
   Verbose: 0
   VNectModel: {fileID: 717188072}

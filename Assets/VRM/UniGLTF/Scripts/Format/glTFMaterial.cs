@@ -28,13 +28,17 @@ namespace UniGLTF
         public int texCoord;
 
         // empty schemas
-        public object extensions;
+        public glTFTextureInfo_extensions extensions;
         public object extras;
 
         protected override void SerializeMembers(GLTFJsonFormatter f)
         {
             f.KeyValue(() => index);
             f.KeyValue(() => texCoord);
+            if (extensions != null)
+            {
+                f.KeyValue(() => extensions);
+            }
         }
 
         public abstract glTFTextureTypes TextureType { get; }
@@ -147,7 +151,10 @@ namespace UniGLTF
     public class glTFMaterial : JsonSerializableBase
     {
         public string name;
-        public glTFPbrMetallicRoughness pbrMetallicRoughness;
+        public glTFPbrMetallicRoughness pbrMetallicRoughness = new glTFPbrMetallicRoughness
+        {
+            baseColorFactor = new float[] { 1.0f, 1.0f, 1.0f, 1.0f },
+        };
         public glTFMaterialNormalTextureInfo normalTexture = null;
 
         public glTFMaterialOcclusionTextureInfo occlusionTexture = null;
@@ -214,8 +221,8 @@ namespace UniGLTF
         {
             return new glTFTextureInfo[]
             {
-                pbrMetallicRoughness.baseColorTexture,
-                pbrMetallicRoughness.metallicRoughnessTexture,
+                (pbrMetallicRoughness != null)?pbrMetallicRoughness.baseColorTexture:null,
+                (pbrMetallicRoughness != null)?pbrMetallicRoughness.metallicRoughnessTexture:null,
                 normalTexture,
                 occlusionTexture,
                 emissiveTexture

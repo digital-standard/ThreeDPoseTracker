@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using UniGLTF.UniUnlit;
+﻿using UniGLTF.UniUnlit;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 
 namespace UniGLTF
@@ -52,6 +49,8 @@ namespace UniGLTF
                     {
                         index = index,
                     };
+
+                    Export_MainTextureTransform(m, material.pbrMetallicRoughness.baseColorTexture);
                 }
             }
         }
@@ -77,6 +76,8 @@ namespace UniGLTF
                         {
                             index = index,
                         };
+
+                    Export_MainTextureTransform(m, material.pbrMetallicRoughness.metallicRoughnessTexture);
                 }
             }
 
@@ -111,6 +112,8 @@ namespace UniGLTF
                     {
                         index = index,
                     };
+
+                    Export_MainTextureTransform(m, material.normalTexture);
                 }
 
                 if (index != -1 && m.HasProperty("_BumpScale"))
@@ -131,6 +134,8 @@ namespace UniGLTF
                     {
                         index = index,
                     };
+
+                    Export_MainTextureTransform(m, material.occlusionTexture);
                 }
 
                 if (index != -1 && m.HasProperty("_OcclusionStrength"))
@@ -164,8 +169,49 @@ namespace UniGLTF
                     {
                         index = index,
                     };
+
+                    Export_MainTextureTransform(m, material.emissiveTexture);
                 }
             }
+        }
+
+        static void Export_MainTextureTransform(Material m, glTFTextureInfo textureInfo)
+        {
+            Export_TextureTransform(m, textureInfo, "_MainTex");
+        }
+
+        static void Export_TextureTransform(Material m, glTFTextureInfo textureInfo, string propertyName)
+        {
+            if (textureInfo != null && m.HasProperty(propertyName))
+            {
+                var offset = m.GetTextureOffset(propertyName);
+                var scale = m.GetTextureScale(propertyName);
+                offset.y = (offset.y + scale.y - 1) * -1.0f;
+
+                textureInfo.extensions = new glTFTextureInfo_extensions
+                {
+                    KHR_texture_transform = new glTF_KHR_texture_transform()
+                    {
+                        offset = new float[] { offset.x, offset.y },
+                        scale = new float[] { scale.x, scale.y },
+                    }
+                };
+            }
+        }
+
+        public static bool UseUnlit(string shaderName)
+        {
+            switch (shaderName)
+            {
+                case "Unlit/Color":
+                case "Unlit/Texture":
+                case "Unlit/Transparent":
+                case "Unlit/Transparent Cutout":
+                case "UniGLTF/UniUnlit":
+                    return true;
+            }
+            return false;
+
         }
 
         protected virtual glTFMaterial CreateMaterial(Material m)

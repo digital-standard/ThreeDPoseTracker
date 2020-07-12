@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System;
 using System.IO;
 using Unity.Barracuda;
+using System.Text;
 
 public class VNectBarracudaRunner : MonoBehaviour
 {
@@ -55,7 +56,7 @@ public class VNectBarracudaRunner : MonoBehaviour
     public float ForwardThreshold;
     public float BackwardThreshold;
     public int NOrderLPF;
-    Filter[] filter = new Filter[JointNum];
+    RobustFitting[] filter = new RobustFitting[JointNum];
     public int BWBuffer = 300;
     public float BWCutoff = 5.8f;
 
@@ -71,8 +72,18 @@ public class VNectBarracudaRunner : MonoBehaviour
     public bool User3Input;
     public bool UpperBodyMode;
 
+    StreamWriter writer;
+
     private void Start()
     {
+        Encoding enc = Encoding.GetEncoding("Shift_JIS");
+
+        // デバッグ用ファイルを開く
+        //var csvPath = System.IO.Path.Combine(Application.streamingAssetsPath, "data.csv");
+        //writer = new StreamWriter(csvPath, false, enc);
+
+        // テキストを書き込む
+
         if (DebugMode)
         {
             if(User3Input)
@@ -136,7 +147,7 @@ public class VNectBarracudaRunner : MonoBehaviour
         {
             if (filter[i] == null)
             {
-                filter[i] = new Filter(BWBuffer, BWCutoff);
+                filter[i] = new RobustFitting(BWBuffer);
             }
         }
 
@@ -261,10 +272,10 @@ public class VNectBarracudaRunner : MonoBehaviour
         {
             if(filter[i] == null)
             {
-                filter[i] = new Filter(BWBuffer, BWCutoff);
+                filter[i] = new RobustFitting(BWBuffer);
             }
 
-            filter[i].Init(config.BWBuffer, config.BWCutoff);
+            filter[i].Init(config.BWBuffer);
         }
 
         ForwardThreshold = config.ForwardThreshold;
@@ -405,6 +416,7 @@ public class VNectBarracudaRunner : MonoBehaviour
     private void PredictPose()
     {
         var score = 0f;
+        var csv = videoCapture.VideoPlayer.frame.ToString();
 
         for (var j = 0; j < JointNum; j++)
         {
@@ -435,13 +447,17 @@ public class VNectBarracudaRunner : MonoBehaviour
                 }
             }
 
+            jp.PrevNow3D = jp.Now3D;
             score += jp.Score3D;
             var yi = maxYIndex * cubeOffsetSquared + maxXIndex * cubeOffsetLinear;
-            var fx = ((offset3D[yi + jj + maxZIndex] + 0.5f + (float)maxXIndex) / (float)HeatMapCol) * InputImageSizeF - InputImageSizeHalf;
-            var fy = InputImageSizeF - ((offset3D[yi + (j + JointNum) * HeatMapCol + maxZIndex] + 0.5f + (float)maxYIndex) / (float)HeatMapCol) * InputImageSizeF - InputImageSizeHalf;
-            var fz = ((offset3D[yi + (j + JointNum_Squared) * HeatMapCol + maxZIndex] + 0.5f + (float)(maxZIndex - HeatMapCol_Half)) / (float)HeatMapCol) * InputImageSizeF;
-            (jp.Now3D.x, jp.Now3D.y, jp.Now3D.z) = filter[j].Add(fx, fy, fz, FPS);
+            jp.Now3D.x = ((offset3D[yi + jj + maxZIndex] + 0.5f + (float)maxXIndex) / (float)HeatMapCol) * InputImageSizeF - InputImageSizeHalf;
+            jp.Now3D.y = InputImageSizeF - ((offset3D[yi + (j + JointNum) * HeatMapCol + maxZIndex] + 0.5f + (float)maxYIndex) / (float)HeatMapCol) * InputImageSizeF - InputImageSizeHalf;
+            jp.Now3D.z = ((offset3D[yi + (j + JointNum_Squared) * HeatMapCol + maxZIndex] + 0.5f + (float)(maxZIndex - HeatMapCol_Half)) / (float)HeatMapCol) * InputImageSizeF;
+            //(jp.Now3D.x, jp.Now3D.y, jp.Now3D.z) = filter[j].Add(fx, fy, fz, FPS);
+
+            //csv += ("," + jp.Now3D.x.ToString() + "," + jp.Now3D.y.ToString() + "," + jp.Now3D.z.ToString());
         }
+        //writer.WriteLine(csv);
 
         EstimatedScore = score / JointNum;
 
@@ -461,15 +477,18 @@ public class VNectBarracudaRunner : MonoBehaviour
 
         // Filters
         //
+
         var frwd = TriangleNormal(jointPoints[PositionIndex.hip.Int()].Now3D, jointPoints[PositionIndex.lThighBend.Int()].Now3D, jointPoints[PositionIndex.rThighBend.Int()].Now3D);
         var frwdAngle = Vector3.Angle(frwd, Vector3.back);
 
         var f = false;
+        /**/
         f = FrontBackCheckv(jointPoints[PositionIndex.lShldrBend.Int()], jointPoints[PositionIndex.rShldrBend.Int()], f);
         if (f)
         {
             foreach (var jp in jointPoints)
             {
+                /*
                 var vec = jp.Now3D - jp.PrevNow3D;
                 var vel = jp.VecNow3D * FPS / 30f;
 
@@ -477,6 +496,15 @@ public class VNectBarracudaRunner : MonoBehaviour
                 jp.Now3D = jp.PrevNow3D + v * 0.6f;
                 jp.PPrevNow3D = jp.PrevNow3D;
                 jp.PrevNow3D = jp.Now3D;
+                */
+                jp.Now3D = jp.Predicted3D;
+                KalmanUpdate(jp);
+                jp.PrevPos3D[0] = jp.Pos3D;
+                for (var i = 1; i < NOrderLPF; i++)
+                {
+                    jp.PrevPos3D[i] = jp.PrevPos3D[i] * Smooth + jp.PrevPos3D[i - 1] * (1f - Smooth);
+                }
+                jp.Pos3D = jp.PrevPos3D[NOrderLPF - 1];
             }
 
             return;
@@ -510,7 +538,7 @@ public class VNectBarracudaRunner : MonoBehaviour
         f = FrontBackCheckv(jointPoints[PositionIndex.lThighBend.Int()], jointPoints[PositionIndex.rThighBend.Int()], f);
         f = FrontBackCheckv(jointPoints[PositionIndex.lFoot.Int()], jointPoints[PositionIndex.rFoot.Int()], f);
         FrontBackCheckv(jointPoints[PositionIndex.lToe.Int()], jointPoints[PositionIndex.rToe.Int()], f);
-
+        /**/
         foreach (var jp in jointPoints)
         {
             var vec = jp.Now3D - jp.PrevNow3D;
@@ -526,27 +554,29 @@ public class VNectBarracudaRunner : MonoBehaviour
                 jp.VecNow3D *= 0.25f;
                 Debug.Log("補正** :" + jp.Score3D.ToString() + "," + vel.magnitude.ToString());
             }*/
-           
-            if ((jp.RattlingCheck) && (jp.Score3D < 0.4 && vel.magnitude > jp.VecNow3DMagnitude * jp.Ratio))
-           // else if (vel.magnitude > jp.VecNow3DMagnitude * 1.5f)
-            {
-                /**/
-                var vv1 = jp.PPrevNow3D - jp.PPPrevNow3D;
-                var vv2 = jp.PrevNow3D - jp.PPrevNow3D;
-                var vv = vv2 - vv1;
-                jp.Now3D = jp.PrevNow3D + vv * 0.5f;
+            /*
+             if ((jp.RattlingCheck) && (jp.Score3D < 0.4 && vel.magnitude > jp.VecNow3DMagnitude * jp.Ratio))
+            // else if (vel.magnitude > jp.VecNow3DMagnitude * 1.5f)
+             {
+
+                 var vv1 = jp.PPrevNow3D - jp.PPPrevNow3D;
+                 var vv2 = jp.PrevNow3D - jp.PPrevNow3D;
+                 var vv = vv2 - vv1;
+                //jp.Now3D = jp.PrevNow3D + vv * 0.5f;
+                jp.Now3D = jp.Predicted3D;
                 jp.VecNow3D *= 0.25f;
-                /**/
-                //jp.Now3D = (jp.PrevNow3D + jp.Predicted3D) * 0.5f;
-                //jp.VecNow3D *= 0.25f;
-                Debug.Log("補正 :" + jp.Score3D.ToString()　+ "," +　vel.magnitude.ToString());
-            }
+
+                 //jp.Now3D = (jp.PrevNow3D + jp.Predicted3D) * 0.5f;
+                 //jp.VecNow3D *= 0.25f;
+                 Debug.Log("補正 :" + jp.Score3D.ToString()　+ "," +　vel.magnitude.ToString());
+             }
             else
+            */
             if (jp.Error != 0 || (jp.Score3D < jp.Threshold && vel.magnitude > jp.VelNow3D.magnitude * jp.Ratio))
             {
-                jp.Now3D = jp.PrevNow3D * jp.Smooth + jp.Now3D * (1f - jp.Smooth);
-                //jp.Now3D = jp.PrevNow3D + jp.VecNow3D * 0.5f;
-                //jp.VecNow3D *= 0.5f;
+ 
+                jp.Now3D = jp.Predicted3D;
+                Debug.Log("補正 :" + jp.Score3D.ToString() + "," + vel.magnitude.ToString());
             }
             else
             {
@@ -556,73 +586,71 @@ public class VNectBarracudaRunner : MonoBehaviour
                 jp.VecNow3D = vec;
                 jp.VelNow3D = vel;
             }
+          
+            KalmanUpdate(jp);
+
+            
             /*
-            jp.K.x = (jp.P.x + this.KalmanParamQ) / (jp.P.x + this.KalmanParamQ + this.KalmanParamR);
-            jp.K.y = (jp.P.y + this.KalmanParamQ) / (jp.P.y + this.KalmanParamQ + this.KalmanParamR);
-            jp.K.z = (jp.P.z + this.KalmanParamQ) / (jp.P.z + this.KalmanParamQ + this.KalmanParamR);
-            jp.P.x = this.KalmanParamR * (jp.P.x + this.KalmanParamQ) / (this.KalmanParamR + jp.P.x + this.KalmanParamQ);
-            jp.P.y = this.KalmanParamR * (jp.P.y + this.KalmanParamQ) / (this.KalmanParamR + jp.P.y + this.KalmanParamQ);
-            jp.P.z = this.KalmanParamR * (jp.P.z + this.KalmanParamQ) / (this.KalmanParamR + jp.P.z + this.KalmanParamQ);
-
-            jp.Pos3D.x = jp.Predicted3D.x + (jp.Now3D.x - jp.Predicted3D.x) * jp.K.x;
-            jp.Pos3D.y = jp.Predicted3D.y + (jp.Now3D.y - jp.Predicted3D.y) * jp.K.y;
-            jp.Pos3D.z = jp.Predicted3D.z + (jp.Now3D.z - jp.Predicted3D.z) * jp.K.z;
-            jp.X = jp.Pos3D;
+            var pPVecNow3D = jp.VecNow3D;
+            jp.VecNow3D = jp.PPos3D - jp.Pos3D;
+            if (!filter[cnt].Add(jp.VecNow3D))
+            {
+                jp.Pos3D = ((jp.Pos3D + jp.PPredicted3D) * 0.5f + jp.PPos3D) * 0.5f;
+                //Debug.Log("Index:" + cnt.ToString() + "  2SD :" + jp.VecNow3D.magnitude.ToString());
+            }
             */
-            var v1 = jp.PrevNow3D - jp.PPrevNow3D;
-            var v2 = jp.Now3D - jp.PrevNow3D;
-
-            if (v1 == Vector3.zero)
-            {
-                jp.Predicted3D = jp.Now3D;
-            }
-            else
-            {
-                // 二つのベクトルのなす角
-                var va = Vector3.Angle(v1, v2) * Mathf.Deg2Rad;
-                // 回転軸
-                Vector3 n = Vector3.Cross(v1, v2);
-                n.Normalize();
-                // ロドリゲス回転公式
-                //var pr = jp.Now3D.normalized;
-                var pr = v2;
-                var cos = Mathf.Cos(va);
-                var ocos = 1f - cos;
-                var sin = Mathf.Sin(va);
-                var nxocos = n.x * ocos;
-                var nyocos = n.y * ocos;
-                var nxsin = n.x * sin;
-                var nysin = n.y * sin;
-                var nzsin = n.z * sin;
-                var prX = (cos + n.x * nxocos) * pr.x + (n.y * nxocos - nzsin) * pr.y + (n.z * nxocos + nysin) * pr.z;
-                var prY = (n.y * nxocos + nzsin) * pr.x + (cos + n.y * nyocos) * pr.y + (n.z * nyocos - nxsin) * pr.z;
-                var prZ = (n.z * nxocos - nysin) * pr.x + (n.z * nyocos + nxsin) * pr.y + (cos + n.z * n.z * ocos) * pr.z;
-
-                var v = new Vector3(prX, prY, prZ);
-
-                //var v = v2 - v1;
-                // 次の予測値
-                jp.Predicted3D = jp.Now3D + v * (v2.magnitude / v1.magnitude);
-            }
-
-            jp.PPPrevNow3D = jp.PPrevNow3D;
-            jp.PPrevNow3D = jp.PrevNow3D;
-            jp.PrevNow3D = jp.Now3D;
-            jp.Pos3D = jp.Now3D;
-            jp.Visibled = true;
-        }
-
-        foreach (var jp in jointPoints)
-        {
             jp.PrevPos3D[0] = jp.Pos3D;
             for (var i = 1; i < NOrderLPF; i++)
             {
                 jp.PrevPos3D[i] = jp.PrevPos3D[i] * Smooth + jp.PrevPos3D[i - 1] * (1f - Smooth);
             }
             jp.Pos3D = jp.PrevPos3D[NOrderLPF - 1];
+
+            var v1 = jp.PPos3D - jp.PPPos3D;
+            var v2 = jp.Pos3D - jp.PPos3D;
+            if (v1 == Vector3.zero)
+            {
+                jp.Predicted3D = jp.Pos3D;
+            }
+            else
+            {
+                // 二つのベクトルのなす角
+                var va = Mathf.Min(Vector3.Angle(v1, v2), 45f) * Mathf.Deg2Rad;
+                // 回転軸
+                Vector3 n = Vector3.Cross(v1, v2).normalized;
+                // ロドリゲス回転公式
+                var pr = v2;
+                var cos = Mathf.Cos(va);
+                var ocos = 1f - cos;
+                var sin = Mathf.Sin(va);
+                var nxocos = n.x * ocos;
+                var nyocos = n.y * ocos;
+                var nzocos = n.z * ocos;
+                var nxsin = n.x * sin;
+                var nysin = n.y * sin;
+                var nzsin = n.z * sin;
+                var prX = (cos + n.x * nxocos) * pr.x + (n.y * nxocos - nzsin) * pr.y + (n.z * nxocos + nysin) * pr.z;
+                var prY = (n.x * nyocos + nzsin) * pr.x + (cos + n.y * nyocos) * pr.y + (n.z * nyocos - nxsin) * pr.z;
+                var prZ = (n.x * nzocos - nysin) * pr.x + (n.y * nzocos + nxsin) * pr.y + (cos + n.z * nzocos) * pr.z;
+
+                //var v = v2 - v1;
+                // 次の予測値
+                jp.PPredicted3D = jp.Predicted3D;
+                jp.Predicted3D = jp.Pos3D + new Vector3(prX, prY, prZ);
+            }
+
+            jp.VecNow3D = (jp.Now3D - jp.PrevNow3D) * FPS / 30f;
+
+            jp.PPrevNow3D = jp.PrevNow3D;
+            jp.PrevNow3D = jp.Now3D;
+            jp.PPPos3D = jp.PPos3D;
+            jp.PPos3D = jp.Pos3D;
+            jp.Visibled = true;
+
+
         }
 
-        if(frwdAngle < 45f)
+        if (frwdAngle < 45f)
         {
             if (EstimatedScore > ForwardThreshold)
             {
@@ -651,84 +679,53 @@ public class VNectBarracudaRunner : MonoBehaviour
 
     bool FrontBackCheckv(VNectModel.JointPoint jp1, VNectModel.JointPoint jp2, bool flag)
     {
-        /*
-        if (flag)
+        var l1 = Vector3.Distance(jp1.PrevNow3D, jp1.Now3D);
+        var c1 = Vector3.Distance(jp2.PrevNow3D, jp1.Now3D);
+
+        var l2 = Vector3.Distance(jp2.PrevNow3D, jp2.Now3D);
+        var c2 = Vector3.Distance(jp1.PrevNow3D, jp2.Now3D);
+
+        if(l1 > c1 && l2 > c2)
         {
             jp1.Error++;
-            if(jp1.Error == jp1.RattlingCheckFrame)
+            jp2.Error++;
+            if (!flag && jp1.Error == jp1.RattlingCheckFrame)
             {
                 jp1.Error = 0;
                 jp2.Error = 0;
                 return false;
             }
 
-            jp2.Error++; ;
             return true;
         }
-        */
-        /*
-        if (jp1.PrevScore3D > 0.5 && jp2.Score3D > 0.5)
+        else
         {
-            jp1.Error = false;
-            jp2.Error = false;
+            jp1.Error = 0;
+            jp2.Error = 0;
+
             return false;
         }
-        */
-        //if (jp1.PrevScore3D > jp1.Score3D && jp2.PrevScore3D > jp2.Score3D)
-        {
-            var l1 = Vector3.Distance(jp1.PrevNow3D, jp1.Now3D);
-            var c1 = Vector3.Distance(jp2.PrevNow3D, jp1.Now3D);
-
-            var l2 = Vector3.Distance(jp2.PrevNow3D, jp2.Now3D);
-            var c2 = Vector3.Distance(jp1.PrevNow3D, jp2.Now3D);
-
-            if(l1 > c1 && l2 > c2)
-            {
-                jp1.Error++;
-                jp2.Error++;
-                if (!flag && jp1.Error == jp1.RattlingCheckFrame)
-                {
-                    jp1.Error = 0;
-                    jp2.Error = 0;
-                    return false;
-                }
-
-                return true;
-            }
-            else
-            {
-                jp1.Error = 0;
-                jp2.Error = 0;
-
-                return false;
-            }
-        }
-        /*else
-        {
-            jp1.Error = false;
-            jp2.Error = false;
-        }*/
     }
 
     void KalmanUpdate(VNectModel.JointPoint measurement)
     {
         measurementUpdate(measurement);
-        measurement.Pos3D.x = measurement.Predicted3D.x + (measurement.Now3D.x - measurement.X.x) * measurement.K.x;
-        measurement.Pos3D.y = measurement.Predicted3D.y + (measurement.Now3D.y - measurement.X.y) * measurement.K.y;
-        measurement.Pos3D.z = measurement.Predicted3D.z + (measurement.Now3D.z - measurement.X.z) * measurement.K.z;
+        measurement.Pos3D.x = measurement.X.x + (measurement.Now3D.x - measurement.X.x) * measurement.K.x;
+        measurement.Pos3D.y = measurement.X.y + (measurement.Now3D.y - measurement.X.y) * measurement.K.y;
+        measurement.Pos3D.z = measurement.X.z + (measurement.Now3D.z - measurement.X.z) * measurement.K.z;
         measurement.X = measurement.Pos3D;
     }
 
     void measurementUpdate(VNectModel.JointPoint measurement)
     {
-        measurement.K.x = (measurement.P.x + this.KalmanParamQ) / (measurement.P.x + this.KalmanParamQ + this.KalmanParamR);
-        measurement.K.y = (measurement.P.y + this.KalmanParamQ) / (measurement.P.y + this.KalmanParamQ + this.KalmanParamR);
-        measurement.K.z = (measurement.P.z + this.KalmanParamQ) / (measurement.P.z + this.KalmanParamQ + this.KalmanParamR);
-        measurement.P.x = this.KalmanParamR * (measurement.P.x + this.KalmanParamQ) / (this.KalmanParamR + measurement.P.x + this.KalmanParamQ);
-        measurement.P.y = this.KalmanParamR * (measurement.P.y + this.KalmanParamQ) / (this.KalmanParamR + measurement.P.y + this.KalmanParamQ);
-        measurement.P.z = this.KalmanParamR * (measurement.P.z + this.KalmanParamQ) / (this.KalmanParamR + measurement.P.z + this.KalmanParamQ);
+        measurement.K.x = (measurement.P.x + KalmanParamQ) / (measurement.P.x + KalmanParamQ + KalmanParamR);
+        measurement.K.y = (measurement.P.y + KalmanParamQ) / (measurement.P.y + KalmanParamQ + KalmanParamR);
+        measurement.K.z = (measurement.P.z + KalmanParamQ) / (measurement.P.z + KalmanParamQ + KalmanParamR);
+        measurement.P.x = KalmanParamR * (measurement.P.x + KalmanParamQ) / (KalmanParamR + measurement.P.x + KalmanParamQ);
+        measurement.P.y = KalmanParamR * (measurement.P.y + KalmanParamQ) / (KalmanParamR + measurement.P.y + KalmanParamQ);
+        measurement.P.z = KalmanParamR * (measurement.P.z + KalmanParamQ) / (KalmanParamR + measurement.P.z + KalmanParamQ);
     }
-    
+
     private void OnDestroy()
     {
         _worker?.Dispose();
