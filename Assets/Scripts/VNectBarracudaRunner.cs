@@ -56,9 +56,11 @@ public class VNectBarracudaRunner : MonoBehaviour
     public float ForwardThreshold;
     public float BackwardThreshold;
     public int NOrderLPF;
-    RobustFitting[] filter = new RobustFitting[JointNum];
+    //RobustFitting[] filter = new RobustFitting[JointNum];
     public int BWBuffer = 300;
     public float BWCutoff = 5.8f;
+    FIRFilter[] filter = new FIRFilter[JointNum];
+    FilterWindow filterWindow = new FilterWindow();
 
     private delegate void UpdateVNectModelDelegate();
     private UpdateVNectModelDelegate UpdateVNectModel;
@@ -74,19 +76,14 @@ public class VNectBarracudaRunner : MonoBehaviour
 
     StreamWriter writer;
 
-    private void Start()
+    private void Awake()
     {
-        Encoding enc = Encoding.GetEncoding("Shift_JIS");
-
-        // デバッグ用ファイルを開く
-        //var csvPath = System.IO.Path.Combine(Application.streamingAssetsPath, "data.csv");
-        //writer = new StreamWriter(csvPath, false, enc);
 
         // テキストを書き込む
 
         if (DebugMode)
         {
-            if(User3Input)
+            if (User3Input)
             {
                 UpdateVNectModel = new UpdateVNectModelDelegate(UpdateVNectAsync);
             }
@@ -128,6 +125,20 @@ public class VNectBarracudaRunner : MonoBehaviour
             }
         }
 
+        // Init VideoCapture
+        videoCapture.Init(InputImageSize, InputImageSize);
+        videoCapture.VideoReady += videoCapture_VideoReady;
+    }
+
+    private void Start()
+    {
+
+        // デバッグ用ファイルを開く
+        //Encoding enc = Encoding.GetEncoding("Shift_JIS");
+        //var csvPath = System.IO.Path.Combine(Application.streamingAssetsPath, "data.csv");
+        //writer = new StreamWriter(csvPath, false, enc);
+
+
         HeatMapCol_Half = HeatMapCol / 2;
         HeatMapCol_Squared = HeatMapCol * HeatMapCol;
         HeatMapCol_Cube = HeatMapCol * HeatMapCol * HeatMapCol;
@@ -147,7 +158,8 @@ public class VNectBarracudaRunner : MonoBehaviour
         {
             if (filter[i] == null)
             {
-                filter[i] = new RobustFitting(BWBuffer);
+                //filter[i] = new RobustFitting(BWBuffer);
+                filter[i] = new FIRFilter(filterWindow);
             }
         }
 
@@ -182,9 +194,6 @@ public class VNectBarracudaRunner : MonoBehaviour
             input.Dispose();
         }
 
-        // Init VideoCapture
-        videoCapture.Init(InputImageSize, InputImageSize);
-        videoCapture.VideoReady += videoCapture_VideoReady;
     }
 
     public void InitVNectModel(VNectModel avatar, ConfigurationSetting config)
@@ -272,10 +281,10 @@ public class VNectBarracudaRunner : MonoBehaviour
         {
             if(filter[i] == null)
             {
-                filter[i] = new RobustFitting(BWBuffer);
+                //filter[i] = new RobustFitting(BWBuffer);
+                filter[i] = new FIRFilter(filterWindow);
             }
 
-            filter[i].Init(config.BWBuffer);
         }
 
         ForwardThreshold = config.ForwardThreshold;
@@ -355,12 +364,18 @@ public class VNectBarracudaRunner : MonoBehaviour
             inputs[inputName_3] = new Tensor(videoCapture.MainTexture);
         }
         else
-        {
+        {/*
             inputs[inputName_3].Dispose();
+            inputs[inputName_1] = input;
+            inputs[inputName_2] = input;
+            inputs[inputName_3] = input;
+            */
+             inputs[inputName_3].Dispose();
 
-            inputs[inputName_3] = inputs[inputName_2];
-             inputs[inputName_2] = inputs[inputName_1];
-             inputs[inputName_1] = input;
+             inputs[inputName_3] = inputs[inputName_2];
+              inputs[inputName_2] = inputs[inputName_1];
+              inputs[inputName_1] = input;
+              
         }
 
         if (!Lock && videoCapture.IsPlay())
@@ -417,6 +432,7 @@ public class VNectBarracudaRunner : MonoBehaviour
     {
         var score = 0f;
         var csv = videoCapture.VideoPlayer.frame.ToString();
+        filterWindow.SetFps(FPS);
 
         for (var j = 0; j < JointNum; j++)
         {
@@ -454,7 +470,8 @@ public class VNectBarracudaRunner : MonoBehaviour
             jp.Now3D.y = InputImageSizeF - ((offset3D[yi + (j + JointNum) * HeatMapCol + maxZIndex] + 0.5f + (float)maxYIndex) / (float)HeatMapCol) * InputImageSizeF - InputImageSizeHalf;
             jp.Now3D.z = ((offset3D[yi + (j + JointNum_Squared) * HeatMapCol + maxZIndex] + 0.5f + (float)(maxZIndex - HeatMapCol_Half)) / (float)HeatMapCol) * InputImageSizeF;
             //(jp.Now3D.x, jp.Now3D.y, jp.Now3D.z) = filter[j].Add(fx, fy, fz, FPS);
-
+            (jp.Now3D.x, jp.Now3D.y, jp.Now3D.z) = filter[j].Add(jp.Now3D.x, jp.Now3D.y, jp.Now3D.z, FPS);
+            
             //csv += ("," + jp.Now3D.x.ToString() + "," + jp.Now3D.y.ToString() + "," + jp.Now3D.z.ToString());
         }
         //writer.WriteLine(csv);
@@ -482,21 +499,20 @@ public class VNectBarracudaRunner : MonoBehaviour
         var frwdAngle = Vector3.Angle(frwd, Vector3.back);
 
         var f = false;
-        /**/
+        /*
         f = FrontBackCheckv(jointPoints[PositionIndex.lShldrBend.Int()], jointPoints[PositionIndex.rShldrBend.Int()], f);
         if (f)
         {
             foreach (var jp in jointPoints)
             {
-                /*
-                var vec = jp.Now3D - jp.PrevNow3D;
-                var vel = jp.VecNow3D * FPS / 30f;
+                //var vec = jp.Now3D - jp.PrevNow3D;
+                //var vel = jp.VecNow3D * FPS / 30f;
 
-                var v = jp.PrevNow3D - jp.PPrevNow3D;
-                jp.Now3D = jp.PrevNow3D + v * 0.6f;
-                jp.PPrevNow3D = jp.PrevNow3D;
-                jp.PrevNow3D = jp.Now3D;
-                */
+                //var v = jp.PrevNow3D - jp.PPrevNow3D;
+                //jp.Now3D = jp.PrevNow3D + v * 0.6f;
+                //jp.PPrevNow3D = jp.PrevNow3D;
+                //jp.PrevNow3D = jp.Now3D;
+
                 jp.Now3D = jp.Predicted3D;
                 KalmanUpdate(jp);
                 jp.PrevPos3D[0] = jp.Pos3D;
@@ -508,7 +524,8 @@ public class VNectBarracudaRunner : MonoBehaviour
             }
 
             return;
-        }
+        
+            }
 
         // 逆関節チェック
         var lThighBend = jointPoints[PositionIndex.rThighBend.Int()].Now3D - jointPoints[PositionIndex.lThighBend.Int()].Now3D;
@@ -519,6 +536,7 @@ public class VNectBarracudaRunner : MonoBehaviour
             // 逆関節
             jointPoints[PositionIndex.lShin.Int()].Error = 1;
             //jointPoints[PositionIndex.lShin.Int()].Score3D = 0;
+            Debug.Log("逆関節 L  :" + lShinAngle.ToString());
             f = true;
         }
         var rThighBend = jointPoints[PositionIndex.rThighBend.Int()].Now3D - jointPoints[PositionIndex.lThighBend.Int()].Now3D;
@@ -529,6 +547,7 @@ public class VNectBarracudaRunner : MonoBehaviour
             // 逆関節
             jointPoints[PositionIndex.rShin.Int()].Error = 1;
             //jointPoints[PositionIndex.rShin.Int()].Score3D = 0;
+            Debug.Log("逆関節 R  :" + rShinAngle.ToString());
             f = true;
         }
         if(!f)
@@ -538,7 +557,7 @@ public class VNectBarracudaRunner : MonoBehaviour
         f = FrontBackCheckv(jointPoints[PositionIndex.lThighBend.Int()], jointPoints[PositionIndex.rThighBend.Int()], f);
         f = FrontBackCheckv(jointPoints[PositionIndex.lFoot.Int()], jointPoints[PositionIndex.rFoot.Int()], f);
         FrontBackCheckv(jointPoints[PositionIndex.lToe.Int()], jointPoints[PositionIndex.rToe.Int()], f);
-        /**/
+        */
         foreach (var jp in jointPoints)
         {
             var vec = jp.Now3D - jp.PrevNow3D;
@@ -574,9 +593,9 @@ public class VNectBarracudaRunner : MonoBehaviour
             */
             if (jp.Error != 0 || (jp.Score3D < jp.Threshold && vel.magnitude > jp.VelNow3D.magnitude * jp.Ratio))
             {
- 
-                jp.Now3D = jp.Predicted3D;
-                Debug.Log("補正 :" + jp.Score3D.ToString() + "," + vel.magnitude.ToString());
+                //jp.Now3D = jp.Predicted3D;
+                //    jp.Now3D = jp.PPos3D;
+                //    Debug.Log("補正 :" + jp.Score3D.ToString() + "," + vel.magnitude.ToString());
             }
             else
             {
@@ -586,10 +605,11 @@ public class VNectBarracudaRunner : MonoBehaviour
                 jp.VecNow3D = vec;
                 jp.VelNow3D = vel;
             }
-          
-            KalmanUpdate(jp);
 
-            
+            KalmanUpdate(jp);
+            //jp.Pos3D = jp.Now3D;
+
+
             /*
             var pPVecNow3D = jp.VecNow3D;
             jp.VecNow3D = jp.PPos3D - jp.Pos3D;
@@ -606,6 +626,7 @@ public class VNectBarracudaRunner : MonoBehaviour
             }
             jp.Pos3D = jp.PrevPos3D[NOrderLPF - 1];
 
+            /*
             var v1 = jp.PPos3D - jp.PPPos3D;
             var v2 = jp.Pos3D - jp.PPos3D;
             if (v1 == Vector3.zero)
@@ -638,6 +659,7 @@ public class VNectBarracudaRunner : MonoBehaviour
                 jp.PPredicted3D = jp.Predicted3D;
                 jp.Predicted3D = jp.Pos3D + new Vector3(prX, prY, prZ);
             }
+            */
 
             jp.VecNow3D = (jp.Now3D - jp.PrevNow3D) * FPS / 30f;
 

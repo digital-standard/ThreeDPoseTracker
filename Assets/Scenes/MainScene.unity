@@ -10254,7 +10254,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 534669902}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c1acdeced5150344998ab289ef2b07ac, type: 3}
   m_Name: 
@@ -33198,7 +33198,6 @@ GameObject:
   - component: {fileID: 1873549735}
   - component: {fileID: 1873549734}
   - component: {fileID: 1873549733}
-  - component: {fileID: 1873549737}
   m_Layer: 2
   m_Name: MainTexrure
   m_TagString: Untagged
@@ -33292,20 +33291,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1873549737
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1873549732}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6e88228433afefe489086733da387b72, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  shader: {fileID: 4800000, guid: 2279e9b21b1e2c447be8e2c5f858e48b, type: 3}
-  mat: {fileID: 0}
 --- !u!1 &1875475999
 GameObject:
   m_ObjectHideFlags: 0
@@ -33335,7 +33320,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22f181ccb880e5c4a8cf0b92c2410b1f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  NNModel: {fileID: 5022602860645237092, guid: 1a83b0b4a907bf648b5b46d0108c192d, type: 3}
+  NNModel: {fileID: 5022602860645237092, guid: e02db212303812a42a163ad11d4e13c2, type: 3}
   WorkerType: 32768
   Verbose: 0
   VNectModel: {fileID: 717188072}

@@ -103,7 +103,14 @@ public class VideoCapture : MonoBehaviour
         //videoTexture = new RenderTexture((int)vclip.width, (int)vclip.height, 24);
         if (VideoPlayer.clip != null)
         {
-            videoTexture = new RenderTexture((int)VideoPlayer.clip.width, (int)VideoPlayer.clip.height, 24);
+            if (VideoPlayer.clip.width == 0 || VideoPlayer.clip.height == 0)
+            {
+                videoTexture = new RenderTexture(1920, 1080, 24);
+            }
+            else
+            {
+                videoTexture = new RenderTexture((int)VideoPlayer.clip.width, (int)VideoPlayer.clip.height, 24);
+            }
         }
         else
         {
@@ -128,26 +135,27 @@ public class VideoCapture : MonoBehaviour
         {
             sd.sizeDelta = new Vector2(videoScreenWidth, (int)(videoScreenWidth * 1080 / 1920));
         }
+        
         VideoScreen.texture = videoTexture;
         VideoScreen.transform.localScale = localScale;
 
         VideoPlayer.Play();
-
+        
         var aspect = (float)videoTexture.width / videoTexture.height;
 
         VideoBackground.transform.localScale = new Vector3(aspect * SourceCutScale, 1 * SourceCutScale, 1) ;
         VideoBackground.transform.localPosition = new Vector3(0f, 0f, -2f);
         VideoBackground.GetComponent<Renderer>().material.mainTexture = videoTexture;
-
+        
         InitMainTexture();
-
+        
         MainTextureCamera.transform.localPosition = new Vector3(SourceCutX, SourceCutY, -2f);
 
         status = Status.VideoPlay;
 
         if (VideoReady != null) VideoReady();
     }
-    
+
     public void ResetScale(float scale, float x, float y, bool isMirror)
     {
         SourceCutScale = scale;
@@ -259,7 +267,7 @@ public class VideoCapture : MonoBehaviour
         MainTextureCamera.transform.localPosition = new Vector3(0.0f, 0.0f, -2.0f );
         MainTextureCamera.transform.localEulerAngles = Vector3.zero;
         MainTextureCamera.layer = _layer;
-
+        
         var camera = MainTextureCamera.GetComponent<Camera>();
         camera.orthographic = true;
         camera.orthographicSize = 0.5f ;
@@ -281,8 +289,9 @@ public class VideoCapture : MonoBehaviour
             wrapMode = TextureWrapMode.Clamp,
             filterMode = FilterMode.Point,
         };
-
+        
         camera.targetTexture = MainTexture;
         if(InputTexture.activeSelf) InputTexture.GetComponent<Renderer>().material.mainTexture = MainTexture;
+        
     }
 }
