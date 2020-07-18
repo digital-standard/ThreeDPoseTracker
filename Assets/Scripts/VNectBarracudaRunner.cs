@@ -56,11 +56,8 @@ public class VNectBarracudaRunner : MonoBehaviour
     public float ForwardThreshold;
     public float BackwardThreshold;
     public int NOrderLPF;
-    //RobustFitting[] filter = new RobustFitting[JointNum];
-    public int BWBuffer = 300;
-    public float BWCutoff = 5.8f;
-    FIRFilter[] filter = new FIRFilter[JointNum];
-    FilterWindow filterWindow = new FilterWindow();
+    private FIRFilter[] filter = new FIRFilter[JointNum];
+    private FilterWindow filterWindow = new FilterWindow();
 
     private delegate void UpdateVNectModelDelegate();
     private UpdateVNectModelDelegate UpdateVNectModel;
@@ -193,7 +190,6 @@ public class VNectBarracudaRunner : MonoBehaviour
             _worker.Execute(input);
             input.Dispose();
         }
-
     }
 
     public void InitVNectModel(VNectModel avatar, ConfigurationSetting config)
@@ -431,7 +427,7 @@ public class VNectBarracudaRunner : MonoBehaviour
     private void PredictPose()
     {
         var score = 0f;
-        var csv = videoCapture.VideoPlayer.frame.ToString();
+        //var csv = videoCapture.VideoPlayer.frame.ToString();
         filterWindow.SetFps(FPS);
 
         for (var j = 0; j < JointNum; j++)
@@ -463,7 +459,7 @@ public class VNectBarracudaRunner : MonoBehaviour
                 }
             }
 
-            jp.PrevNow3D = jp.Now3D;
+            //jp.PrevNow3D = jp.Now3D;
             score += jp.Score3D;
             var yi = maxYIndex * cubeOffsetSquared + maxXIndex * cubeOffsetLinear;
             jp.Now3D.x = ((offset3D[yi + jj + maxZIndex] + 0.5f + (float)maxXIndex) / (float)HeatMapCol) * InputImageSizeF - InputImageSizeHalf;
@@ -497,9 +493,9 @@ public class VNectBarracudaRunner : MonoBehaviour
 
         var frwd = TriangleNormal(jointPoints[PositionIndex.hip.Int()].Now3D, jointPoints[PositionIndex.lThighBend.Int()].Now3D, jointPoints[PositionIndex.rThighBend.Int()].Now3D);
         var frwdAngle = Vector3.Angle(frwd, Vector3.back);
-
-        var f = false;
         /*
+        var f = false;
+        
         f = FrontBackCheckv(jointPoints[PositionIndex.lShldrBend.Int()], jointPoints[PositionIndex.rShldrBend.Int()], f);
         if (f)
         {
@@ -560,9 +556,10 @@ public class VNectBarracudaRunner : MonoBehaviour
         */
         foreach (var jp in jointPoints)
         {
+            /*
             var vec = jp.Now3D - jp.PrevNow3D;
             var vel = jp.VecNow3D * FPS / 30f;
-            /*
+            
             var r = (jp.PrevNow3D - jp.PPrevNow3D).magnitude;
             if(jp.Score3D < 0.4 && (jp.Predicted3D - jp.Now3D).magnitude > (jp.PrevNow3D - jp.PPrevNow3D).magnitude * 1.5)
             {
@@ -591,6 +588,7 @@ public class VNectBarracudaRunner : MonoBehaviour
              }
             else
             */
+            /*
             if (jp.Error != 0 || (jp.Score3D < jp.Threshold && vel.magnitude > jp.VelNow3D.magnitude * jp.Ratio))
             {
                 //jp.Now3D = jp.Predicted3D;
@@ -605,9 +603,9 @@ public class VNectBarracudaRunner : MonoBehaviour
                 jp.VecNow3D = vec;
                 jp.VelNow3D = vel;
             }
+            */
 
             KalmanUpdate(jp);
-            //jp.Pos3D = jp.Now3D;
 
 
             /*
@@ -622,6 +620,7 @@ public class VNectBarracudaRunner : MonoBehaviour
             jp.PrevPos3D[0] = jp.Pos3D;
             for (var i = 1; i < NOrderLPF; i++)
             {
+                //jp.PrevPos3D[i] = jp.PrevPos3D[i] * Smooth + jp.PrevPos3D[i - 1] * (1f - Smooth);
                 jp.PrevPos3D[i] = jp.PrevPos3D[i] * Smooth + jp.PrevPos3D[i - 1] * (1f - Smooth);
             }
             jp.Pos3D = jp.PrevPos3D[NOrderLPF - 1];
@@ -659,14 +658,15 @@ public class VNectBarracudaRunner : MonoBehaviour
                 jp.PPredicted3D = jp.Predicted3D;
                 jp.Predicted3D = jp.Pos3D + new Vector3(prX, prY, prZ);
             }
-            */
+            
 
             jp.VecNow3D = (jp.Now3D - jp.PrevNow3D) * FPS / 30f;
+            */
 
-            jp.PPrevNow3D = jp.PrevNow3D;
-            jp.PrevNow3D = jp.Now3D;
-            jp.PPPos3D = jp.PPos3D;
-            jp.PPos3D = jp.Pos3D;
+            //jp.PPrevNow3D = jp.PrevNow3D;
+            //jp.PrevNow3D = jp.Now3D;
+            //jp.PPPos3D = jp.PPos3D;
+            //jp.PPos3D = jp.Pos3D;
             jp.Visibled = true;
 
 
@@ -698,7 +698,7 @@ public class VNectBarracudaRunner : MonoBehaviour
 
         return dd;
     }
-
+    /*
     bool FrontBackCheckv(VNectModel.JointPoint jp1, VNectModel.JointPoint jp2, bool flag)
     {
         var l1 = Vector3.Distance(jp1.PrevNow3D, jp1.Now3D);
@@ -728,6 +728,7 @@ public class VNectBarracudaRunner : MonoBehaviour
             return false;
         }
     }
+    */
 
     void KalmanUpdate(VNectModel.JointPoint measurement)
     {

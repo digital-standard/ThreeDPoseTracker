@@ -24,7 +24,7 @@ public class FilterWindow
 
     public FilterWindow()
     {
-        Init(100, 0.01f, 2f, 20);
+        Init(100, 0.01f, 2.5f, 20);
     }
 
     public void Init(int n, float f1, float f2, float f)

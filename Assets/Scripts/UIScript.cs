@@ -851,15 +851,15 @@ public class ConfigurationSetting
 
     public float LowPassFilter;
     public int NOrderLPF;
-    public int BWBuffer;
-    public float BWCutoff;
+    //public int BWBuffer;
+    //public float BWCutoff;
     public float ForwardThreshold;
     public float BackwardThreshold;
     public int LockFoot;
     public int LockLegs;
-    public float HeightRatioThreshold;
+    //public float HeightRatioThreshold;
     public int TrainedModel;
-
+/*
     public int ShoulderRattlingCheckFrame;
     public int ThighRattlingCheckFrame;
     public int FootRattlingCheckFrame;
@@ -873,7 +873,7 @@ public class ConfigurationSetting
     public float OtherThreshold;
     public float OtherSmooth;
     public float OtherRatio;
-
+*/
     public int Blender;
     public int EnforceHumanoidBones;
     public int Capturing;
@@ -907,15 +907,15 @@ public class ConfigurationSetting
 
         LowPassFilter = 0.1f;
         NOrderLPF = 7;
-        BWBuffer = 100;
-        BWCutoff = 10.0f;
+        //BWBuffer = 100;
+        //BWCutoff = 10.0f;
         ForwardThreshold = 0.2f;
         BackwardThreshold = 0.05f;
         LockFoot = 0;
         LockLegs = 0;
-        HeightRatioThreshold = 2f;
+        //HeightRatioThreshold = 2f;
         TrainedModel = 1;
-
+/*
         ShoulderRattlingCheckFrame = 10;
         ThighRattlingCheckFrame = 10;
         FootRattlingCheckFrame = 10;
@@ -929,7 +929,7 @@ public class ConfigurationSetting
         OtherThreshold = 0.1f;
         OtherSmooth = 0.8f;
         OtherRatio = 2.0f;
-
+*/
         Blender = 0;
         EnforceHumanoidBones = 1;
         Capturing = 1;
@@ -965,15 +965,15 @@ public class ConfigurationSetting
 
             LowPassFilter = LowPassFilter,
             NOrderLPF = NOrderLPF,
-            BWBuffer = BWBuffer,
-            BWCutoff = BWCutoff,
+            //BWBuffer = BWBuffer,
+            //BWCutoff = BWCutoff,
             ForwardThreshold = ForwardThreshold,
             BackwardThreshold = BackwardThreshold,
             LockFoot = LockFoot,
             LockLegs = LockLegs,
-            HeightRatioThreshold = HeightRatioThreshold,
+            //HeightRatioThreshold = HeightRatioThreshold,
             TrainedModel = TrainedModel,
-
+/*
             ShoulderRattlingCheckFrame = ShoulderRattlingCheckFrame,
             ThighRattlingCheckFrame = ThighRattlingCheckFrame,
             FootRattlingCheckFrame = FootRattlingCheckFrame,
@@ -987,7 +987,7 @@ public class ConfigurationSetting
             OtherThreshold = OtherThreshold,
             OtherSmooth = OtherSmooth,
             OtherRatio = OtherRatio,
-
+*/
             Blender = Blender,
             EnforceHumanoidBones = EnforceHumanoidBones,
             Capturing = Capturing,
@@ -1022,15 +1022,15 @@ public class ConfigurationSetting
 
         LowPassFilter = PlayerPrefs.GetFloat("LowPassFilter", LowPassFilter);
         NOrderLPF = PlayerPrefs.GetInt("NOrderLPF", NOrderLPF);
-        BWBuffer = PlayerPrefs.GetInt("BWBuffer", BWBuffer);
-        BWCutoff = PlayerPrefs.GetFloat("BWCutoff", BWCutoff);
+        //BWBuffer = PlayerPrefs.GetInt("BWBuffer", BWBuffer);
+        //BWCutoff = PlayerPrefs.GetFloat("BWCutoff", BWCutoff);
         ForwardThreshold = PlayerPrefs.GetFloat("ForwardThreshold", ForwardThreshold);
         BackwardThreshold = PlayerPrefs.GetFloat("BackwardThreshold", BackwardThreshold);
         LockFoot = PlayerPrefs.GetInt("LockFoot", LockFoot);
         LockLegs = PlayerPrefs.GetInt("LockLegs", LockLegs);
-        HeightRatioThreshold = PlayerPrefs.GetFloat("HeightRatioThreshold", HeightRatioThreshold);
+        //HeightRatioThreshold = PlayerPrefs.GetFloat("HeightRatioThreshold", HeightRatioThreshold);
         TrainedModel = PlayerPrefs.GetInt("TrainedModel", TrainedModel);
-
+/*
         ShoulderRattlingCheckFrame = PlayerPrefs.GetInt("ShoulderRattlingCheckFrame", ShoulderRattlingCheckFrame);
         ThighRattlingCheckFrame = PlayerPrefs.GetInt("ThighRattlingCheckFrame", ThighRattlingCheckFrame);
         FootRattlingCheckFrame = PlayerPrefs.GetInt("FootRattlingCheckFrame", FootRattlingCheckFrame);
@@ -1045,7 +1045,7 @@ public class ConfigurationSetting
         OtherThreshold = PlayerPrefs.GetFloat("OtherThreshold", OtherThreshold);
         OtherSmooth = PlayerPrefs.GetFloat("OtherSmooth", OtherSmooth);
         OtherRatio = PlayerPrefs.GetFloat("OtherRatio", OtherRatio);
-
+*/
         Blender = PlayerPrefs.GetInt("Blender", Blender);
         EnforceHumanoidBones = PlayerPrefs.GetInt("EnforceHumanoidBones", EnforceHumanoidBones);
         Capturing = PlayerPrefs.GetInt("Capturing", Capturing);
@@ -1079,15 +1079,15 @@ public class ConfigurationSetting
 
         ppSet("LowPassFilter", LowPassFilter);
         ppSet("NOrderLPF", NOrderLPF);
-        ppSet("BWBuffer", BWBuffer);
-        ppSet("BWCutoff", BWCutoff);
+        //ppSet("BWBuffer", BWBuffer);
+        //ppSet("BWCutoff", BWCutoff);
         ppSet("ForwardThreshold", ForwardThreshold);
         ppSet("BackwardThreshold", BackwardThreshold);
         ppSet("LockFoot", LockFoot);
         ppSet("LockLegs", LockLegs);
-        ppSet("HeightRatioThreshold", HeightRatioThreshold);
+        //ppSet("HeightRatioThreshold", HeightRatioThreshold);
         ppSet("TrainedModel", TrainedModel);
-
+/*
         ppSet("ShoulderRattlingCheckFrame", ShoulderRattlingCheckFrame);
         ppSet("ThighRattlingCheckFrame", ThighRattlingCheckFrame);
         ppSet("FootRattlingCheckFrame", FootRattlingCheckFrame);
@@ -1101,7 +1101,7 @@ public class ConfigurationSetting
         ppSet("OtherThreshold", OtherThreshold);
         ppSet("OtherSmooth", OtherSmooth);
         ppSet("OtherRatio", OtherRatio);
-
+*/
         ppSet("Blender", Blender);
         ppSet("EnforceHumanoidBones", EnforceHumanoidBones);
         ppSet("Capturing", Capturing);

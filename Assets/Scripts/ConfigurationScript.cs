@@ -29,15 +29,15 @@ public class ConfigurationScript : MonoBehaviour
 
     private InputField ifLowPassFilter;
     private InputField ifNOrderLPF;
-    private InputField ifBWBuffer;
-    private InputField ifBWCutoff;
+    //private InputField ifBWBuffer;
+    //private InputField ifBWCutoff;
     private InputField ifForwardThreshold;
     private InputField ifBackwardThreshold;
     private Toggle LockFoot;
     private Toggle LockLegs;
-    private InputField ifHeightRatioThreshold;
+    //private InputField ifHeightRatioThreshold;
     private Dropdown trainedModel;
-
+/*
     private InputField ifShoulderRattlingCheckFrame;
     private InputField ifThighRattlingCheckFrame;
     private InputField ifFootRattlingCheckFrame;
@@ -51,7 +51,7 @@ public class ConfigurationScript : MonoBehaviour
     private InputField ifOtherThreshold;
     private InputField ifOtherSmooth;
     private InputField ifOtherRatio;
-
+*/
     private Toggle Blender;
     private Toggle EnforceHumanoidBones;
     private Toggle Capturing;
@@ -99,15 +99,15 @@ public class ConfigurationScript : MonoBehaviour
 
         ifLowPassFilter = GameObject.Find("ifLowPassFilter").GetComponent<InputField>();
         ifNOrderLPF = GameObject.Find("ifNOrderLPF").GetComponent<InputField>();
-        ifBWBuffer = GameObject.Find("ifBWBuffer").GetComponent<InputField>();
-        ifBWCutoff = GameObject.Find("ifBWCutoff").GetComponent<InputField>();
+        //ifBWBuffer = GameObject.Find("ifBWBuffer").GetComponent<InputField>();
+        //ifBWCutoff = GameObject.Find("ifBWCutoff").GetComponent<InputField>();
         ifForwardThreshold = GameObject.Find("ifForwardThreshold").GetComponent<InputField>();
         ifBackwardThreshold = GameObject.Find("ifBackwardThreshold").GetComponent<InputField>();
         LockFoot = GameObject.Find("LockFoot").GetComponent<Toggle>();
         LockLegs = GameObject.Find("LockLegs").GetComponent<Toggle>();
-        ifHeightRatioThreshold = GameObject.Find("ifHeightRatioThreshold").GetComponent<InputField>();
+        //ifHeightRatioThreshold = GameObject.Find("ifHeightRatioThreshold").GetComponent<InputField>();
         trainedModel = GameObject.Find("TrainedModel").GetComponent<Dropdown>();
-
+/*
         ifShoulderRattlingCheckFrame = GameObject.Find("ifShoulderRattlingCheckFrame").GetComponent<InputField>();
         ifThighRattlingCheckFrame = GameObject.Find("ifThighRattlingCheckFrame").GetComponent<InputField>();
         ifFootRattlingCheckFrame = GameObject.Find("ifFootRattlingCheckFrame").GetComponent<InputField>();
@@ -121,7 +121,7 @@ public class ConfigurationScript : MonoBehaviour
         ifOtherThreshold = GameObject.Find("ifOtherThreshold").GetComponent<InputField>();
         ifOtherSmooth = GameObject.Find("ifOtherSmooth").GetComponent<InputField>();
         ifOtherRatio = GameObject.Find("ifOtherRatio").GetComponent<InputField>();
-
+*/
         Blender = GameObject.Find("Blender").GetComponent<Toggle>();
         EnforceHumanoidBones = GameObject.Find("EnforceHumanoidBones").GetComponent<Toggle>();
         Capturing = GameObject.Find("Capturing").GetComponent<Toggle>();
@@ -163,15 +163,15 @@ public class ConfigurationScript : MonoBehaviour
 
         ifLowPassFilter.text = config.LowPassFilter.ToString("0.00");
         ifNOrderLPF.text = config.NOrderLPF.ToString();
-        ifBWBuffer.text = config.BWBuffer.ToString();
-        ifBWCutoff.text = config.BWCutoff.ToString("0.00");
+        //ifBWBuffer.text = config.BWBuffer.ToString();
+        //ifBWCutoff.text = config.BWCutoff.ToString("0.00");
         ifForwardThreshold.text = config.ForwardThreshold.ToString("0.00");
         ifBackwardThreshold.text = config.BackwardThreshold.ToString("0.00");
         LockFoot.isOn = config.LockFoot == 1;
         LockLegs.isOn = config.LockLegs == 1;
-        ifHeightRatioThreshold.text = config.HeightRatioThreshold.ToString("0.00");
+        //ifHeightRatioThreshold.text = config.HeightRatioThreshold.ToString("0.00");
         trainedModel.value = config.TrainedModel;
-
+/*
         ifShoulderRattlingCheckFrame.text = config.ShoulderRattlingCheckFrame.ToString();
         ifThighRattlingCheckFrame.text = config.ThighRattlingCheckFrame.ToString();
         ifFootRattlingCheckFrame.text = config.FootRattlingCheckFrame.ToString();
@@ -185,7 +185,7 @@ public class ConfigurationScript : MonoBehaviour
         ifOtherThreshold.text = config.OtherThreshold.ToString("0.00");
         ifOtherSmooth.text = config.OtherSmooth.ToString("0.00");
         ifOtherRatio.text = config.OtherRatio.ToString("0.00");
-
+*/
         Blender.isOn = config.Blender == 1;
         EnforceHumanoidBones.isOn = config.EnforceHumanoidBones == 1;
         Capturing.isOn = config.Capturing == 1;
@@ -289,7 +289,7 @@ public class ConfigurationScript : MonoBehaviour
             return "N-Order LPF is between 1 and 10.";
         }
         configurationSetting.NOrderLPF = i;
-
+        /*
         if (!int.TryParse(ifBWBuffer.text, out i))
         {
             return "BW Buffer is required.";
@@ -309,7 +309,7 @@ public class ConfigurationScript : MonoBehaviour
             return "BW Cutoff is between 0 and 100.";
         }
         configurationSetting.BWCutoff = f;
-
+        */
         if (!float.TryParse(ifForwardThreshold.text, out f))
         {
             return "Forward Threshold is required.";
@@ -332,7 +332,7 @@ public class ConfigurationScript : MonoBehaviour
 
         configurationSetting.LockFoot = LockFoot.isOn ? 1 : 0;
         configurationSetting.LockLegs = LockLegs.isOn ? 1 : 0;
-
+        /*
         if (!float.TryParse(ifHeightRatioThreshold.text, out f))
         {
             return "Height Ratio Threshold is required.";
@@ -342,9 +342,9 @@ public class ConfigurationScript : MonoBehaviour
             return "Height Ratio Threshold is between 0 and 100.";
         }
         configurationSetting.HeightRatioThreshold = f;
-
+        */
         configurationSetting.TrainedModel = trainedModel.value;
-
+        /*
         if (!int.TryParse(ifShoulderRattlingCheckFrame.text, out i))
         {
             return "Shoulder Rattling Check Frame is required.";
@@ -475,7 +475,7 @@ public class ConfigurationScript : MonoBehaviour
             return "Other Ratio is between 0 and 10.";
         }
         configurationSetting.OtherRatio = f;
-
+        */
         configurationSetting.Blender = Blender.isOn ? 1 : 0;
         configurationSetting.EnforceHumanoidBones = EnforceHumanoidBones.isOn ? 1 : 0;
         configurationSetting.Capturing = Capturing.isOn ? 1 : 0;
