@@ -31,10 +31,15 @@ public class ConfigurationScript : MonoBehaviour
     private InputField ifNOrderLPF;
     //private InputField ifBWBuffer;
     //private InputField ifBWCutoff;
+    private InputField ifRangePathFilterBuffer;
+    private InputField ifFIROrderN;
+    private InputField ifFIRFromHz;
+    private InputField ifFIRToHz;
     private InputField ifForwardThreshold;
     private InputField ifBackwardThreshold;
     private Toggle LockFoot;
     private Toggle LockLegs;
+    private Toggle ElbowAxisTop;
     //private InputField ifHeightRatioThreshold;
     private Dropdown trainedModel;
 /*
@@ -101,10 +106,15 @@ public class ConfigurationScript : MonoBehaviour
         ifNOrderLPF = GameObject.Find("ifNOrderLPF").GetComponent<InputField>();
         //ifBWBuffer = GameObject.Find("ifBWBuffer").GetComponent<InputField>();
         //ifBWCutoff = GameObject.Find("ifBWCutoff").GetComponent<InputField>();
+        ifRangePathFilterBuffer = GameObject.Find("ifRangePathFilterBuffer").GetComponent<InputField>();
+        ifFIROrderN = GameObject.Find("ifFIROrderN").GetComponent<InputField>();
+        ifFIRFromHz = GameObject.Find("ifFIRFromHz").GetComponent<InputField>();
+        ifFIRToHz = GameObject.Find("ifFIRToHz").GetComponent<InputField>();
         ifForwardThreshold = GameObject.Find("ifForwardThreshold").GetComponent<InputField>();
         ifBackwardThreshold = GameObject.Find("ifBackwardThreshold").GetComponent<InputField>();
         LockFoot = GameObject.Find("LockFoot").GetComponent<Toggle>();
         LockLegs = GameObject.Find("LockLegs").GetComponent<Toggle>();
+        ElbowAxisTop = GameObject.Find("ElbowAxisTop").GetComponent<Toggle>();
         //ifHeightRatioThreshold = GameObject.Find("ifHeightRatioThreshold").GetComponent<InputField>();
         trainedModel = GameObject.Find("TrainedModel").GetComponent<Dropdown>();
 /*
@@ -165,10 +175,15 @@ public class ConfigurationScript : MonoBehaviour
         ifNOrderLPF.text = config.NOrderLPF.ToString();
         //ifBWBuffer.text = config.BWBuffer.ToString();
         //ifBWCutoff.text = config.BWCutoff.ToString("0.00");
+        ifRangePathFilterBuffer.text = config.RangePathFilterBuffer.ToString("0");
+        ifFIROrderN.text = config.FIROrderN.ToString("0");
+        ifFIRFromHz.text = config.FIRFromHz.ToString("0.00");
+        ifFIRToHz.text = config.FIRToHz.ToString("0.00");
         ifForwardThreshold.text = config.ForwardThreshold.ToString("0.00");
         ifBackwardThreshold.text = config.BackwardThreshold.ToString("0.00");
         LockFoot.isOn = config.LockFoot == 1;
         LockLegs.isOn = config.LockLegs == 1;
+        ElbowAxisTop.isOn = config.ElbowAxisTop == 1;
         //ifHeightRatioThreshold.text = config.HeightRatioThreshold.ToString("0.00");
         trainedModel.value = config.TrainedModel;
 /*
@@ -310,6 +325,46 @@ public class ConfigurationScript : MonoBehaviour
         }
         configurationSetting.BWCutoff = f;
         */
+        if (!int.TryParse(ifRangePathFilterBuffer.text, out i))
+        {
+            return "Range Path Filter Buffer is required.";
+        }
+        if (i < 10 || i >= 10000)
+        {
+            return "Range Path Filter Buffer is between 10 and 10000.";
+        }
+        configurationSetting.RangePathFilterBuffer = i;
+
+        if (!int.TryParse(ifFIROrderN.text, out i))
+        {
+            return "FIR Order N is required.";
+        }
+        if (i < 10 || i >= 10000)
+        {
+            return "FIR Order N is between 10 and 10000.";
+        }
+        configurationSetting.FIROrderN = i;
+
+        if (!float.TryParse(ifFIRFromHz.text, out f))
+        {
+            return "FIR From Hz is required.";
+        }
+        if (f < 0f || f > 10f)
+        {
+            return "FIR From Hz is between 0 and 10.";
+        }
+        configurationSetting.FIRFromHz = f;
+
+        if (!float.TryParse(ifFIRToHz.text, out f))
+        {
+            return "FIR To Hz is required.";
+        }
+        if (f < 0f || f > 10f)
+        {
+            return "FIR To Hz is between 0 and 10.";
+        }
+        configurationSetting.FIRToHz = f;
+
         if (!float.TryParse(ifForwardThreshold.text, out f))
         {
             return "Forward Threshold is required.";
@@ -332,6 +387,7 @@ public class ConfigurationScript : MonoBehaviour
 
         configurationSetting.LockFoot = LockFoot.isOn ? 1 : 0;
         configurationSetting.LockLegs = LockLegs.isOn ? 1 : 0;
+        configurationSetting.ElbowAxisTop = ElbowAxisTop.isOn ? 1 : 0;
         /*
         if (!float.TryParse(ifHeightRatioThreshold.text, out f))
         {

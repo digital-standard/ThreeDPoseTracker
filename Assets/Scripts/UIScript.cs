@@ -853,10 +853,15 @@ public class ConfigurationSetting
     public int NOrderLPF;
     //public int BWBuffer;
     //public float BWCutoff;
+    public int RangePathFilterBuffer;
+    public int FIROrderN;
+    public float FIRFromHz;
+    public float FIRToHz;
     public float ForwardThreshold;
     public float BackwardThreshold;
     public int LockFoot;
     public int LockLegs;
+    public int ElbowAxisTop;
     //public float HeightRatioThreshold;
     public int TrainedModel;
 /*
@@ -909,10 +914,16 @@ public class ConfigurationSetting
         NOrderLPF = 7;
         //BWBuffer = 100;
         //BWCutoff = 10.0f;
+        RangePathFilterBuffer = 100;
+        FIROrderN = 100;
+        FIRFromHz = 0.01f;
+        FIRToHz = 2.5f;
+
         ForwardThreshold = 0.2f;
         BackwardThreshold = 0.05f;
         LockFoot = 0;
         LockLegs = 0;
+        ElbowAxisTop = 0;
         //HeightRatioThreshold = 2f;
         TrainedModel = 1;
 /*
@@ -967,10 +978,15 @@ public class ConfigurationSetting
             NOrderLPF = NOrderLPF,
             //BWBuffer = BWBuffer,
             //BWCutoff = BWCutoff,
+            RangePathFilterBuffer = RangePathFilterBuffer,
+            FIROrderN = FIROrderN,
+            FIRFromHz = FIRFromHz,
+            FIRToHz = FIRToHz,
             ForwardThreshold = ForwardThreshold,
             BackwardThreshold = BackwardThreshold,
             LockFoot = LockFoot,
             LockLegs = LockLegs,
+            ElbowAxisTop = ElbowAxisTop,
             //HeightRatioThreshold = HeightRatioThreshold,
             TrainedModel = TrainedModel,
 /*
@@ -1024,10 +1040,15 @@ public class ConfigurationSetting
         NOrderLPF = PlayerPrefs.GetInt("NOrderLPF", NOrderLPF);
         //BWBuffer = PlayerPrefs.GetInt("BWBuffer", BWBuffer);
         //BWCutoff = PlayerPrefs.GetFloat("BWCutoff", BWCutoff);
+        RangePathFilterBuffer = PlayerPrefs.GetInt("RangePathFilterBuffer", RangePathFilterBuffer);
+        FIROrderN = PlayerPrefs.GetInt("FIROrderN", FIROrderN);
+        FIRFromHz = PlayerPrefs.GetFloat("FIRFromHz", FIRFromHz);
+        FIRToHz = PlayerPrefs.GetFloat("FIRToHz", FIRToHz);
         ForwardThreshold = PlayerPrefs.GetFloat("ForwardThreshold", ForwardThreshold);
         BackwardThreshold = PlayerPrefs.GetFloat("BackwardThreshold", BackwardThreshold);
         LockFoot = PlayerPrefs.GetInt("LockFoot", LockFoot);
         LockLegs = PlayerPrefs.GetInt("LockLegs", LockLegs);
+        ElbowAxisTop = PlayerPrefs.GetInt("ElbowAxisTop", ElbowAxisTop);
         //HeightRatioThreshold = PlayerPrefs.GetFloat("HeightRatioThreshold", HeightRatioThreshold);
         TrainedModel = PlayerPrefs.GetInt("TrainedModel", TrainedModel);
 /*
@@ -1081,10 +1102,15 @@ public class ConfigurationSetting
         ppSet("NOrderLPF", NOrderLPF);
         //ppSet("BWBuffer", BWBuffer);
         //ppSet("BWCutoff", BWCutoff);
+        ppSet("RangePathFilterBuffer", RangePathFilterBuffer);
+        ppSet("FIROrderN", FIROrderN);
+        ppSet("FIRFromHz", FIRFromHz);
+        ppSet("FIRToHz", FIRToHz);
         ppSet("ForwardThreshold", ForwardThreshold);
         ppSet("BackwardThreshold", BackwardThreshold);
         ppSet("LockFoot", LockFoot);
         ppSet("LockLegs", LockLegs);
+        ppSet("ElbowAxisTop", ElbowAxisTop);
         //ppSet("HeightRatioThreshold", HeightRatioThreshold);
         ppSet("TrainedModel", TrainedModel);
 /*

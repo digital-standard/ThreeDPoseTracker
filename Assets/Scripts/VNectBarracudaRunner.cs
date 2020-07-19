@@ -56,7 +56,7 @@ public class VNectBarracudaRunner : MonoBehaviour
     public float ForwardThreshold;
     public float BackwardThreshold;
     public int NOrderLPF;
-    private FIRFilter[] filter = new FIRFilter[JointNum];
+    private List<FIRFilter> filter = new List<FIRFilter>();
     private FilterWindow filterWindow = new FilterWindow();
 
     private delegate void UpdateVNectModelDelegate();
@@ -150,15 +150,6 @@ public class VNectBarracudaRunner : MonoBehaviour
 
         cubeOffsetLinear = HeatMapCol * JointNum_Cube;
         cubeOffsetSquared = HeatMapCol_Squared * JointNum_Cube;
-
-        for (var i = 0; i < JointNum; i++)
-        {
-            if (filter[i] == null)
-            {
-                //filter[i] = new RobustFitting(BWBuffer);
-                filter[i] = new FIRFilter(filterWindow);
-            }
-        }
 
         // Disabel sleep
         Screen.sleepTimeout = SleepTimeout.NeverSleep;
@@ -273,14 +264,12 @@ public class VNectBarracudaRunner : MonoBehaviour
         Smooth = config.LowPassFilter;
         NOrderLPF = config.NOrderLPF;
 
+        filterWindow.Init(config.FIROrderN, config.FIRFromHz, config.FIRToHz, 30f);
+
+        filter.Clear();
         for (var i = 0; i < JointNum; i++)
         {
-            if(filter[i] == null)
-            {
-                //filter[i] = new RobustFitting(BWBuffer);
-                filter[i] = new FIRFilter(filterWindow);
-            }
-
+            filter.Add(new FIRFilter(filterWindow, config.RangePathFilterBuffer));
         }
 
         ForwardThreshold = config.ForwardThreshold;

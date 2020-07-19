@@ -24,7 +24,6 @@ public class FilterWindow
 
     public FilterWindow()
     {
-        Init(100, 0.01f, 2.5f, 20);
     }
 
     public void Init(int n, float f1, float f2, float f)
@@ -92,15 +91,16 @@ public class FIRFilter
     private int bufferSize = 100;
     private FilterWindow filter;
 
-    public FIRFilter(FilterWindow fw)
+    public FIRFilter(FilterWindow fw, int buffer)
     {
         filter = fw;
+        bufferSize = buffer;
     }
 
     private float Add(List<float> list, float v)
     {
         list.Add(v);
-        if (list.Count > 100)
+        if (list.Count > 10)
         {
             if (list.Count > bufferSize)
             {
