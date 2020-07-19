@@ -4131,7 +4131,8 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 0, y: 8.845e-42, z: 0, w: 12.4375}
+  m_BoundingSphereOverride: {x: 1.09025164e+27, y: 1.5109333e-19, z: 7.389729e+20,
+    w: 3.172546e+30}
   m_UseBoundingSphereOverride: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
@@ -35074,7 +35075,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22f181ccb880e5c4a8cf0b92c2410b1f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  NNModel: {fileID: 5022602860645237092, guid: ee2ba8e87c9efff4f9d941c2ba836210, type: 3}
+  NNModel: {fileID: 5022602860645237092, guid: abefaf9f8c448f441b2dddc64350237d, type: 3}
   WorkerType: 32768
   Verbose: 0
   VNectModel: {fileID: 717188072}

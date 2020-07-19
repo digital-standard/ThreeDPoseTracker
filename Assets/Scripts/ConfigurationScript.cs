@@ -349,7 +349,7 @@ public class ConfigurationScript : MonoBehaviour
         {
             return "FIR From Hz is required.";
         }
-        if (f < 0f || f > 10f)
+        if (f <= 0f || f > 10f)
         {
             return "FIR From Hz is between 0 and 10.";
         }
@@ -359,7 +359,7 @@ public class ConfigurationScript : MonoBehaviour
         {
             return "FIR To Hz is required.";
         }
-        if (f < 0f || f > 10f)
+        if (f <= 0f || f > 10f)
         {
             return "FIR To Hz is between 0 and 10.";
         }

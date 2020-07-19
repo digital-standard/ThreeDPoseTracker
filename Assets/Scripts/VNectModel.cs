@@ -279,13 +279,19 @@ public class VNectModel : MonoBehaviour
         // Right Arm
         jointPoints[PositionIndex.rShldrBend.Int()].Child = jointPoints[PositionIndex.rForearmBend.Int()];
         jointPoints[PositionIndex.rForearmBend.Int()].Child = jointPoints[PositionIndex.rHand.Int()];
-//        jointPoints[PositionIndex.rForearmBend.Int()].Parent = jointPoints[PositionIndex.rShldrBend.Int()];
+        if (config.ElbowAxisTop == 0)
+        {
+            jointPoints[PositionIndex.rForearmBend.Int()].Parent = jointPoints[PositionIndex.rShldrBend.Int()];
+        }
         //jointPoints[PositionIndex.rHand.Int()].Parent = jointPoints[PositionIndex.rForearmBend.Int()];
 
         // Left Arm
         jointPoints[PositionIndex.lShldrBend.Int()].Child = jointPoints[PositionIndex.lForearmBend.Int()];
         jointPoints[PositionIndex.lForearmBend.Int()].Child = jointPoints[PositionIndex.lHand.Int()];
-//        jointPoints[PositionIndex.lForearmBend.Int()].Parent = jointPoints[PositionIndex.lShldrBend.Int()];
+        if (config.ElbowAxisTop == 0)
+        {
+            jointPoints[PositionIndex.lForearmBend.Int()].Parent = jointPoints[PositionIndex.lShldrBend.Int()];
+        }
         //jointPoints[PositionIndex.lHand.Int()].Parent = jointPoints[PositionIndex.lForearmBend.Int()];
 
         // Fase
@@ -568,6 +574,16 @@ public class VNectModel : MonoBehaviour
         jointPoints[PositionIndex.lShin.Int()].Lock = LockLegs;
         jointPoints[PositionIndex.rShin.Int()].Lock = LockLegs;
 
+        if (config.ElbowAxisTop == 0)
+        {
+            jointPoints[PositionIndex.rForearmBend.Int()].Parent = jointPoints[PositionIndex.rShldrBend.Int()];
+            jointPoints[PositionIndex.lForearmBend.Int()].Parent = jointPoints[PositionIndex.lShldrBend.Int()];
+        }
+    else
+        {
+            jointPoints[PositionIndex.rForearmBend.Int()].Parent = null;
+            jointPoints[PositionIndex.lForearmBend.Int()].Parent = null;
+        }
     }
 
     private float tallHeadNeck;
