@@ -917,7 +917,7 @@ public class ConfigurationSetting
         RangePathFilterBuffer = 100;
         FIROrderN = 100;
         FIRFromHz = 0.01f;
-        FIRToHz = 2.5f;
+        FIRToHz = 3.5f;
 
         ForwardThreshold = 0.2f;
         BackwardThreshold = 0.05f;

@@ -20864,7 +20864,7 @@ MonoBehaviour:
     m_Options:
     - m_Text: Low Quality and Faster
       m_Image: {fileID: 0}
-    - m_Text: Hight Quality (req GTX1060 or higher)
+    - m_Text: High Quality (req GTX1060 or higher)
       m_Image: {fileID: 0}
   m_OnValueChanged:
     m_PersistentCalls:
@@ -30706,7 +30706,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Range Pass Filter Baffer
+  m_Text: Range Pass Filter Buffer
 --- !u!222 &1654341298
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -35075,7 +35075,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22f181ccb880e5c4a8cf0b92c2410b1f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  NNModel: {fileID: 5022602860645237092, guid: abefaf9f8c448f441b2dddc64350237d, type: 3}
+  NNModel: {fileID: 5022602860645237092, guid: 59a761a46ce697a4cbc33d728f139a86, type: 3}
   WorkerType: 32768
   Verbose: 0
   VNectModel: {fileID: 717188072}
