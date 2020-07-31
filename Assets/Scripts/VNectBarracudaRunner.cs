@@ -73,10 +73,13 @@ public class VNectBarracudaRunner : MonoBehaviour
 
     StreamWriter writer;
 
-    private void Awake()
+    private void Start()
     {
 
-        // テキストを書き込む
+        // デバッグ用ファイルを開く
+        //Encoding enc = Encoding.GetEncoding("Shift_JIS");
+        //var csvPath = System.IO.Path.Combine(Application.streamingAssetsPath, "data.csv");
+        //writer = new StreamWriter(csvPath, false, enc);
 
         if (DebugMode)
         {
@@ -125,16 +128,6 @@ public class VNectBarracudaRunner : MonoBehaviour
         // Init VideoCapture
         videoCapture.Init(InputImageSize, InputImageSize);
         videoCapture.VideoReady += videoCapture_VideoReady;
-    }
-
-    private void Start()
-    {
-
-        // デバッグ用ファイルを開く
-        //Encoding enc = Encoding.GetEncoding("Shift_JIS");
-        //var csvPath = System.IO.Path.Combine(Application.streamingAssetsPath, "data.csv");
-        //writer = new StreamWriter(csvPath, false, enc);
-
 
         HeatMapCol_Half = HeatMapCol / 2;
         HeatMapCol_Squared = HeatMapCol * HeatMapCol;
