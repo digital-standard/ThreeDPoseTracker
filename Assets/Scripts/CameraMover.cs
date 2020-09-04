@@ -68,10 +68,10 @@ public class CameraMover : MonoBehaviour
 
         if(Input.GetMouseButtonDown(0))
         {
-            CameraAngleCnt++;
+            /*
+             CameraAngleCnt++;
             var headpos = barracudaRunner.GetHeadPosition();
-
-            // マウスホイールの回転値を変数 scroll に渡す
+           // マウスホイールの回転値を変数 scroll に渡す
             scroll = Input.GetAxis("Mouse ScrollWheel");
 
             if (CameraAngleCnt == 1)
@@ -98,40 +98,20 @@ public class CameraMover : MonoBehaviour
                 CameraAngleCnt = 0;
                 camTransform.position = initialCamposition;
             }
+            */
         }
         else if(Input.GetMouseButtonDown(1))
         {
-            uiScript.NextAvatar();
-            var headpos = barracudaRunner.GetHeadPosition();
-            if (CameraAngleCnt == 1)
-            {
-                mainCamera.fieldOfView = 60;
-                camTransform.position = new Vector3(headpos.x - 0.5f, headpos.y, headpos.z - 0.5f);
-                this.transform.LookAt(headpos);
-            }
-            else if (CameraAngleCnt == 2)
-            {
-                mainCamera.fieldOfView = 60;
-                camTransform.position = new Vector3(headpos.x + 0.5f, headpos.y, headpos.z - 0.5f);
-                this.transform.LookAt(headpos);
-            }
-            else if (CameraAngleCnt == 3)
-            {
-                mainCamera.fieldOfView = 60;
-                camTransform.position = new Vector3(headpos.x, headpos.y, headpos.z - 0.8f);
-                this.transform.LookAt(headpos);
-            }
-            else if (CameraAngleCnt == 4)
-            {
-                mainCamera.fieldOfView = 60;
-                CameraAngleCnt = 0;
-                camTransform.position = initialCamposition;
-            }
+            //uiScript.NextAvatar();
         }
 
         // マウスホイールの回転値を変数 scroll に渡す
-        scroll = Input.GetAxis("Mouse ScrollWheel") * 50;
-        mainCamera.fieldOfView += scroll;
+        scroll = Input.GetAxis("Mouse ScrollWheel") ;
+        if (scroll != 0)
+        {
+            camTransform.position += camTransform.forward * scroll;
+            //mainCamera.fieldOfView += scroll;
+        }
         /*
         if (CameraAngleCnt == 1)
         {
@@ -157,6 +137,7 @@ public class CameraMover : MonoBehaviour
         {
             ResetCameraRotation(); //回転角度のみリセット
             CameraRotationMouseControl(); //カメラの回転 マウス
+            CameraRotation2MouseControl(); //カメラの回転 マウス
             CameraSlideMouseControl(); //カメラの縦横移動 マウス
             CameraPositionKeyControl(); //カメラのローカル移動 キー
         }
@@ -191,6 +172,30 @@ public class CameraMover : MonoBehaviour
     //カメラの回転 マウス
     private void CameraRotationMouseControl()
     {
+        if (Input.GetMouseButtonDown(1))
+        {
+            startMousePos = Input.mousePosition;
+            _presentCamRotation.x = camTransform.transform.eulerAngles.x;
+            _presentCamRotation.y = camTransform.transform.eulerAngles.y;
+        }
+
+        if (Input.GetMouseButton(1))
+        {
+            //(移動開始座標 - マウスの現在座標) / 解像度 で正規化
+            float x = (startMousePos.x - Input.mousePosition.x) / Screen.width;
+            float y = (startMousePos.y - Input.mousePosition.y) / Screen.height;
+
+            //回転開始角度 ＋ マウスの変化量 * マウス感度
+            float eulerX = _presentCamRotation.x + y * _mouseSensitive;
+            float eulerY = _presentCamRotation.y - x * _mouseSensitive;
+
+            camTransform.rotation = Quaternion.Euler(eulerX, eulerY, 0);
+        }
+    }
+
+    //カメラの回転 マウス
+    private void CameraRotation2MouseControl()
+    {
         if (Input.GetMouseButtonDown(0))
         {
             startMousePos = Input.mousePosition;
@@ -203,25 +208,23 @@ public class CameraMover : MonoBehaviour
             //(移動開始座標 - マウスの現在座標) / 解像度 で正規化
             float x = (startMousePos.x - Input.mousePosition.x) / Screen.width;
             float y = (startMousePos.y - Input.mousePosition.y) / Screen.height;
+            var headpos = barracudaRunner.GetHeadPosition();
+            camTransform.RotateAround(headpos, Vector3.up, -x * 10);
+            camTransform.RotateAround(headpos, camTransform.right, y * 10);
 
-            //回転開始角度 ＋ マウスの変化量 * マウス感度
-            float eulerX = _presentCamRotation.x + y * _mouseSensitive;
-            float eulerY = _presentCamRotation.y + x * _mouseSensitive;
-
-            camTransform.rotation = Quaternion.Euler(eulerX, eulerY, 0);
         }
     }
 
     //カメラの移動 マウス
     private void CameraSlideMouseControl()
     {
-        if (Input.GetMouseButtonDown(1))
+        if (Input.GetMouseButtonDown(2))
         {
             startMousePos = Input.mousePosition;
             _presentCamPos = camTransform.position;
         }
 
-        if (Input.GetMouseButton(1))
+        if (Input.GetMouseButton(2))
         {
             //(移動開始座標 - マウスの現在座標) / 解像度 で正規化
             float x = (startMousePos.x - Input.mousePosition.x) / Screen.width;
@@ -247,6 +250,31 @@ public class CameraMover : MonoBehaviour
         if (Input.GetKey(KeyCode.Q)) { campos -= camTransform.up * Time.deltaTime * _positionStep; }
         if (Input.GetKey(KeyCode.W)) { campos += camTransform.forward * Time.deltaTime * _positionStep; }
         if (Input.GetKey(KeyCode.S)) { campos -= camTransform.forward * Time.deltaTime * _positionStep; }
+        var headpos = barracudaRunner.GetHeadPosition();
+        if (Input.GetKey(KeyCode.Alpha1))
+        {
+            mainCamera.fieldOfView = 60;
+            CameraAngleCnt = 0;
+            campos = initialCamposition;
+        }
+        else if (Input.GetKey(KeyCode.Alpha2))
+        {
+            mainCamera.fieldOfView = 60;
+            campos = new Vector3(headpos.x - 0.5f, headpos.y, headpos.z - 0.5f);
+            this.transform.LookAt(headpos);
+        }
+        else if (Input.GetKey(KeyCode.Alpha3))
+        {
+            mainCamera.fieldOfView = 60;
+            campos = new Vector3(headpos.x + 0.5f, headpos.y, headpos.z - 0.5f);
+            this.transform.LookAt(headpos);
+        }
+        else if (Input.GetKey(KeyCode.Alpha4))
+        {
+            mainCamera.fieldOfView = 60;
+            campos = new Vector3(headpos.x, headpos.y, headpos.z - 0.8f);
+            this.transform.LookAt(headpos);
+        }
 
         camTransform.position = campos;
     }

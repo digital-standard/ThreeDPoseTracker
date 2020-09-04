@@ -5,7 +5,7 @@
         "m_Name": "",
         "m_EditorClassIdentifier": "Unity.Burst.Editor:Unity.Burst.Editor:BurstPlatformAotSettings",
         "DisableOptimisations": true,
-        "DisableSafetyChecks": true,
+        "DisableSafetyChecks": false,
         "DisableBurstCompilation": true
     }
 }

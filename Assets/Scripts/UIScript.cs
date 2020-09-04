@@ -45,6 +45,7 @@ public class UIScript : MonoBehaviour
     public MessageBoxScript message;
 
     public GameObject OSCClient;
+    public GameObject LipSyncObject;
 
 
     private void Awake()
@@ -452,6 +453,9 @@ public class UIScript : MonoBehaviour
 
         var src = OSCClient.GetComponent<VMCPBonesSender>();
         src.Model = AvatarList[avatars.value].Avatar.gameObject;
+
+        var lip = LipSyncObject.GetComponent<VRMLipSyncContextMorphTarget>();
+        lip.SetVRMBlendShapeProxy();
     }
 
     public void onAddAvatar()

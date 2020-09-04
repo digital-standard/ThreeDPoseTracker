@@ -423,7 +423,7 @@ public class VNectModel : MonoBehaviour
         SetPredictSetting(config);
 
         defaultCenter = new Vector3(transform.position.x, (jointPoints[PositionIndex.rToe.Int()].Transform.position.y + jointPoints[PositionIndex.lToe.Int()].Transform.position.y) /2f, transform.position.z);
-        FootIKY = (jointPoints[PositionIndex.rFoot.Int()].Transform.position.y + jointPoints[PositionIndex.lFoot.Int()].Transform.position.y) / 2f;
+        FootIKY = (jointPoints[PositionIndex.rFoot.Int()].Transform.position.y + jointPoints[PositionIndex.lFoot.Int()].Transform.position.y) / 2f + 0.1f;
         ToeIKY = (jointPoints[PositionIndex.rToe.Int()].Transform.position.y + jointPoints[PositionIndex.lToe.Int()].Transform.position.y) / 2f;
 
         return JointPoints;
@@ -730,7 +730,7 @@ public class VNectModel : MonoBehaviour
             if (jointPoint.Parent != null)
             {
                 var fv = jointPoint.Parent.Pos3D - jointPoint.Pos3D;
-                jointPoint.Transform.rotation = Quaternion.LookRotation(jointPoint.Pos3D - jointPoint.Child.Pos3D, jointPoint.VecFlag * fv) * jointPoint.InverseRotation;
+                jointPoint.Transform.rotation = Quaternion.LookRotation(jointPoint.Pos3D - jointPoint.Child.Pos3D, fv) * jointPoint.InverseRotation;
             }
             else if (jointPoint.Child != null)
             {
@@ -742,6 +742,98 @@ public class VNectModel : MonoBehaviour
             }
 
         }
+        /*
+        if (jointPoints[PositionIndex.lFoot.Int()].Transform.position.y < FootIKY)
+        {
+
+            var origlFoot = jointPoints[PositionIndex.lFoot.Int()].Transform.position;
+            var lShin = jointPoints[PositionIndex.lShin.Int()].Transform.position;
+            var lThigh = jointPoints[PositionIndex.lThighBend.Int()].Transform.position;
+            // Footの位置
+            var afterT = (FootIKY - lThigh.y) / (origlFoot.y - lThigh.y);
+            var afterX = afterT * (origlFoot.x - lThigh.x) + lThigh.x;
+            var afterZ = afterT * (origlFoot.z - lThigh.z) + lThigh.z;
+            var lFoot = new Vector3(afterX, FootIKY, afterZ);
+
+            var nu1 = (lShin - lThigh).normalized;
+            var nv1 = (lShin - origlFoot).normalized;
+            var nn = Vector3.Cross(-nu1, nv1);
+
+            var D = -1 * Vector3.Dot(nn, nv1) / Vector3.Dot(nn, nu1);
+            var E = (Vector3.Dot(nn, lFoot) - Vector3.Dot(nn, lThigh)) / Vector3.Dot(nn, nu1);
+            var U = nu1 * D + nv1;
+            var N = nu1 * E + lThigh - lFoot;
+            var r1 = (lThigh - lShin).magnitude;
+            var r2 = (origlFoot - lShin).magnitude;
+            var kaiA = U.sqrMagnitude * r1 * r1;
+            var kaiB = Vector3.Dot(U, N) * r1;
+            var kaiC = N.sqrMagnitude - r2 * r2;
+            var sq = kaiB * kaiB - kaiA * kaiC;
+            if (sq > 0)
+            {
+                Debug.Log("LFoo IK");
+                sq = Mathf.Sqrt(sq);
+                var sq1 = (-kaiB + sq) / kaiA;
+                var sq2 = (-kaiB - sq) / kaiA;
+                var shinPos1 = lShin;
+                var shinPos2 = lShin;
+                var flag1 = false;
+                var flag2 = false;
+                if (sq1 <= 1f && sq1 >= -1f)
+                {
+                    var kai1 = Mathf.Asin(sq1);
+                    var sinT1 = Mathf.Sin(kai1);
+                    var cosT1 = Mathf.Cos(kai1);
+                    shinPos1 = lThigh + r1 * cosT1 * nu1 + r1 * sinT1 * nv1;
+                    flag1 = true;
+                }
+                if (sq2 <= 1f && sq2 >= -1f)
+                {
+                    var kai2 = Mathf.Asin(sq2);
+                    var sinT2 = Mathf.Sin(kai2);
+                    var cosT2 = Mathf.Cos(kai2);
+                    shinPos2 = lThigh + r1 * cosT2 * nu1 + r1 * sinT2 * nv1;
+                    flag2 = true;
+                }
+
+                var lThighJP = jointPoints[PositionIndex.lThighBend.Int()];
+                var lShinJP = jointPoints[PositionIndex.lShin.Int()];
+                var lFootJP = jointPoints[PositionIndex.lFoot.Int()];
+                if (flag1 && flag2)
+                {
+                    var nn1 = Vector3.Cross(-(shinPos1 - lThigh), (shinPos1 - lFoot)).normalized;
+                    //var nn2 = Vector3.Cross(-(shinPos2 - lThigh), (shinPos2 - lFoot));
+                    //if ((lShin - shinPos1).magnitude < (lShin - shinPos2).magnitude)
+                    if ((nn - nn1).magnitude > 1.0f)
+                    { 
+                        lThighJP.Transform.rotation = Quaternion.LookRotation(lThigh - shinPos1, nn) * lThighJP.InverseRotation;
+                        lShinJP.Transform.rotation = Quaternion.LookRotation(shinPos1 - lFoot, nn) * lShinJP.InverseRotation;
+                        //lShinJP.Transform.position = shinPos1;
+                        //lFootJP.Transform.position = lFoot;
+                    }
+                    else
+                    {
+                        lThighJP.Transform.rotation = Quaternion.LookRotation(lThigh - shinPos2, nn) * lThighJP.InverseRotation;
+                        lShinJP.Transform.rotation = Quaternion.LookRotation(shinPos2 - lFoot, nn) * lShinJP.InverseRotation;
+                        //lShinJP.Transform.position = shinPos2;
+                        //lFootJP.Transform.position = lFoot;
+                    }
+                }
+                
+                else if (flag1)
+                {
+                //    lThighJP.Transform.rotation = Quaternion.LookRotation(lThigh - shinPos1, nn) * lThighJP.InverseRotation;
+                //    lShinJP.Transform.rotation = Quaternion.LookRotation(shinPos1 - lFoot, nn) * lShinJP.InverseRotation;
+                }
+                else if (flag2)
+                {
+                 //   lThighJP.Transform.rotation = Quaternion.LookRotation(lThigh - shinPos2, nn) * lThighJP.InverseRotation;
+                 //   lShinJP.Transform.rotation = Quaternion.LookRotation(shinPos2 - lFoot, nn) * lShinJP.InverseRotation;
+                }
+                
+            }
+        }
+        */
         /*
         if (jointPoints[PositionIndex.lFoot.Int()].Transform.position.y < FootIKY)
         {
