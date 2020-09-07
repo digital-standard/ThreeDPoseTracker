@@ -9,6 +9,8 @@ public class ConfigurationScript : MonoBehaviour
     private GameObject pnlImages;
     private GameObject pnlPredict;
     private GameObject pnlRecord;
+    private GameObject pnlLipSync;
+    private GameObject pnlRoom;
     private GameObject pnlOthers;
 
     private Toggle ShowSource;
@@ -79,11 +81,15 @@ public class ConfigurationScript : MonoBehaviour
         pnlImages = GameObject.Find("pnlImages");
         pnlPredict = GameObject.Find("pnlPredict");
         pnlRecord = GameObject.Find("pnlRecord");
+        pnlLipSync = GameObject.Find("pnlLipSync");
+        pnlRoom = GameObject.Find("pnlRoom");
         pnlOthers = GameObject.Find("pnlOthers");
 
         pnlImages.SetActive(true);
         pnlPredict.SetActive(true);
         pnlRecord.SetActive(true);
+        pnlLipSync.SetActive(true);
+        pnlRoom.SetActive(true);
         pnlOthers.SetActive(true);
 
         ShowSource = GameObject.Find("ShowSource").GetComponent<Toggle>();
@@ -144,10 +150,8 @@ public class ConfigurationScript : MonoBehaviour
         ifVMCPPort = GameObject.Find("ifVMCPPort").GetComponent<InputField>();
         VMCPRot = GameObject.Find("VMCPRot").GetComponent<Toggle>();
 
+        DeactivateTabPanel();
         pnlImages.SetActive(true);
-        pnlPredict.SetActive(false);
-        pnlRecord.SetActive(false);
-        pnlOthers.SetActive(false);
     }
 
     public void ShowSetting(ConfigurationSetting config)
@@ -618,6 +622,18 @@ public class ConfigurationScript : MonoBehaviour
         pnlRecord.SetActive(true);
     }
 
+    public void onTabLipSync()
+    {
+        DeactivateTabPanel();
+        pnlLipSync.SetActive(true);
+    }
+
+    public void onTabRoom()
+    {
+        DeactivateTabPanel();
+        pnlRoom.SetActive(true);
+    }
+
     public void onTabOthers()
     {
         DeactivateTabPanel();
@@ -626,9 +642,11 @@ public class ConfigurationScript : MonoBehaviour
 
     private void DeactivateTabPanel()
     {
-        if(pnlImages.activeSelf) pnlImages.SetActive(false);
+        if (pnlImages.activeSelf) pnlImages.SetActive(false);
         if (pnlPredict.activeSelf) pnlPredict.SetActive(false);
         if (pnlRecord.activeSelf) pnlRecord.SetActive(false);
+        if (pnlLipSync.activeSelf) pnlLipSync.SetActive(false);
+        if (pnlRoom.activeSelf) pnlRoom.SetActive(false);
         if (pnlOthers.activeSelf) pnlOthers.SetActive(false);
     }
 

@@ -46,7 +46,8 @@ public class UIScript : MonoBehaviour
 
     public GameObject OSCClient;
     public GameObject LipSyncObject;
-
+    public GameObject IKObject;
+    public bool UseIK = false;
 
     private void Awake()
     {
@@ -456,6 +457,12 @@ public class UIScript : MonoBehaviour
 
         var lip = LipSyncObject.GetComponent<VRMLipSyncContextMorphTarget>();
         lip.SetVRMBlendShapeProxy();
+
+        if (UseIK)
+        {
+            var ik = IKObject.GetComponent<VRIK_Wrapper>();
+            ik.UpdateVRIK(AvatarList[avatars.value].Avatar.gameObject.transform);
+        }
     }
 
     public void onAddAvatar()

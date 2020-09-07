@@ -160,9 +160,9 @@ public class VNectBarracudaRunner : MonoBehaviour
 
         if (User3Input)
         {
-            inputs[inputName_1] = new Tensor(texture);
-            inputs[inputName_2] = new Tensor(texture);
-            inputs[inputName_3] = new Tensor(texture);
+            inputs[inputName_1] = new Tensor(texture, 3);
+            inputs[inputName_2] = new Tensor(texture, 3);
+            inputs[inputName_3] = new Tensor(texture, 3);
             _worker.Execute(inputs);
             inputs[inputName_1].Dispose();
             inputs[inputName_2].Dispose();
@@ -170,7 +170,7 @@ public class VNectBarracudaRunner : MonoBehaviour
         }
         else
         {
-            input = new Tensor(texture);
+            input = new Tensor(texture, 3);
             _worker.Execute(input);
             input.Dispose();
         }
@@ -315,7 +315,7 @@ public class VNectBarracudaRunner : MonoBehaviour
     {
 
         // Create input and Execute model
-        input = new Tensor(videoCapture.MainTexture);
+        input = new Tensor(videoCapture.MainTexture, 3);
         _worker.Execute(input);
         input.Dispose();
 
@@ -334,12 +334,12 @@ public class VNectBarracudaRunner : MonoBehaviour
 
     private void UpdateVNectAsync()
     {
-        input = new Tensor(videoCapture.MainTexture);
+        input = new Tensor(videoCapture.MainTexture, 3);
         if (inputs[inputName_1] == null)
         {
             inputs[inputName_1] = input;
-            inputs[inputName_2] = new Tensor(videoCapture.MainTexture);
-            inputs[inputName_3] = new Tensor(videoCapture.MainTexture);
+            inputs[inputName_2] = new Tensor(videoCapture.MainTexture, 3);
+            inputs[inputName_3] = new Tensor(videoCapture.MainTexture, 3);
         }
         else
         {/*
