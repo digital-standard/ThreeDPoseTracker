@@ -257,12 +257,12 @@ public class VNectBarracudaRunner : MonoBehaviour
         Smooth = config.LowPassFilter;
         NOrderLPF = config.NOrderLPF;
 
-        filterWindow.Init(config.FIROrderN, config.FIRFromHz, config.FIRToHz, 30f);
+        filterWindow.Init(config.FIROrderN03, config.FIRFromHz, config.FIRToHz, 30f);
 
         filter.Clear();
         for (var i = 0; i < JointNum; i++)
         {
-            filter.Add(new FIRFilter(filterWindow, config.RangePathFilterBuffer));
+            filter.Add(new FIRFilter(filterWindow, config.RangePathFilterBuffer03));
         }
 
         ForwardThreshold = config.ForwardThreshold;

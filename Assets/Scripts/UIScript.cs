@@ -381,6 +381,11 @@ public class UIScript : MonoBehaviour
         {
             StopVMCProtocol();
         }
+
+        SetLipSync();
+        SetAutoBlink();
+
+        UseIK = config.UseGrounderIK == 1;
     }
 
     private void SaveConfiguration(ConfigurationSetting config)
@@ -455,14 +460,48 @@ public class UIScript : MonoBehaviour
         var src = OSCClient.GetComponent<VMCPBonesSender>();
         src.Model = AvatarList[avatars.value].Avatar.gameObject;
 
-        var lip = LipSyncObject.GetComponent<VRMLipSyncContextMorphTarget>();
-        lip.SetVRMBlendShapeProxy();
+        SetLipSync();
+        SetAutoBlink();
 
         if (UseIK)
         {
             var ik = IKObject.GetComponent<VRIK_Wrapper>();
             ik.UpdateVRIK(AvatarList[avatars.value].Avatar.gameObject.transform);
         }
+    }
+
+    private void SetLipSync()
+    {
+        var mic = LipSyncObject.GetComponent<OVRLipSyncMicInput>();
+        if (Microphone.GetPosition(mic.selectedDevice) <= 0)
+        {
+            configurationSetting.SelectedMic = "None";
+            mic.enabled = false;
+            return;
+        }
+
+        var lip = LipSyncObject.GetComponent<VRMLipSyncContextMorphTarget>();
+        lip.smoothAmount = configurationSetting.LipSyncSmoothAmount;
+        lip.LipSyncSensitivity = configurationSetting.LipSyncSensitivity;
+        lip.SetVRMBlendShapeProxy(configurationSetting.UseLipSync == 1);
+
+    }
+
+    public void MicSelectButton()
+    {
+        var mic = LipSyncObject.GetComponent<OVRLipSyncMicInput>();
+        mic.enabled = true;
+        mic.MicDeviceGUI((Screen.width / 2) - 150, (Screen.height / 2) - 75, 300, 50, 10, -300);
+    }
+
+    private void SetAutoBlink()
+    {
+        var lip = LipSyncObject.GetComponent<VRMLipSyncContextMorphTarget>();
+        lip.timeBlink = configurationSetting.TimeBlink;
+        lip.threshold = configurationSetting.AutoBlinkThreshold;
+        lip.interval = configurationSetting.AutoBlinkInterval;
+        lip.SetAutoBlink(configurationSetting.UseAutoBlink == 1);
+
     }
 
     public void onAddAvatar()
@@ -864,8 +903,8 @@ public class ConfigurationSetting
     public int NOrderLPF;
     //public int BWBuffer;
     //public float BWCutoff;
-    public int RangePathFilterBuffer;
-    public int FIROrderN;
+    public int RangePathFilterBuffer03;
+    public int FIROrderN03;
     public float FIRFromHz;
     public float FIRToHz;
     public float ForwardThreshold;
@@ -896,6 +935,31 @@ public class ConfigurationSetting
     public float CapturingFPS;
     public int CatchUp;
 
+    public int UseLipSync;
+    public string SelectedMic;  /* None save data */
+    public int LipSyncSmoothAmount;
+    public float LipSyncSensitivity;
+    public int UseAutoBlink;
+    public float TimeBlink;
+    public float AutoBlinkThreshold;
+    public float AutoBlinkInterval;
+
+    public int ShowRoom;
+    public float RoomX;
+    public float RoomY;
+    public float RoomZ;
+    public float RoomRotX;
+    public float RoomRotY;
+    public float RoomRotZ;
+    public float RoomScaleX;
+    public float RoomScaleY;
+    public float RoomScaleZ;
+    public int ReceiveShadow;
+    public int UseGrounderIK;
+    public float IKPositionWeight;
+    public float LegPositionWeight;
+    public float HeightOffset;
+
     public int UseUnityCapture;
     public int UseVMCProtocol;
     public string VMCPIP;
@@ -925,8 +989,8 @@ public class ConfigurationSetting
         NOrderLPF = 7;
         //BWBuffer = 100;
         //BWCutoff = 10.0f;
-        RangePathFilterBuffer = 100;
-        FIROrderN = 100;
+        RangePathFilterBuffer03 = 40;
+        FIROrderN03 = 10;
         FIRFromHz = 0.01f;
         FIRToHz = 3.5f;
 
@@ -957,6 +1021,30 @@ public class ConfigurationSetting
         Capturing = 1;
         CapturingFPS = 30f;
         CatchUp = 1;
+
+        UseLipSync = 0;
+        LipSyncSmoothAmount = 70;
+        LipSyncSensitivity = 1;
+        UseAutoBlink = 0;
+        TimeBlink = 0.3f;
+        AutoBlinkThreshold = 0.3f;
+        AutoBlinkInterval = 2f;
+
+        ShowRoom = 0;
+        RoomX = 0f;
+        RoomY = 0f;
+        RoomZ = 0f;
+        RoomRotX = 0f;
+        RoomRotY = 0f;
+        RoomRotZ = 0f;
+        RoomScaleX = 1f;
+        RoomScaleY = 1f;
+        RoomScaleZ = 1f;
+        ReceiveShadow = 0;
+        UseGrounderIK = 0;
+        IKPositionWeight = 0.3f;
+        LegPositionWeight = 0f;
+        HeightOffset = -0.05f;
 
         UseUnityCapture = 0;
         UseVMCProtocol = 0;
@@ -989,8 +1077,8 @@ public class ConfigurationSetting
             NOrderLPF = NOrderLPF,
             //BWBuffer = BWBuffer,
             //BWCutoff = BWCutoff,
-            RangePathFilterBuffer = RangePathFilterBuffer,
-            FIROrderN = FIROrderN,
+            RangePathFilterBuffer03 = RangePathFilterBuffer03,
+            FIROrderN03 = FIROrderN03,
             FIRFromHz = FIRFromHz,
             FIRToHz = FIRToHz,
             ForwardThreshold = ForwardThreshold,
@@ -1020,6 +1108,30 @@ public class ConfigurationSetting
             Capturing = Capturing,
             CapturingFPS = CapturingFPS,
             CatchUp = CatchUp,
+
+            UseLipSync = UseLipSync,
+            LipSyncSmoothAmount = LipSyncSmoothAmount,
+            LipSyncSensitivity = LipSyncSensitivity,
+            UseAutoBlink = UseAutoBlink,
+            TimeBlink = TimeBlink,
+            AutoBlinkThreshold = AutoBlinkThreshold,
+            AutoBlinkInterval = AutoBlinkInterval,
+
+            ShowRoom = ShowRoom,
+            RoomX = RoomX,
+            RoomY = RoomY,
+            RoomZ = RoomZ,
+            RoomRotX = RoomRotX,
+            RoomRotY = RoomRotY,
+            RoomRotZ = RoomRotZ,
+            RoomScaleX = RoomScaleX,
+            RoomScaleY = RoomScaleY,
+            RoomScaleZ = RoomScaleZ,
+            ReceiveShadow = ReceiveShadow,
+            UseGrounderIK = UseGrounderIK,
+            IKPositionWeight = IKPositionWeight,
+            LegPositionWeight = LegPositionWeight,
+            HeightOffset = HeightOffset,
 
             UseUnityCapture = UseUnityCapture,
             UseVMCProtocol = UseVMCProtocol,
@@ -1051,8 +1163,8 @@ public class ConfigurationSetting
         NOrderLPF = PlayerPrefs.GetInt("NOrderLPF", NOrderLPF);
         //BWBuffer = PlayerPrefs.GetInt("BWBuffer", BWBuffer);
         //BWCutoff = PlayerPrefs.GetFloat("BWCutoff", BWCutoff);
-        RangePathFilterBuffer = PlayerPrefs.GetInt("RangePathFilterBuffer", RangePathFilterBuffer);
-        FIROrderN = PlayerPrefs.GetInt("FIROrderN", FIROrderN);
+        RangePathFilterBuffer03 = PlayerPrefs.GetInt("RangePathFilterBuffer03", RangePathFilterBuffer03);
+        FIROrderN03 = PlayerPrefs.GetInt("FIROrderN03", FIROrderN03);
         FIRFromHz = PlayerPrefs.GetFloat("FIRFromHz", FIRFromHz);
         FIRToHz = PlayerPrefs.GetFloat("FIRToHz", FIRToHz);
         ForwardThreshold = PlayerPrefs.GetFloat("ForwardThreshold", ForwardThreshold);
@@ -1084,6 +1196,30 @@ public class ConfigurationSetting
         CapturingFPS = PlayerPrefs.GetFloat("CapturingFPS", CapturingFPS);
         CatchUp = PlayerPrefs.GetInt("CatchUp", CatchUp);
 
+        UseLipSync = PlayerPrefs.GetInt("UseLipSync", UseLipSync);
+        LipSyncSmoothAmount = PlayerPrefs.GetInt("LipSyncSmoothAmount", LipSyncSmoothAmount);
+        LipSyncSensitivity = PlayerPrefs.GetFloat("LipSyncSensitivity", LipSyncSensitivity);
+        UseAutoBlink = PlayerPrefs.GetInt("UseAutoBlink", UseAutoBlink);
+        TimeBlink = PlayerPrefs.GetFloat("TimeBlink", TimeBlink);
+        AutoBlinkThreshold = PlayerPrefs.GetFloat("AutoBlinkThreshold", AutoBlinkThreshold);
+        AutoBlinkInterval = PlayerPrefs.GetFloat("AutoBlinkInterval", AutoBlinkInterval);
+
+        ShowRoom = PlayerPrefs.GetInt("ShowRoom", ShowRoom);
+        RoomX = PlayerPrefs.GetFloat("RoomX", RoomX);
+        RoomY = PlayerPrefs.GetFloat("RoomY", RoomY);
+        RoomZ = PlayerPrefs.GetFloat("RoomZ", RoomZ);
+        RoomRotX = PlayerPrefs.GetFloat("RoomRotX", RoomRotX);
+        RoomRotY = PlayerPrefs.GetFloat("RoomRotY", RoomRotY);
+        RoomRotZ = PlayerPrefs.GetFloat("RoomRotZ", RoomRotZ);
+        RoomScaleX = PlayerPrefs.GetFloat("RoomScaleX", RoomScaleX);
+        RoomScaleY = PlayerPrefs.GetFloat("RoomScaleY", RoomScaleY);
+        RoomScaleZ = PlayerPrefs.GetFloat("RoomScaleZ", RoomScaleZ);
+        ReceiveShadow = PlayerPrefs.GetInt("RecceiveShadow", ReceiveShadow);
+        UseGrounderIK = PlayerPrefs.GetInt("UseGrounderIK", UseGrounderIK);
+        IKPositionWeight = PlayerPrefs.GetFloat("IKPositionWeight", IKPositionWeight);
+        LegPositionWeight = PlayerPrefs.GetFloat("LegPositionWeight", LegPositionWeight);
+        HeightOffset = PlayerPrefs.GetFloat("HeightOffset", HeightOffset);
+
         UseUnityCapture = PlayerPrefs.GetInt("UseUnityCapture", UseUnityCapture);
         UseVMCProtocol = PlayerPrefs.GetInt("UseVMCProtocol", UseVMCProtocol);
         VMCPIP = PlayerPrefs.GetString("VMCPIP", VMCPIP);
@@ -1113,8 +1249,8 @@ public class ConfigurationSetting
         ppSet("NOrderLPF", NOrderLPF);
         //ppSet("BWBuffer", BWBuffer);
         //ppSet("BWCutoff", BWCutoff);
-        ppSet("RangePathFilterBuffer", RangePathFilterBuffer);
-        ppSet("FIROrderN", FIROrderN);
+        ppSet("RangePathFilterBuffer03", RangePathFilterBuffer03);
+        ppSet("FIROrderN03", FIROrderN03);
         ppSet("FIRFromHz", FIRFromHz);
         ppSet("FIRToHz", FIRToHz);
         ppSet("ForwardThreshold", ForwardThreshold);
@@ -1144,6 +1280,30 @@ public class ConfigurationSetting
         ppSet("Capturing", Capturing);
         ppSet("CapturingFPS", CapturingFPS);
         ppSet("CatchUp", CatchUp);
+
+        ppSet("UseLipSync", UseLipSync);
+        ppSet("LipSyncSmoothAmount", LipSyncSmoothAmount);
+        ppSet("LipSyncSensitivity", LipSyncSensitivity);
+        ppSet("UseAutoBlink", UseAutoBlink);
+        ppSet("TimeBlink", TimeBlink);
+        ppSet("AutoBlinkThreshold", AutoBlinkThreshold);
+        ppSet("AutoBlinkInterval", AutoBlinkInterval);
+
+        ppSet("ShowRoom", ShowRoom);
+        ppSet("RoomX", RoomX);
+        ppSet("RoomY", RoomY);
+        ppSet("RoomZ", RoomZ);
+        ppSet("RoomRotX", RoomRotX);
+        ppSet("RoomRotY", RoomRotY);
+        ppSet("RoomRotZ", RoomRotZ);
+        ppSet("RoomScaleX", RoomScaleX);
+        ppSet("RoomScaleY", RoomScaleY);
+        ppSet("RoomScaleZ", RoomScaleZ);
+        ppSet("ReceiveShadow", ReceiveShadow);
+        ppSet("UseGrounderIK", UseGrounderIK);
+        ppSet("IKPositionWeight", IKPositionWeight);
+        ppSet("LegPositionWeight", LegPositionWeight);
+        ppSet("HeightOffset", HeightOffset);
 
         ppSet("UseUnityCapture", UseUnityCapture);
         ppSet("UseVMCProtocol", UseVMCProtocol);

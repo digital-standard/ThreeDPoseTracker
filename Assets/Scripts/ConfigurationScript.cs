@@ -65,6 +65,31 @@ public class ConfigurationScript : MonoBehaviour
     private InputField ifCapturingFPS;
     private Toggle CatchUp;
 
+    private Toggle UseLipSync;
+    private Text lblSelectedMic;
+    private InputField ifLipSyncSmoothAmount;
+    private InputField ifLipSyncSensitivity;
+    private Toggle UseAutoBlink;
+    private InputField ifTimeBlink;
+    private InputField ifAutoBlinkThreshold;
+    private InputField ifAutoBlinkInterval;
+
+    private Toggle ShowRoom;
+    private InputField ifRoomX;
+    private InputField ifRoomY;
+    private InputField ifRoomZ;
+    private InputField ifRoomRotX;
+    private InputField ifRoomRotY;
+    private InputField ifRoomRotZ;
+    private InputField ifRoomScaleX;
+    private InputField ifRoomScaleY;
+    private InputField ifRoomScaleZ;
+    private Toggle ReceiveShadow;
+    private Toggle UseGrounderIK;
+    private InputField ifIKPositionWeight;
+    private InputField ifLegPositionWeight;
+    private InputField ifHeightOffset;
+
     private Toggle UseUnityCapture;
     private Toggle UseVMCProtocol;
     private InputField ifVMCPIP;
@@ -144,6 +169,31 @@ public class ConfigurationScript : MonoBehaviour
         ifCapturingFPS = GameObject.Find("ifCapturingFPS").GetComponent<InputField>();
         CatchUp = GameObject.Find("CatchUp").GetComponent<Toggle>();
 
+        UseLipSync = GameObject.Find("UseLipSync").GetComponent<Toggle>();
+        lblSelectedMic = GameObject.Find("lblSelectedMic").GetComponent<Text>();
+        ifLipSyncSmoothAmount = GameObject.Find("ifLipSyncSmoothAmount").GetComponent<InputField>();
+        ifLipSyncSensitivity = GameObject.Find("ifLipSyncSensitivity").GetComponent<InputField>();
+        UseAutoBlink = GameObject.Find("UseAutoBlink").GetComponent<Toggle>();
+        ifTimeBlink = GameObject.Find("ifTimeBlink").GetComponent<InputField>();
+        ifAutoBlinkThreshold = GameObject.Find("ifAutoBlinkThreshold").GetComponent<InputField>();
+        ifAutoBlinkInterval = GameObject.Find("ifAutoBlinkInterval").GetComponent<InputField>();
+
+        ShowRoom = GameObject.Find("ShowRoom").GetComponent<Toggle>();
+        ifRoomX = GameObject.Find("ifRoomX").GetComponent<InputField>();
+        ifRoomY = GameObject.Find("ifRoomY").GetComponent<InputField>();
+        ifRoomZ = GameObject.Find("ifRoomZ").GetComponent<InputField>();
+        ifRoomRotX = GameObject.Find("ifRoomRotX").GetComponent<InputField>();
+        ifRoomRotY = GameObject.Find("ifRoomRotY").GetComponent<InputField>();
+        ifRoomRotZ = GameObject.Find("ifRoomRotZ").GetComponent<InputField>();
+        ifRoomScaleX = GameObject.Find("ifRoomScaleX").GetComponent<InputField>();
+        ifRoomScaleY = GameObject.Find("ifRoomScaleY").GetComponent<InputField>();
+        ifRoomScaleZ = GameObject.Find("ifRoomScaleZ").GetComponent<InputField>();
+        ReceiveShadow = GameObject.Find("ReceiveShadow").GetComponent<Toggle>();
+        UseGrounderIK = GameObject.Find("UseGrounderIK").GetComponent<Toggle>();
+        ifIKPositionWeight = GameObject.Find("ifIKPositionWeight").GetComponent<InputField>();
+        ifLegPositionWeight = GameObject.Find("ifLegPositionWeight").GetComponent<InputField>();
+        ifHeightOffset = GameObject.Find("ifHeightOffset").GetComponent<InputField>();
+
         UseUnityCapture = GameObject.Find("UseUnityCapture").GetComponent<Toggle>();
         UseVMCProtocol = GameObject.Find("UseVMCProtocol").GetComponent<Toggle>();
         ifVMCPIP = GameObject.Find("ifVMCPIP").GetComponent<InputField>();
@@ -179,8 +229,8 @@ public class ConfigurationScript : MonoBehaviour
         ifNOrderLPF.text = config.NOrderLPF.ToString();
         //ifBWBuffer.text = config.BWBuffer.ToString();
         //ifBWCutoff.text = config.BWCutoff.ToString("0.00");
-        ifRangePathFilterBuffer.text = config.RangePathFilterBuffer.ToString("0");
-        ifFIROrderN.text = config.FIROrderN.ToString("0");
+        ifRangePathFilterBuffer.text = config.RangePathFilterBuffer03.ToString("0");
+        ifFIROrderN.text = config.FIROrderN03.ToString("0");
         ifFIRFromHz.text = config.FIRFromHz.ToString("0.00");
         ifFIRToHz.text = config.FIRToHz.ToString("0.00");
         ifForwardThreshold.text = config.ForwardThreshold.ToString("0.00");
@@ -210,6 +260,31 @@ public class ConfigurationScript : MonoBehaviour
         Capturing.isOn = config.Capturing == 1;
         ifCapturingFPS.text = config.CapturingFPS.ToString("0");
         CatchUp.isOn = config.CatchUp == 1;
+
+        UseLipSync.isOn = config.UseLipSync == 1;
+        lblSelectedMic.text = "";
+        ifLipSyncSmoothAmount.text = config.LipSyncSmoothAmount.ToString("0");
+        ifLipSyncSensitivity.text = config.LipSyncSensitivity.ToString("0.00");
+        UseAutoBlink.isOn = config.UseAutoBlink == 1;
+        ifTimeBlink.text = config.TimeBlink.ToString("0.00");
+        ifAutoBlinkThreshold.text = config.AutoBlinkThreshold.ToString("0.00");
+        ifAutoBlinkInterval.text = config.AutoBlinkInterval.ToString("0.00");
+
+        ShowRoom.isOn = config.ShowRoom == 1;
+        ifRoomX.text = config.RoomX.ToString("0.00");
+        ifRoomY.text = config.RoomY.ToString("0.00");
+        ifRoomZ.text = config.RoomZ.ToString("0.00");
+        ifRoomRotX.text = config.RoomRotX.ToString("0.00");
+        ifRoomRotY.text = config.RoomRotY.ToString("0.00");
+        ifRoomRotZ.text = config.RoomRotZ.ToString("0.00");
+        ifRoomScaleX.text = config.RoomScaleX.ToString("0.00");
+        ifRoomScaleY.text = config.RoomScaleY.ToString("0.00");
+        ifRoomScaleZ.text = config.RoomScaleZ.ToString("0.00");
+        ReceiveShadow.isOn = config.ReceiveShadow == 1;
+        UseGrounderIK.isOn = config.UseGrounderIK == 1;
+        ifIKPositionWeight.text = config.IKPositionWeight.ToString("0.00");
+        ifLegPositionWeight.text = config.LegPositionWeight.ToString("0.00");
+        ifHeightOffset.text = config.HeightOffset.ToString("0.00");
 
         UseUnityCapture.isOn = config.UseUnityCapture == 1;
         UseVMCProtocol.isOn = config.UseVMCProtocol == 1;
@@ -337,7 +412,7 @@ public class ConfigurationScript : MonoBehaviour
         {
             return "Range Path Filter Buffer is between 10 and 10000.";
         }
-        configurationSetting.RangePathFilterBuffer = i;
+        configurationSetting.RangePathFilterBuffer03 = i;
 
         if (!int.TryParse(ifFIROrderN.text, out i))
         {
@@ -347,7 +422,7 @@ public class ConfigurationScript : MonoBehaviour
         {
             return "FIR Order N is between 10 and 10000.";
         }
-        configurationSetting.FIROrderN = i;
+        configurationSetting.FIROrderN03 = i;
 
         if (!float.TryParse(ifFIRFromHz.text, out f))
         {
@@ -550,6 +625,166 @@ public class ConfigurationScript : MonoBehaviour
         configurationSetting.CapturingFPS = f;
         configurationSetting.CatchUp = CatchUp.isOn ? 1 : 0;
 
+        configurationSetting.UseLipSync = UseLipSync.isOn ? 1 : 0;
+        if (!int.TryParse(ifLipSyncSmoothAmount.text, out i))
+        {
+            return "Smooth Amount is required.";
+        }
+        if (i < 0 || i > 100)
+        {
+            return "Smooth Amount is between 0 and 100.";
+        }
+        configurationSetting.LipSyncSmoothAmount = i;
+        if (!float.TryParse(ifLipSyncSensitivity.text, out f))
+        {
+            return "Sensitivity is required.";
+        }
+        if (f < 0f || f > 2f)
+        {
+            return "Sensitivity is between 0 and 2.";
+        }
+        configurationSetting.LipSyncSensitivity = f;
+        configurationSetting.UseAutoBlink = UseAutoBlink.isOn ? 1 : 0;
+        if (!float.TryParse(ifTimeBlink.text, out f))
+        {
+            return "TimeBlink is required.";
+        }
+        if (f < 0f || f > 1f)
+        {
+            return "TimeBlink is between 0 and 1.";
+        }
+        configurationSetting.TimeBlink = f;
+        if (!float.TryParse(ifAutoBlinkThreshold.text, out f))
+        {
+            return "Auto Blink Threshold is required.";
+        }
+        if (f < 0f || f > 1f)
+        {
+            return "Auto Blink Threshold is between 0 and 1.";
+        }
+        configurationSetting.AutoBlinkThreshold = f;
+        if (!float.TryParse(ifAutoBlinkInterval.text, out f))
+        {
+            return "Auto Blink Interval is required.";
+        }
+        if (f < 0f || f > 10f)
+        {
+            return "Auto Blink Interval is between 0 and 10.";
+        }
+        configurationSetting.AutoBlinkInterval = f;
+
+        configurationSetting.ShowRoom = ShowRoom.isOn ? 1 : 0;
+        if (!float.TryParse(ifRoomX.text, out f))
+        {
+            return "Room Position X is required.";
+        }
+        if (f < -100f || f > 100f)
+        {
+            return "Room Position X is between -100 and 100.";
+        }
+        configurationSetting.RoomX = f;
+        if (!float.TryParse(ifRoomY.text, out f))
+        {
+            return "Room Position Y is required.";
+        }
+        if (f < -100f || f > 100f)
+        {
+            return "Room Position Y is between -100 and 100.";
+        }
+        configurationSetting.RoomY = f;
+        if (!float.TryParse(ifRoomZ.text, out f))
+        {
+            return "Room Position Z is required.";
+        }
+        if (f < -100f || f > 100f)
+        {
+            return "Room Position Z is between -100 and 100.";
+        }
+        configurationSetting.RoomZ = f;
+        if (!float.TryParse(ifRoomRotX.text, out f))
+        {
+            return "Room Rotation X is required.";
+        }
+        if (f < -100f || f > 100f)
+        {
+            return "Room Rotation X is between -100 and 100.";
+        }
+        configurationSetting.RoomRotX = f;
+        if (!float.TryParse(ifRoomRotY.text, out f))
+        {
+            return "Room Rotation Y is required.";
+        }
+        if (f < -100f || f > 100f)
+        {
+            return "Room Rotation Y is between -100 and 100.";
+        }
+        configurationSetting.RoomRotY = f;
+        if (!float.TryParse(ifRoomRotZ.text, out f))
+        {
+            return "Room Rotation Z is required.";
+        }
+        if (f < -100f || f > 100f)
+        {
+            return "Room Rotation Z is between -100 and 100.";
+        }
+        configurationSetting.RoomRotZ = f;
+        if (!float.TryParse(ifRoomScaleX.text, out f))
+        {
+            return "Room Scale X is required.";
+        }
+        if (f < -100f || f > 100f)
+        {
+            return "Room Scale X is between -100 and 100.";
+        }
+        configurationSetting.RoomScaleX = f;
+        if (!float.TryParse(ifRoomScaleY.text, out f))
+        {
+            return "Room Scale Y is required.";
+        }
+        if (f < -100f || f > 100f)
+        {
+            return "Room Scale Y is between -100 and 100.";
+        }
+        configurationSetting.RoomScaleY = f;
+        if (!float.TryParse(ifRoomScaleZ.text, out f))
+        {
+            return "Room Scale Z is required.";
+        }
+        if (f < -100f || f > 100f)
+        {
+            return "Room Scale Z is between -100 and 100.";
+        }
+        configurationSetting.RoomScaleZ = f;
+        configurationSetting.ReceiveShadow = ReceiveShadow.isOn ? 1 : 0;
+        configurationSetting.UseGrounderIK = UseGrounderIK.isOn ? 1 : 0;
+        if (!float.TryParse(ifIKPositionWeight.text, out f))
+        {
+            return "IK Position Weight is required.";
+        }
+        if (f < 0f || f > 1f)
+        {
+            return "IK Position Weight 0 and 1.";
+        }
+        configurationSetting.IKPositionWeight = f;
+        if (!float.TryParse(ifLegPositionWeight.text, out f))
+        {
+            return "Leg Position Weight is required.";
+        }
+        if (f < 0f || f > 1f)
+        {
+            return "Leg Position Weight 0 and 1.";
+        }
+        configurationSetting.LegPositionWeight = f;
+        if (!float.TryParse(ifHeightOffset.text, out f))
+        {
+            return "Height Offset is required.";
+        }
+        if (f < -10f || f > 10f)
+        {
+            return "Height Offset -10 and 10.";
+        }
+        configurationSetting.HeightOffset = f;
+
         configurationSetting.UseUnityCapture = UseUnityCapture.isOn ? 1 : 0;
         configurationSetting.UseVMCProtocol = UseVMCProtocol.isOn ? 1 : 0;
         configurationSetting.VMCPIP = ifVMCPIP.text.Trim();
@@ -667,6 +902,19 @@ public class ConfigurationScript : MonoBehaviour
         {
             ifBackgroundFile.text = paths[0];
         }
+    }
+
+    public void onMicSelect()
+    {
+        currentUI.MicSelectButton();
+    }
+
+    public void onRoomCredit1()
+    {
+    }
+
+    public void onRoomCredit2()
+    {
     }
 
     public void TrainedModel_Changed(int value)

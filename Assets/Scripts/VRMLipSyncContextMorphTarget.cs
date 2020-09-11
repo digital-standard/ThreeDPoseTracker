@@ -7,6 +7,8 @@ using System.Linq;
 
 public class VRMLipSyncContextMorphTarget : MonoBehaviour
 {
+    public bool LipSync = false;
+
     // Set the blendshape index to go to (-1 means there is not one assigned)
     private int[] visemeToBlendTargets = { -1, 4, 4, 5, 3, 3, 3, 3, -1, 3, 2, 5, 3, 6, 4 }; //AIUEOへの振り分けテーブル
 
@@ -68,39 +70,45 @@ public class VRMLipSyncContextMorphTarget : MonoBehaviour
     /// </summary>
     void Update()
     {
-        if (lipsyncContext != null)
+        if (LipSync)
         {
-            // get the current viseme frame
-            OVRLipSync.Frame frame = lipsyncContext.GetCurrentPhonemeFrame();
-            if (frame != null)
+            if (lipsyncContext != null)
             {
-                SetVisemeToMorphTarget(frame);
-            }
+                // get the current viseme frame
+                OVRLipSync.Frame frame = lipsyncContext.GetCurrentPhonemeFrame();
+                if (frame != null)
+                {
+                    SetVisemeToMorphTarget(frame);
+                }
 
-            // Update smoothing value
-            if (smoothAmount != lipsyncContext.Smoothing)
-            {
-                lipsyncContext.Smoothing = smoothAmount;
+                // Update smoothing value
+                if (smoothAmount != lipsyncContext.Smoothing)
+                {
+                    lipsyncContext.Smoothing = smoothAmount;
+                }
             }
         }
 
-        // Blink
-        if (!timerStarted)
+        if (AutoBlink)
         {
-            eyeStatus = AutoBlinkStatus.Close;
-            timerStarted = true;
-        }
-        if (timerStarted)
-        {
-            timeRemining -= Time.deltaTime;
-            if (timeRemining <= 0.0f)
+            // Blink
+            if (!timerStarted)
             {
-                eyeStatus = AutoBlinkStatus.Open;
-                ResetTimer();
+                eyeStatus = AutoBlinkStatus.Close;
+                timerStarted = true;
             }
-            else if (timeRemining <= timeBlink * 0.3f)
+            if (timerStarted)
             {
-                eyeStatus = AutoBlinkStatus.HalfClose;
+                timeRemining -= Time.deltaTime;
+                if (timeRemining <= 0.0f)
+                {
+                    eyeStatus = AutoBlinkStatus.Open;
+                    ResetTimer();
+                }
+                else if (timeRemining <= timeBlink * 0.3f)
+                {
+                    eyeStatus = AutoBlinkStatus.HalfClose;
+                }
             }
         }
     }
@@ -148,9 +156,51 @@ public class VRMLipSyncContextMorphTarget : MonoBehaviour
     }
 
     // VRMBlendShapeProxyを探す
-    public void SetVRMBlendShapeProxy()
+    public void SetVRMBlendShapeProxy(bool flag)
     {
-        proxy = FindObjectOfType<VRMBlendShapeProxy>();
+        if (flag)
+        {
+            LipSync = true;
+
+            proxy = FindObjectOfType<VRMBlendShapeProxy>();
+            if(proxy == null)
+            {
+                LipSync = false;
+                AutoBlink = false;
+            }
+        }
+        else
+        {
+            LipSync = false;
+
+            if(!AutoBlink && !LipSync)
+            {
+                proxy = null;
+            }
+        }
+    }
+
+    public void SetAutoBlink(bool flag)
+    {
+        if (flag)
+        {
+            AutoBlink = true;
+            proxy = FindObjectOfType<VRMBlendShapeProxy>();
+            if (proxy == null)
+            {
+                LipSync = false;
+                AutoBlink = false;
+            }
+        }
+        else
+        {
+            AutoBlink = false;
+
+            if (!AutoBlink && !LipSync)
+            {
+                proxy = null;
+            }
+        }
     }
 
     void SetCloseEyes()
