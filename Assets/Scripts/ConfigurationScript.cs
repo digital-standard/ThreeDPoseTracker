@@ -41,6 +41,7 @@ public class ConfigurationScript : MonoBehaviour
     private InputField ifBackwardThreshold;
     private Toggle LockFoot;
     private Toggle LockLegs;
+    private Toggle LockHand;
     private Toggle ElbowAxisTop;
     //private InputField ifHeightRatioThreshold;
     private Dropdown trainedModel;
@@ -66,7 +67,7 @@ public class ConfigurationScript : MonoBehaviour
     private Toggle CatchUp;
 
     private Toggle UseLipSync;
-    private Text lblSelectedMic;
+    private Dropdown ddMicSelect;
     private InputField ifLipSyncSmoothAmount;
     private InputField ifLipSyncSensitivity;
     private Toggle UseAutoBlink;
@@ -145,6 +146,7 @@ public class ConfigurationScript : MonoBehaviour
         ifBackwardThreshold = GameObject.Find("ifBackwardThreshold").GetComponent<InputField>();
         LockFoot = GameObject.Find("LockFoot").GetComponent<Toggle>();
         LockLegs = GameObject.Find("LockLegs").GetComponent<Toggle>();
+        LockHand = GameObject.Find("LockHand").GetComponent<Toggle>();
         ElbowAxisTop = GameObject.Find("ElbowAxisTop").GetComponent<Toggle>();
         //ifHeightRatioThreshold = GameObject.Find("ifHeightRatioThreshold").GetComponent<InputField>();
         trainedModel = GameObject.Find("TrainedModel").GetComponent<Dropdown>();
@@ -170,7 +172,7 @@ public class ConfigurationScript : MonoBehaviour
         CatchUp = GameObject.Find("CatchUp").GetComponent<Toggle>();
 
         UseLipSync = GameObject.Find("UseLipSync").GetComponent<Toggle>();
-        lblSelectedMic = GameObject.Find("lblSelectedMic").GetComponent<Text>();
+        ddMicSelect = GameObject.Find("MicSelect").GetComponent<Dropdown>();
         ifLipSyncSmoothAmount = GameObject.Find("ifLipSyncSmoothAmount").GetComponent<InputField>();
         ifLipSyncSensitivity = GameObject.Find("ifLipSyncSensitivity").GetComponent<InputField>();
         UseAutoBlink = GameObject.Find("UseAutoBlink").GetComponent<Toggle>();
@@ -237,6 +239,7 @@ public class ConfigurationScript : MonoBehaviour
         ifBackwardThreshold.text = config.BackwardThreshold.ToString("0.00");
         LockFoot.isOn = config.LockFoot == 1;
         LockLegs.isOn = config.LockLegs == 1;
+        LockHand.isOn = config.LockHand == 1;
         ElbowAxisTop.isOn = config.ElbowAxisTop == 1;
         //ifHeightRatioThreshold.text = config.HeightRatioThreshold.ToString("0.00");
         trainedModel.value = config.TrainedModel;
@@ -262,7 +265,7 @@ public class ConfigurationScript : MonoBehaviour
         CatchUp.isOn = config.CatchUp == 1;
 
         UseLipSync.isOn = config.UseLipSync == 1;
-        lblSelectedMic.text = "";
+        SetMicList(config.SelectedMic);
         ifLipSyncSmoothAmount.text = config.LipSyncSmoothAmount.ToString("0");
         ifLipSyncSensitivity.text = config.LipSyncSensitivity.ToString("0.00");
         UseAutoBlink.isOn = config.UseAutoBlink == 1;
@@ -291,6 +294,27 @@ public class ConfigurationScript : MonoBehaviour
         ifVMCPIP.text = config.VMCPIP;
         ifVMCPPort.text = config.VMCPPort.ToString("0"); ;
         VMCPRot.isOn = config.VMCPRot == 1;
+    }
+
+    private void SetMicList(string selectedMic)
+    {
+        ddMicSelect.options.Clear();
+        bool find = false;
+        for (int i = 0; i < Microphone.devices.Length; ++i)
+        {
+            var name = Microphone.devices[i].ToString();
+            ddMicSelect.options.Add(new Dropdown.OptionData(name));
+            if(name == selectedMic)
+            {
+                ddMicSelect.value = i;
+                find = true;
+            }
+        }
+        if (!find && ddMicSelect.options.Count > 0)
+        {
+            ddMicSelect.value = 0;
+        }
+        ddMicSelect.RefreshShownValue();
     }
 
     public void Show(UIScript ui, ConfigurationSetting config)
@@ -466,6 +490,7 @@ public class ConfigurationScript : MonoBehaviour
 
         configurationSetting.LockFoot = LockFoot.isOn ? 1 : 0;
         configurationSetting.LockLegs = LockLegs.isOn ? 1 : 0;
+        configurationSetting.LockHand = LockHand.isOn ? 1 : 0;
         configurationSetting.ElbowAxisTop = ElbowAxisTop.isOn ? 1 : 0;
         /*
         if (!float.TryParse(ifHeightRatioThreshold.text, out f))
@@ -626,6 +651,7 @@ public class ConfigurationScript : MonoBehaviour
         configurationSetting.CatchUp = CatchUp.isOn ? 1 : 0;
 
         configurationSetting.UseLipSync = UseLipSync.isOn ? 1 : 0;
+        configurationSetting.SelectedMic = ddMicSelect.options[ddMicSelect.value].text;
         if (!int.TryParse(ifLipSyncSmoothAmount.text, out i))
         {
             return "Smooth Amount is required.";
@@ -904,17 +930,14 @@ public class ConfigurationScript : MonoBehaviour
         }
     }
 
-    public void onMicSelect()
-    {
-        currentUI.MicSelectButton();
-    }
-
     public void onRoomCredit1()
     {
+        Application.OpenURL("https://sketchfab.com/3d-models/the-charterhouse-great-chamber-50e692c037784347b289d7bbcb318bed");
     }
 
     public void onRoomCredit2()
     {
+        Application.OpenURL("https://twitter.com/artfletch");
     }
 
     public void TrainedModel_Changed(int value)

@@ -146,6 +146,7 @@ public class VNectModel : MonoBehaviour
 
     private bool LockFoot = false;
     private bool LockLegs = false;
+    private bool LockHand = false;
     private float FootIKY = 0f;
     private float ToeIKY = 0f;
 
@@ -567,12 +568,15 @@ public class VNectModel : MonoBehaviour
 */
         LockFoot = config.LockFoot == 1;
         LockLegs = config.LockLegs == 1;
+        LockHand = config.LockHand == 1;
         jointPoints[PositionIndex.lToe.Int()].Lock = LockFoot || LockLegs;
         jointPoints[PositionIndex.rToe.Int()].Lock = LockFoot || LockLegs;
         jointPoints[PositionIndex.lFoot.Int()].Lock = LockFoot || LockLegs;
         jointPoints[PositionIndex.rFoot.Int()].Lock = LockFoot || LockLegs;
         jointPoints[PositionIndex.lShin.Int()].Lock = LockLegs;
         jointPoints[PositionIndex.rShin.Int()].Lock = LockLegs;
+        jointPoints[PositionIndex.lHand.Int()].Lock = LockHand;
+        jointPoints[PositionIndex.rHand.Int()].Lock = LockHand;
 
         if (config.ElbowAxisTop == 0)
         {
@@ -861,13 +865,13 @@ public class VNectModel : MonoBehaviour
 
         // Wrist rotation (Test code)
         var lHand = jointPoints[PositionIndex.lHand.Int()];
-        if (lHand.Visibled)
+        if (!lHand.Lock && lHand.Visibled)
         {
             var lf = TriangleNormal(lHand.Pos3D, jointPoints[PositionIndex.lMid1.Int()].Pos3D, jointPoints[PositionIndex.lThumb2.Int()].Pos3D);
             lHand.Transform.rotation = Quaternion.LookRotation(jointPoints[PositionIndex.lThumb2.Int()].Pos3D - jointPoints[PositionIndex.lMid1.Int()].Pos3D, lf) * lHand.InverseRotation;
         }
         var rHand = jointPoints[PositionIndex.rHand.Int()];
-        if (rHand.Visibled)
+        if (!rHand.Lock && rHand.Visibled)
         {
             var rf = TriangleNormal(rHand.Pos3D, jointPoints[PositionIndex.rThumb2.Int()].Pos3D, jointPoints[PositionIndex.rMid1.Int()].Pos3D);
             rHand.Transform.rotation = Quaternion.LookRotation(jointPoints[PositionIndex.rThumb2.Int()].Pos3D - jointPoints[PositionIndex.rMid1.Int()].Pos3D, rf) * rHand.InverseRotation;

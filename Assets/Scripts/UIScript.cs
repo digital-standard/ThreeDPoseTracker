@@ -46,8 +46,13 @@ public class UIScript : MonoBehaviour
 
     public GameObject OSCClient;
     public GameObject LipSyncObject;
+    public GameObject Room;
+    public GameObject Floor;
     public GameObject IKObject;
     public bool UseIK = false;
+    private Vector3 roomDefaultPos = new Vector3(0, 6.23f, -2.8f);
+    private Vector3 roomDefaultRot = new Vector3(0.5f, 0, -0.4f);
+    private Vector3 roomDefaultScale = new Vector3(0.7f, 0.7f, 0.7f);
 
     private void Awake()
     {
@@ -373,7 +378,7 @@ public class UIScript : MonoBehaviour
 
         SetBackgroundImage(config);
 
-        if(config.UseVMCProtocol == 1)
+        if (config.UseVMCProtocol == 1)
         {
             StartVMCProtocol(configurationSetting);
         }
@@ -385,7 +390,61 @@ public class UIScript : MonoBehaviour
         SetLipSync();
         SetAutoBlink();
 
-        UseIK = config.UseGrounderIK == 1;
+        if (configurationSetting.ShowRoom == 1)
+        {
+            Room.SetActive(true);
+            SetRoomSetting();
+            if(configurationSetting.ReceiveShadow == 1)
+            {
+                Floor.SetActive(true);
+            }
+            else
+            {
+                Floor.SetActive(false);
+            }
+        }
+        else
+        {
+            Room.SetActive(false);
+            Floor.SetActive(false);
+        }
+
+        SetIK();
+    }
+
+    private void SetIK()
+    {
+        if (AvatarList.Count > 0)
+        {
+            UseIK = configurationSetting.UseGrounderIK == 1;
+            if (UseIK)
+            {
+                IKObject.SetActive(true);
+                var ik = IKObject.GetComponent<VRIK_Wrapper>();
+                ik.UpdateVRIK(AvatarList[avatars.value].Avatar.gameObject.transform);
+                ik.SetIKPositionWeight(configurationSetting.IKPositionWeight);
+                ik.SetLegPositionWeight(configurationSetting.LegPositionWeight);
+                ik.SetHeightOffset(configurationSetting.HeightOffset);
+                ik.UpdateVRIK();
+                AvatarList[avatars.value].Avatar.gameObject.SetActive(false);
+                AvatarList[avatars.value].Avatar.gameObject.SetActive(true);
+            }
+            else
+            {
+                /*
+                if (IKObject.activeSelf)
+                {
+                    ik.UpdateVRIK(AvatarList[avatars.value].Avatar.gameObject.transform);
+                }
+                */
+                IKObject.SetActive(false);
+            }
+        }
+        else
+        {
+            UseIK = false;
+            IKObject.SetActive(false);
+        }
     }
 
     private void SaveConfiguration(ConfigurationSetting config)
@@ -463,21 +522,21 @@ public class UIScript : MonoBehaviour
         SetLipSync();
         SetAutoBlink();
 
-        if (UseIK)
-        {
-            var ik = IKObject.GetComponent<VRIK_Wrapper>();
-            ik.UpdateVRIK(AvatarList[avatars.value].Avatar.gameObject.transform);
-        }
+        SetIK();
     }
 
     private void SetLipSync()
     {
-        var mic = LipSyncObject.GetComponent<OVRLipSyncMicInput>();
-        if (Microphone.GetPosition(mic.selectedDevice) <= 0)
+        var mic = LipSyncObject.GetComponent<MicSelecter>();
+        
+        if (configurationSetting.UseLipSync == 1)
         {
-            configurationSetting.SelectedMic = "None";
+            mic.enabled = true;
+            mic.InitializeMic(configurationSetting.SelectedMic);
+        }
+        else
+        {
             mic.enabled = false;
-            return;
         }
 
         var lip = LipSyncObject.GetComponent<VRMLipSyncContextMorphTarget>();
@@ -485,13 +544,6 @@ public class UIScript : MonoBehaviour
         lip.LipSyncSensitivity = configurationSetting.LipSyncSensitivity;
         lip.SetVRMBlendShapeProxy(configurationSetting.UseLipSync == 1);
 
-    }
-
-    public void MicSelectButton()
-    {
-        var mic = LipSyncObject.GetComponent<OVRLipSyncMicInput>();
-        mic.enabled = true;
-        mic.MicDeviceGUI((Screen.width / 2) - 150, (Screen.height / 2) - 75, 300, 50, 10, -300);
     }
 
     private void SetAutoBlink()
@@ -781,6 +833,15 @@ public class UIScript : MonoBehaviour
         OSCClient.SetActive(false);
     }
 
+    private void SetRoomSetting()
+    {
+        var cs = configurationSetting;
+        var t = Room.gameObject.transform;
+        t.position = roomDefaultPos + new Vector3(cs.RoomX, cs.RoomY, cs.RoomZ);
+        t.eulerAngles = roomDefaultRot + new Vector3(cs.RoomRotX, cs.RoomRotY, cs.RoomRotZ);
+        t.localScale = new Vector3(cs.RoomScaleX * roomDefaultScale.x, cs.RoomScaleY * roomDefaultScale.y, cs.RoomScaleZ * roomDefaultScale.z);
+    }
+
     void OnDisable()
     {
         /*
@@ -911,6 +972,7 @@ public class ConfigurationSetting
     public float BackwardThreshold;
     public int LockFoot;
     public int LockLegs;
+    public int LockHand;
     public int ElbowAxisTop;
     //public float HeightRatioThreshold;
     public int TrainedModel;
@@ -936,7 +998,7 @@ public class ConfigurationSetting
     public int CatchUp;
 
     public int UseLipSync;
-    public string SelectedMic;  /* None save data */
+    public string SelectedMic;
     public int LipSyncSmoothAmount;
     public float LipSyncSensitivity;
     public int UseAutoBlink;
@@ -998,6 +1060,7 @@ public class ConfigurationSetting
         BackwardThreshold = 0.05f;
         LockFoot = 0;
         LockLegs = 0;
+        LockHand = 0;
         ElbowAxisTop = 0;
         //HeightRatioThreshold = 2f;
         TrainedModel = 1;
@@ -1023,6 +1086,7 @@ public class ConfigurationSetting
         CatchUp = 1;
 
         UseLipSync = 0;
+        SelectedMic = "";
         LipSyncSmoothAmount = 70;
         LipSyncSensitivity = 1;
         UseAutoBlink = 0;
@@ -1085,6 +1149,7 @@ public class ConfigurationSetting
             BackwardThreshold = BackwardThreshold,
             LockFoot = LockFoot,
             LockLegs = LockLegs,
+            LockHand = LockHand,
             ElbowAxisTop = ElbowAxisTop,
             //HeightRatioThreshold = HeightRatioThreshold,
             TrainedModel = TrainedModel,
@@ -1110,6 +1175,7 @@ public class ConfigurationSetting
             CatchUp = CatchUp,
 
             UseLipSync = UseLipSync,
+            SelectedMic = SelectedMic,
             LipSyncSmoothAmount = LipSyncSmoothAmount,
             LipSyncSensitivity = LipSyncSensitivity,
             UseAutoBlink = UseAutoBlink,
@@ -1171,6 +1237,7 @@ public class ConfigurationSetting
         BackwardThreshold = PlayerPrefs.GetFloat("BackwardThreshold", BackwardThreshold);
         LockFoot = PlayerPrefs.GetInt("LockFoot", LockFoot);
         LockLegs = PlayerPrefs.GetInt("LockLegs", LockLegs);
+        LockHand = PlayerPrefs.GetInt("LockHand", LockHand);
         ElbowAxisTop = PlayerPrefs.GetInt("ElbowAxisTop", ElbowAxisTop);
         //HeightRatioThreshold = PlayerPrefs.GetFloat("HeightRatioThreshold", HeightRatioThreshold);
         TrainedModel = PlayerPrefs.GetInt("TrainedModel", TrainedModel);
@@ -1197,6 +1264,7 @@ public class ConfigurationSetting
         CatchUp = PlayerPrefs.GetInt("CatchUp", CatchUp);
 
         UseLipSync = PlayerPrefs.GetInt("UseLipSync", UseLipSync);
+        SelectedMic = PlayerPrefs.GetString("SelectedMic", SelectedMic);
         LipSyncSmoothAmount = PlayerPrefs.GetInt("LipSyncSmoothAmount", LipSyncSmoothAmount);
         LipSyncSensitivity = PlayerPrefs.GetFloat("LipSyncSensitivity", LipSyncSensitivity);
         UseAutoBlink = PlayerPrefs.GetInt("UseAutoBlink", UseAutoBlink);
@@ -1214,8 +1282,8 @@ public class ConfigurationSetting
         RoomScaleX = PlayerPrefs.GetFloat("RoomScaleX", RoomScaleX);
         RoomScaleY = PlayerPrefs.GetFloat("RoomScaleY", RoomScaleY);
         RoomScaleZ = PlayerPrefs.GetFloat("RoomScaleZ", RoomScaleZ);
-        ReceiveShadow = PlayerPrefs.GetInt("RecceiveShadow", ReceiveShadow);
-        UseGrounderIK = PlayerPrefs.GetInt("UseGrounderIK", UseGrounderIK);
+        ReceiveShadow = PlayerPrefs.GetInt("ReceiveShadow", ReceiveShadow);
+        ////////////UseGrounderIK = PlayerPrefs.GetInt("UseGrounderIK", UseGrounderIK);/////////////////////////////
         IKPositionWeight = PlayerPrefs.GetFloat("IKPositionWeight", IKPositionWeight);
         LegPositionWeight = PlayerPrefs.GetFloat("LegPositionWeight", LegPositionWeight);
         HeightOffset = PlayerPrefs.GetFloat("HeightOffset", HeightOffset);
@@ -1257,6 +1325,7 @@ public class ConfigurationSetting
         ppSet("BackwardThreshold", BackwardThreshold);
         ppSet("LockFoot", LockFoot);
         ppSet("LockLegs", LockLegs);
+        ppSet("LockHand", LockHand);
         ppSet("ElbowAxisTop", ElbowAxisTop);
         //ppSet("HeightRatioThreshold", HeightRatioThreshold);
         ppSet("TrainedModel", TrainedModel);
@@ -1282,6 +1351,7 @@ public class ConfigurationSetting
         ppSet("CatchUp", CatchUp);
 
         ppSet("UseLipSync", UseLipSync);
+        ppSet("SelectedMic", SelectedMic);
         ppSet("LipSyncSmoothAmount", LipSyncSmoothAmount);
         ppSet("LipSyncSensitivity", LipSyncSensitivity);
         ppSet("UseAutoBlink", UseAutoBlink);
@@ -1300,7 +1370,7 @@ public class ConfigurationSetting
         ppSet("RoomScaleY", RoomScaleY);
         ppSet("RoomScaleZ", RoomScaleZ);
         ppSet("ReceiveShadow", ReceiveShadow);
-        ppSet("UseGrounderIK", UseGrounderIK);
+        ////////////////////ppSet("UseGrounderIK", UseGrounderIK);/////////////////////////
         ppSet("IKPositionWeight", IKPositionWeight);
         ppSet("LegPositionWeight", LegPositionWeight);
         ppSet("HeightOffset", HeightOffset);
