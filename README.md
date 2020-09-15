@@ -23,6 +23,7 @@ Unity Capture(https://github.com/schellingb/UnityCapture)</br>
 Oculus Lipsync Unity 20.0.0(https://developer.oculus.com/downloads/package/oculus-lipsync-unity/)</br>
 Final IK (https://assetstore.unity.com/packages/tools/animation/final-ik-14290)</br>
 The Charterhouse Great Chamber glTF Data (https://sketchfab.com/3d-models/the-charterhouse-great-chamber-50e692c037784347b289d7bbcb318bed)
+uWindowCapture v0.6.0 (https://github.com/hecomi/uWindowCapture)
 
 ## Performance Report</br>
 This has been confirmed to work on Windows 10 only.</br>
