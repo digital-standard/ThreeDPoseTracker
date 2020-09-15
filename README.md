@@ -15,7 +15,7 @@ Move the downloaded HighQualityTrainedModel.nn file to Asset/StreamingAssets in 
 Turn off BarracudaRunner script DebugMode checkbox, which is in the Unity Editor's hierarchy</br>
 
 ### Other Packages
-UniVRM 0.56.3(https://github.com/vrm-c/UniVRM></br>
+UniVRM 0.51.1(https://github.com/vrm-c/UniVRM></br>
 BVH Tools(https://assetstore.unity.com/packages/tools/animation/bvh-tools-144728)</br>
 Unity Standalone File Browser 1.2(https://github.com/gkngkc/UnityStandaloneFileBrowser)</br>
 uOSC 0.0.2 (https://github.com/hecomi/uOSC)</br>
