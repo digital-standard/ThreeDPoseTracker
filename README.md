@@ -52,11 +52,7 @@ https://unity-chan.com/contents/license_en/</br>
 ![Light_Frame.png](image/Light_Frame.png)</br></br>
 
 ### Commercial use</br>
-・In the case of developping application including free application for advertising, it costs $500 per developer.
-  About complicated case, please contact us.</br>
-・In the case of using this on cloud server, please contact us.</br>
-・In the case of creating motion or delivering the video, and the earnings surpass $500 or there is the expectation,
-  it costs $500. Otherwise it is for free.</br></br>
+・please contact us.</br>
   
 ## Contact</br>
 If you have any questions, please feel free to contact us from following URL.</br>
