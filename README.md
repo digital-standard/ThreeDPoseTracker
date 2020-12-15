@@ -46,13 +46,13 @@ original video: https://www.youtube.com/watch?v=C9VtSRiEM7s) and "onegai_darling
 The Charterhouse Great Chamber : https://sketchfab.com/3d-models/the-charterhouse-great-chamber-50e692c037784347b289d7bbcb318bed</br>
 David Fletcher (@artfletch : https://twitter.com/artfletch)</br></br>
 
+### Commercial use</br>
+・please contact us.</br>
+
 ### Unitychan</br>
 We follow the Unity-Chan License Terms.</br>
 https://unity-chan.com/contents/license_en/</br>
 ![Light_Frame.png](image/Light_Frame.png)</br></br>
-
-### Commercial use</br>
-・please contact us.</br>
   
 ## Contact</br>
 If you have any questions, please feel free to contact us from following URL.</br>
