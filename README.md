@@ -47,7 +47,7 @@ The Charterhouse Great Chamber : https://sketchfab.com/3d-models/the-charterhous
 David Fletcher (@artfletch : https://twitter.com/artfletch)</br></br>
 
 ### Commercial use</br>
-・please contact us.</br>
+・Non-commercial use only.</br>
 
 ### Unitychan</br>
 We follow the Unity-Chan License Terms.</br>
