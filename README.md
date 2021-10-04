@@ -1,4 +1,9 @@
-# ThreeDPoseTracker (preparing now)
+# ThreeDPoseTracker (I will not be updating this page.)
+このプロジェクトはプライベートのリポジトリに移動したためメンテナンスを行っていません。古いままなのでエラーが発生するかも知れませんがそういう物として見てください。
+コードに関しての質問も返答しておりません。</br>
+This project has been moved to a private repository and is not maintained. Since it is still old, an error may occur, but please see it as such.
+We have not answered any questions regarding the code.</br>
+
 使い方は下記のQiitaの記事を読んでください。</br>
 （For instructions on how to use it, please read the following Qiita article in Japanese.）</br>
 Ver.0.1.0 : https://qiita.com/yukihiko_a/items/43d09db5628334789fab</br>
@@ -57,5 +62,3 @@ https://unity-chan.com/contents/license_en/</br>
 ## Contact</br>
 If you have any questions, please feel free to contact us from following URL.</br>
 Contact form:  https://digital-standard.com/contact/ </br>
-E-Mail: info@digital-standard.com </br>
-https://digi-rooms.com/
